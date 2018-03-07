@@ -257,18 +257,18 @@ fn create_tables(conn : &Connection){
 }
 
 fn stops_near(conn: &Connection, lat: f32, lng: f32, meters: f64){
-    let query = "SELECT
-        id,
-        name,\
-        ST_AsGeoJSON(position) as geojson,\
-        type,\
-        parent_stop,\
-        feed_id\
-        FROM stop WHERE \
+    let query = "SELECT 
+        id, 
+        name, 
+        type, 
+        parent_stop, 
+        feed_id,
+        ST_Y(position::geometry) as lat,
+        ST_X(position::geometry) as lng FROM stop WHERE \
         ST_Distance(position, \
         ST_GeomFromText($1)) <= $2;";
 
-    println!(format!("{}", query));
+    //println!(format!("{}", query));
 
     let stops = conn.query(
         query,
@@ -279,18 +279,18 @@ fn stops_near(conn: &Connection, lat: f32, lng: f32, meters: f64){
     );
 
     for row in stops.expect("Query failed").iter() {
-        let a : String = row.get(2);
-        let lat= 0.0;
-        let lng = 0.0;
-
+        //let a : String = row.get(2);
+        let lat : f64 = row.get(5);
+        let lng : f64 = row.get(6);
+        
         let stop = Stop {
             id: row.get(0),
             name: row.get(1),
             lat: lat,
             lng: lng,
-            location_type: row.get(3),
-            parent_station: row.get(4),
-            feed_id: row.get(5)
+            location_type: row.get(2),
+            parent_station: row.get(3),
+            feed_id: row.get(4)
 
         };
         println!("{:?}", stop);
