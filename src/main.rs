@@ -229,7 +229,7 @@ fn create_tables(conn : &Connection){
         start_date DATE NOT NULL,
         end_date DATE NOT NULL,
         version VARCHAR(255)
-    )", &[]);
+    )", &[]).expect("Cannot create table \"feed\"");
 
     conn.execute("CREATE TABLE IF NOT EXISTS agency\
     (\
@@ -241,7 +241,7 @@ fn create_tables(conn : &Connection){
         phone VARCHAR(255),\
         feed_id VARCHAR(64) NOT NULL,
         PRIMARY KEY (id, feed_id)
-    )", &[]);
+    )", &[]).expect("Cannot create table \"agency\"");
 
 
     conn.execute("CREATE TABLE IF NOT EXISTS stop\
@@ -253,7 +253,7 @@ fn create_tables(conn : &Connection){
         parent_stop VARCHAR(255),
         feed_id VARCHAR(64) NOT NULL,
         PRIMARY KEY (id, feed_id)
-    )", &[]).expect("WTF");
+    )", &[]).expect("Cannot create table \"stop\"");
 }
 
 fn stops_near(conn: &Connection, lat: f32, lng: f32, meters: f64){
