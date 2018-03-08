@@ -4,6 +4,8 @@ extern crate csv;
 extern crate crypto;
 extern crate chrono;
 extern crate regex;
+extern crate r2d2;
+extern crate r2d2_postgres;
 
 #[macro_use]
 extern crate serde_derive;
@@ -16,16 +18,20 @@ use std::str::FromStr;
 use regex::Regex;
 
 use std::fs::File;
-use postgres::{Connection, TlsMode};
+use r2d2_postgres::{TlsMode, PostgresConnectionManager};
+use r2d2::Pool;
+
 use chrono::{NaiveDate,NaiveTime};
+use std::thread;
 
 
-fn create_conn() -> Connection {
-    let conn = Connection::connect(
+fn create_pool() -> Pool<PostgresConnectionManager> {
+    let manager = PostgresConnectionManager::new(
         "postgres://postgres:mysecretpassword@172.18.0.2:5432",
         TlsMode::None
     ).unwrap();
-    conn
+    let pool = Pool::new(manager).unwrap();
+    pool
 }
 
 #[derive(Debug,Deserialize)]
@@ -100,203 +106,227 @@ struct Stop {
     feed_id: String
 }
 
-fn parse_agency(feed_id: &str, path: &str, conn: &Connection) {
+fn parse_agency<'a>(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>) {
     let f = File::open(path).expect("File not found");
     let mut rdr = csv::Reader::from_reader(f);
-    let stmt = conn.prepare("INSERT INTO agency \
-            (id, name, url, timezone, lang, phone, feed_id)\
-            VALUES($1, $2, $3, $4, $5, $6, $7)"
-    ).expect("Unable to create statement");
 
     for result in rdr.deserialize() {
-        let record: AgencyCSV = result.unwrap();
-        println!("{}", record.agency_id);
-        stmt.execute(&[
-            &record.agency_id,
-            &record.agency_name,
-            &record.agency_url,
-            &record.agency_timezone,
-            &record.agency_lang,
-            &record.agency_phone,
-            &feed_id
-        ]);
+        let conn = pool.clone().get().unwrap();
+        let feed_clone : String = String::from(feed_id).to_owned();
+        thread::spawn(move || {
+            let stmt = conn.prepare("INSERT INTO agency \
+                (id, name, url, timezone, lang, phone, feed_id)\
+                VALUES($1, $2, $3, $4, $5, $6, $7)"
+            ).expect("Unable to create statement");
+            let record: AgencyCSV = result.unwrap();
+            println!("{}", record.agency_id);
+            stmt.execute(&[
+                &record.agency_id,
+                &record.agency_name,
+                &record.agency_url,
+                &record.agency_timezone,
+                &record.agency_lang,
+                &record.agency_phone,
+                &feed_clone
+            ]).expect("Unable to add agency");
+        });
     }
 }
 
-fn parse_stops(feed_id: &str, path: &str, conn: &Connection){
-    let stmt = conn.prepare("INSERT INTO stop\
-        (id, name, position, type, parent_stop, feed_id)\
-        VALUES ($1, $2, ST_GeographyFromText($3), $4, $5, $6)\
-        ON CONFLICT DO NOTHING"
-    ).expect("Unable to create statement");
+fn parse_stops(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
     let f = File::open(path).expect("File not found");
     let mut rdr = csv::Reader::from_reader(f);
     for result in rdr.deserialize() {
-        let record: StopCSV = result.unwrap();
-        /*println!("SRID=4326;POINT({} {})",
-                         record.stop_lon, record.stop_lat);*/
-        stmt.execute(&[
-            &record.stop_id,
-            &record.stop_name,
-            &format!("SRID=4326;POINT({} {})",
-                record.stop_lon, record.stop_lat),
-            &(match record.location_type.parse::<i32>() {
-                Ok(val) => val,
-                Err(E) => 0
-            }),
-            &record.parent_station,
-            &feed_id
-        ]).expect("Cannot add stop");
+        let conn = pool.clone().get().unwrap();
+        let feed_clone : String = String::from(feed_id).to_owned();
+
+        thread::spawn(move || {
+            let record: StopCSV = result.unwrap();
+            let stmt = conn.prepare("INSERT INTO stop\
+                (id, name, position, type, parent_stop, feed_id)\
+                VALUES ($1, $2, ST_GeographyFromText($3), $4, $5, $6)\
+                ON CONFLICT DO NOTHING"
+            ).expect("Unable to create statement");
+
+            stmt.execute(&[
+                &record.stop_id,
+                &record.stop_name,
+                &format!("SRID=4326;POINT({} {})",
+                    record.stop_lon, record.stop_lat),
+                &(match record.location_type.parse::<i32>() {
+                    Ok(val) => val,
+                    Err(E) => 0
+                }),
+                &record.parent_station,
+                &feed_clone
+            ]).expect("Cannot add stop");
+        });
+
         //println!("{}", record.stop_name);
     }
 }
 
-fn parse_routes(feed_id: &str, path: &str, conn: &Connection){
+fn parse_routes(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
     let f = File::open(path).expect("File not found");
     let mut rdr = csv::Reader::from_reader(f);
-    let stmt = conn.prepare(
-        "INSERT INTO route (id, agency, short_name, long_name, description, type, feed_id)\
-        VALUES ($1, $2, $3, $4, $5, $6, $7)"
-    ).expect("Unable to create statement");
     for result in rdr.deserialize() {
-        let record: RouteCSV = result.unwrap();
-        println!("Route ID {}, {}, {} ({})",
-            record.route_id,
-            record.route_short_name,
-            record.route_long_name,
-            record.route_type
-        );
+        let conn = pool.clone().get().unwrap();
+        let feed_clone : String = String::from(feed_id).to_owned();
 
-        stmt.execute(&[
-            &record.route_id,
-            &record.agency_id,
-            &record.route_short_name,
-            &record.route_long_name,
-            &record.route_desc,
-            &(match record.route_type.parse::<i32>() {
-                Ok(v) => {v},
-                Err(e) => {0}   
-            }),
-            &feed_id
-        ]).expect("Unable to insert route");
+        thread::spawn(move || {
+            let record: RouteCSV = result.unwrap();
+            let stmt = conn.prepare(
+                "INSERT INTO route (id, agency, short_name, long_name, description, type, feed_id)\
+                VALUES ($1, $2, $3, $4, $5, $6, $7)"
+            ).expect("Unable to create statement");
+            println!("Route ID {}, {}, {} ({})",
+                record.route_id,
+                record.route_short_name,
+                record.route_long_name,
+                record.route_type
+            );
 
+            stmt.execute(&[
+                &record.route_id,
+                &record.agency_id,
+                &record.route_short_name,
+                &record.route_long_name,
+                &record.route_desc,
+                &(match record.route_type.parse::<i32>() {
+                    Ok(v) => {v},
+                    Err(_e) => {0}   
+                }),
+                &feed_clone
+            ]).expect("Unable to insert route");
+        });
     }
 }
 
-fn parse_trips(feed_id: &str, path: &str, conn: &Connection){
+fn parse_trips(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
     let f = File::open(path).expect("File not found");
     let mut rdr = csv::Reader::from_reader(f);
-    let stmt = conn.prepare("INSERT INTO trip (\
-            route_id,
-            service_id,
-            headsign,
-            short_name,
-            direction_id,
-            feed_id
-        )\
-        VALUES ($1, $2, $3, $4, $5, $6)"
-    ).expect("Unable to create statement");
     for result in rdr.deserialize() {
-        let record: TripCSV = result.unwrap();
-        println!("Trip {}",
-                 record.trip_headsign
-        );
+        let conn = pool.clone().get().unwrap();
+        let feed_clone : String = String::from(feed_id).to_owned();
 
-        stmt.execute(&[
-            &record.route_id,
-            &record.service_id,
-            &record.trip_headsign,
-            &record.trip_short_name,
-            &record.direction_id,
-            &feed_id
-        ]);
+        thread::spawn(move || {
+            let stmt = conn.prepare("INSERT INTO trip (\
+                    route_id,
+                    service_id,
+                    headsign,
+                    short_name,
+                    direction_id,
+                    feed_id
+                )\
+                VALUES ($1, $2, $3, $4, $5, $6)"
+            ).expect("Unable to create statement");
+            let record: TripCSV = result.unwrap();
+            println!("Trip {}",
+                    record.trip_headsign
+            );
+
+            stmt.execute(&[
+                &record.route_id,
+                &record.service_id,
+                &record.trip_headsign,
+                &record.trip_short_name,
+                &record.direction_id,
+                &feed_clone
+            ]);
+        });
     }
 }
 
-fn parse_stop_times(feed_id: &str, path: &str, conn: &Connection){
+fn parse_stop_times(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
     let f = File::open(path).expect("File not found");
     let mut rdr = csv::Reader::from_reader(f);
-    let stmt = conn.prepare("INSERT INTO stop_time (\
-            trip_id,
-            arrival_time,
-            departure_time,
-            stop_id,
-            stop_sequence,
-            pickup_type,
-            drop_off_type,
-            feed_id
-        )\
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
-    ).expect("Unable to create statement");
     for result in rdr.deserialize() {
-        let record: StopTimeCSV = result.unwrap();
-        /*println!("Stop time {}-{}",
-                 record.stop_id,
-                 record.trip_id
-        );*/
+        let conn = pool.get().unwrap();
+        let feed_clone : String = String::from(feed_id).to_owned();
+        
+        thread::spawn(move || {
+            let record: StopTimeCSV = result.unwrap();
+            let stmt = conn.prepare("INSERT INTO stop_time (\
+                    trip_id,
+                    arrival_time,
+                    departure_time,
+                    stop_id,
+                    stop_sequence,
+                    pickup_type,
+                    drop_off_type,
+                    feed_id
+                )\
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+            ).expect("Unable to create statement");
+            /*println!("Stop time {}-{}",
+                    record.stop_id,
+                    record.trip_id
+            );*/
 
-        let re = Regex::new(r"^(\d{2}):(\d{2}):(\d{2})$").unwrap();
-        if !re.is_match(&record.arrival_time){
-            panic!("Invalid arrival time!");
-        }
+            let re = Regex::new(r"^(\d{2}):(\d{2}):(\d{2})$").unwrap();
+            if !re.is_match(&record.arrival_time){
+                panic!("Invalid arrival time!");
+            }
 
-        if !re.is_match(&record.departure_time){
-            panic!("Invalid departure time!");
-        }      
+            if !re.is_match(&record.departure_time){
+                panic!("Invalid departure time!");
+            }      
 
-        let  (mut h_arr, mut m_arr, mut s_arr) = (0,0,0);
-        let  (mut h_dep, mut m_dep, mut s_dep) = (0,0,0);  
+            let  (mut h_arr, mut m_arr, mut s_arr) = (0,0,0);
+            let  (mut h_dep, mut m_dep, mut s_dep) = (0,0,0);  
 
-        for cap in re.captures_iter(&record.arrival_time){
-            h_arr = u32::from_str(&cap[1]).unwrap() % 24;
-            m_arr = u32::from_str(&cap[2]).unwrap();
-            s_arr = u32::from_str(&cap[3]).unwrap();
-        }
+            for cap in re.captures_iter(&record.arrival_time){
+                h_arr = u32::from_str(&cap[1]).unwrap() % 24;
+                m_arr = u32::from_str(&cap[2]).unwrap();
+                s_arr = u32::from_str(&cap[3]).unwrap();
+            }
 
-        for cap in re.captures_iter(&record.departure_time){
-            h_dep = u32::from_str(&cap[1]).unwrap() % 24;
-            m_dep = u32::from_str(&cap[2]).unwrap();
-            s_dep = u32::from_str(&cap[3]).unwrap();
-        }
-
-
-        let arr_time = NaiveTime::from_hms(
-            h_arr,
-            m_arr,
-            s_arr
-        );
-
-        let dep_time = NaiveTime::from_hms(
-            h_dep,
-            m_dep,
-            s_dep
-        );
+            for cap in re.captures_iter(&record.departure_time){
+                h_dep = u32::from_str(&cap[1]).unwrap() % 24;
+                m_dep = u32::from_str(&cap[2]).unwrap();
+                s_dep = u32::from_str(&cap[3]).unwrap();
+            }
 
 
-        stmt.execute(&[
-            &record.trip_id,
-            &arr_time,
-            &dep_time,
-            &record.stop_id,
-            &record.stop_sequence,
-            &record.pickup_type,
-            &record.drop_off_type,
-            &feed_id
-        ]).expect("Unable to insert stop time");
+            let arr_time = NaiveTime::from_hms(
+                h_arr,
+                m_arr,
+                s_arr
+            );
+
+            let dep_time = NaiveTime::from_hms(
+                h_dep,
+                m_dep,
+                s_dep
+            );
+
+
+            stmt.execute(&[
+                &record.trip_id,
+                &arr_time,
+                &dep_time,
+                &record.stop_id,
+                &record.stop_sequence,
+                &record.pickup_type,
+                &record.drop_off_type,
+                &feed_clone
+            ]).expect("Unable to insert stop time");
+        });
     }
 }
 
-fn parse_feed(path: &str, conn: &Connection) -> String {
+fn parse_feed(path: &str, pool: &Pool<PostgresConnectionManager>) -> String {
     let f = File::open(path).expect("File not found");
     let mut rdr = csv::Reader::from_reader(f);
-    let stmt = conn.prepare("INSERT INTO feed \
-            (id, publisher_name, publisher_url, lang,\
-            start_date, end_date, version) \
-            VALUES ($1, $2, $3, $4, $5, $6, $7)"
-    ).expect("Unable to create statement");
 
 
     for result in rdr.deserialize() {
+        let conn = pool.clone().get().unwrap();
+        let stmt = conn.prepare("INSERT INTO feed \
+                (id, publisher_name, publisher_url, lang,\
+                start_date, end_date, version) \
+                VALUES ($1, $2, $3, $4, $5, $6, $7)"
+        ).expect("Unable to create statement");
         let record: FeedCSV = result.unwrap();
         println!("Parsing Feed from {}",
                  record.feed_publisher_name
@@ -336,7 +366,7 @@ fn parse_feed(path: &str, conn: &Connection) -> String {
             &start_date,
             &end_date,
             &record.feed_version
-        ]);
+        ]).expect("Unable to add feed");
 
         return feed_id;
     }
@@ -344,9 +374,10 @@ fn parse_feed(path: &str, conn: &Connection) -> String {
     return String::new();
 }
 
-fn create_tables(conn : &Connection){
+fn create_tables(pool : &Pool<PostgresConnectionManager>){
 
-    conn.execute("CREATE TABLE IF NOT EXISTS feed\
+    let conn = pool.clone().get().unwrap();
+    conn.execute("CREATE TABLE IF NOT EXISTS feed
     (\
         id VARCHAR(64) PRIMARY KEY NOT NULL,\
         publisher_name VARCHAR(255),\
@@ -419,7 +450,7 @@ fn create_tables(conn : &Connection){
     )", &[]).expect("Cannot create table \"trip\"");
 }
 
-fn stops_near(conn: &Connection, lat: f32, lng: f32, meters: f64){
+fn stops_near(pool: &Pool<PostgresConnectionManager>, lat: f32, lng: f32, meters: f64){
     let query = "SELECT 
         id, 
         name, 
@@ -432,7 +463,7 @@ fn stops_near(conn: &Connection, lat: f32, lng: f32, meters: f64){
         ST_GeomFromText($1)) <= $2;";
 
     //println!(format!("{}", query));
-
+    let conn = pool.clone().get().unwrap();
     let stops = conn.query(
         query,
     &[
@@ -461,10 +492,10 @@ fn stops_near(conn: &Connection, lat: f32, lng: f32, meters: f64){
 }
 
 fn main() {
-    let conn = create_conn();
-    create_tables(&conn);
+    let pool = create_pool();
+    create_tables(&pool);
 
-    let feed_id = parse_feed("./resources/gtfs/sbb/feed_info.txt", &conn);
+    let feed_id = parse_feed("./resources/gtfs/sbb/feed_info.txt", &pool);
     println!("{}", feed_id);
     /*parse_agency(
         &feed_id,
@@ -472,9 +503,9 @@ fn main() {
         &conn
     );*/
 
-    stops_near(&conn, 46.00598, 8.952449, 200.0);
+    stops_near(&pool, 46.00598, 8.952449, 200.0);
     //parse_stops(&feed_id, "./resources/gtfs/sbb/stops.txt", &conn);
     //parse_routes(&feed_id, "./resources/gtfs/sbb/routes.txt", &conn);
     //parse_trips(&feed_id, "./resources/gtfs/sbb/trips.txt", &conn);
-    parse_stop_times(&feed_id, "./resources/gtfs/sbb/stop_times.txt", &conn);
+    parse_stop_times(&feed_id, "./resources/gtfs/sbb/stop_times.txt", &pool);
 }
