@@ -106,7 +106,7 @@ struct Stop {
     feed_id: String
 }
 
-fn parse_agency<'a>(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>) {
+fn parse_agency(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>) {
     let f = File::open(path).expect("File not found");
     let mut rdr = csv::Reader::from_reader(f);
 
@@ -155,7 +155,7 @@ fn parse_stops(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>
                     record.stop_lon, record.stop_lat),
                 &(match record.location_type.parse::<i32>() {
                     Ok(val) => val,
-                    Err(E) => 0
+                    Err(_e) => 0
                 }),
                 &record.parent_station,
                 &feed_clone
@@ -232,7 +232,7 @@ fn parse_trips(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>
                 &record.trip_short_name,
                 &record.direction_id,
                 &feed_clone
-            ]);
+            ]).expect("Unable to parse trip");
         });
     }
 }
