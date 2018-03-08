@@ -3,6 +3,7 @@ extern crate postgres;
 extern crate csv;
 extern crate crypto;
 extern crate chrono;
+extern crate regex;
 
 #[macro_use]
 extern crate serde_derive;
@@ -10,9 +11,13 @@ extern crate serde_derive;
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 
+use std::str::FromStr;
+
+use regex::Regex;
+
 use std::fs::File;
 use postgres::{Connection, TlsMode};
-use chrono::NaiveDate;
+use chrono::{NaiveDate,NaiveTime};
 
 
 fn create_conn() -> Connection {
@@ -71,6 +76,17 @@ struct FeedCSV {
     feed_start_date: String,
     feed_end_date: String,
     feed_version: String
+}
+
+#[derive(Debug,Deserialize)]
+struct StopTimeCSV {
+    trip_id: String,
+    arrival_time: String,
+    departure_time: String,
+    stop_id: String,
+    stop_sequence: i32,
+    pickup_type: i32,
+    drop_off_type: i32
 }
 
 #[derive(Debug,Deserialize)]
@@ -135,9 +151,13 @@ fn parse_stops(feed_id: &str, path: &str, conn: &Connection){
     }
 }
 
-fn parse_routes(path: &str){
+fn parse_routes(feed_id: &str, path: &str, conn: &Connection){
     let f = File::open(path).expect("File not found");
     let mut rdr = csv::Reader::from_reader(f);
+    let stmt = conn.prepare(
+        "INSERT INTO route (id, agency, short_name, long_name, description, type, feed_id)\
+        VALUES ($1, $2, $3, $4, $5, $6, $7)"
+    ).expect("Unable to create statement");
     for result in rdr.deserialize() {
         let record: RouteCSV = result.unwrap();
         println!("Route ID {}, {}, {} ({})",
@@ -146,17 +166,123 @@ fn parse_routes(path: &str){
             record.route_long_name,
             record.route_type
         );
+
+        stmt.execute(&[
+            &record.route_id,
+            &record.agency_id,
+            &record.route_short_name,
+            &record.route_long_name,
+            &record.route_desc,
+            &(match record.route_type.parse::<i32>() {
+                Ok(v) => {v},
+                Err(e) => {0}   
+            }),
+            &feed_id
+        ]).expect("Unable to insert route");
+
     }
 }
 
-fn parse_trips(path: &str){
+fn parse_trips(feed_id: &str, path: &str, conn: &Connection){
     let f = File::open(path).expect("File not found");
     let mut rdr = csv::Reader::from_reader(f);
+    let stmt = conn.prepare("INSERT INTO trip (\
+            route_id,
+            service_id,
+            headsign,
+            short_name,
+            direction_id,
+            feed_id
+        )\
+        VALUES ($1, $2, $3, $4, $5, $6)"
+    ).expect("Unable to create statement");
     for result in rdr.deserialize() {
         let record: TripCSV = result.unwrap();
         println!("Trip {}",
                  record.trip_headsign
         );
+
+        stmt.execute(&[
+            &record.route_id,
+            &record.service_id,
+            &record.trip_headsign,
+            &record.trip_short_name,
+            &record.direction_id,
+            &feed_id
+        ]);
+    }
+}
+
+fn parse_stop_times(feed_id: &str, path: &str, conn: &Connection){
+    let f = File::open(path).expect("File not found");
+    let mut rdr = csv::Reader::from_reader(f);
+    let stmt = conn.prepare("INSERT INTO stop_time (\
+            trip_id,
+            arrival_time,
+            departure_time,
+            stop_id,
+            stop_sequence,
+            pickup_type,
+            drop_off_type,
+            feed_id
+        )\
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+    ).expect("Unable to create statement");
+    for result in rdr.deserialize() {
+        let record: StopTimeCSV = result.unwrap();
+        /*println!("Stop time {}-{}",
+                 record.stop_id,
+                 record.trip_id
+        );*/
+
+        let re = Regex::new(r"^(\d{2}):(\d{2}):(\d{2})$").unwrap();
+        if !re.is_match(&record.arrival_time){
+            panic!("Invalid arrival time!");
+        }
+
+        if !re.is_match(&record.departure_time){
+            panic!("Invalid departure time!");
+        }      
+
+        let  (mut h_arr, mut m_arr, mut s_arr) = (0,0,0);
+        let  (mut h_dep, mut m_dep, mut s_dep) = (0,0,0);  
+
+        for cap in re.captures_iter(&record.arrival_time){
+            h_arr = u32::from_str(&cap[1]).unwrap() % 24;
+            m_arr = u32::from_str(&cap[2]).unwrap();
+            s_arr = u32::from_str(&cap[3]).unwrap();
+        }
+
+        for cap in re.captures_iter(&record.departure_time){
+            h_dep = u32::from_str(&cap[1]).unwrap() % 24;
+            m_dep = u32::from_str(&cap[2]).unwrap();
+            s_dep = u32::from_str(&cap[3]).unwrap();
+        }
+
+
+        let arr_time = NaiveTime::from_hms(
+            h_arr,
+            m_arr,
+            s_arr
+        );
+
+        let dep_time = NaiveTime::from_hms(
+            h_dep,
+            m_dep,
+            s_dep
+        );
+
+
+        stmt.execute(&[
+            &record.trip_id,
+            &arr_time,
+            &dep_time,
+            &record.stop_id,
+            &record.stop_sequence,
+            &record.pickup_type,
+            &record.drop_off_type,
+            &feed_id
+        ]).expect("Unable to insert stop time");
     }
 }
 
@@ -254,6 +380,43 @@ fn create_tables(conn : &Connection){
         feed_id VARCHAR(64) NOT NULL,
         PRIMARY KEY (id, feed_id)
     )", &[]).expect("Cannot create table \"stop\"");
+
+    conn.execute("CREATE TABLE IF NOT EXISTS route\
+    (\
+        id VARCHAR(255) NOT NULL,\
+        agency VARCHAR(255) NOT NULL,\
+        short_name VARCHAR(255) NOT NULL,\
+        long_name VARCHAR(255) NOT NULL,\
+        description VARCHAR(255),\
+        type INTEGER,
+        feed_id VARCHAR(64) NOT NULL,\
+        PRIMARY KEY (id, feed_id)\
+    )", &[]).expect("Cannot create table \"route\"");
+
+
+    conn.execute("CREATE TABLE IF NOT EXISTS trip\
+    (\
+        route_id VARCHAR(255) NOT NULL,\
+        service_id VARCHAR(255) NOT NULL,\
+        headsign VARCHAR(255) NOT NULL,\
+        short_name VARCHAR(255) NOT NULL,\
+        direction_id INTEGER,
+        feed_id VARCHAR(64) NOT NULL,\
+        PRIMARY KEY (route_id, service_id, feed_id)\
+    )", &[]).expect("Cannot create table \"trip\"");
+
+    conn.execute("CREATE TABLE IF NOT EXISTS stop_time\
+    (\
+        trip_id VARCHAR(255) NOT NULL,\
+        arrival_time TIME NOT NULL,\
+        departure_time TIME NOT NULL,\
+        stop_id VARCHAR(255) NOT NULL,\
+        stop_sequence INTEGER,
+        pickup_type INTEGER,
+        drop_off_type INTEGER,
+        feed_id VARCHAR(64) NOT NULL,\
+        PRIMARY KEY (trip_id, stop_id, stop_sequence, feed_id)\
+    )", &[]).expect("Cannot create table \"trip\"");
 }
 
 fn stops_near(conn: &Connection, lat: f32, lng: f32, meters: f64){
@@ -282,7 +445,7 @@ fn stops_near(conn: &Connection, lat: f32, lng: f32, meters: f64){
         //let a : String = row.get(2);
         let lat : f64 = row.get(5);
         let lng : f64 = row.get(6);
-        
+
         let stop = Stop {
             id: row.get(0),
             name: row.get(1),
@@ -311,6 +474,7 @@ fn main() {
 
     stops_near(&conn, 46.00598, 8.952449, 200.0);
     //parse_stops(&feed_id, "./resources/gtfs/sbb/stops.txt", &conn);
-    //parse_routes("./resources/gtfs/sbb/routes.txt");
-    //parse_trips("./resources/gtfs/sbb/trips.txt");
+    //parse_routes(&feed_id, "./resources/gtfs/sbb/routes.txt", &conn);
+    //parse_trips(&feed_id, "./resources/gtfs/sbb/trips.txt", &conn);
+    parse_stop_times(&feed_id, "./resources/gtfs/sbb/stop_times.txt", &conn);
 }
