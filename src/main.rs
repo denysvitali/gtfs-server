@@ -13,6 +13,8 @@ extern crate serde_derive;
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 
+use std::io::BufReader;
+
 use std::str::FromStr;
 
 use regex::Regex;
@@ -239,13 +241,14 @@ fn parse_trips(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>
 
 fn parse_stop_times(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
     let f = File::open(path).expect("File not found");
-    let mut rdr = csv::Reader::from_reader(f);
-    for result in rdr.deserialize() {
+    let mut reader = BufReader::new(f);
+    let mut rdr = csv::Reader::from_reader(reader);
+    for result in rdr.byte_records() {
+        let record = result.unwrap();
         let conn = pool.get().unwrap();
         let feed_clone : String = String::from(feed_id).to_owned();
         
         thread::spawn(move || {
-            let record: StopTimeCSV = result.unwrap();
             let stmt = conn.prepare("INSERT INTO stop_time (\
                     trip_id,
                     arrival_time,
@@ -256,32 +259,31 @@ fn parse_stop_times(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionMan
                     drop_off_type,
                     feed_id
                 )\
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING"
             ).expect("Unable to create statement");
-            /*println!("Stop time {}-{}",
-                    record.stop_id,
-                    record.trip_id
-            );*/
 
             let re = Regex::new(r"^(\d{2}):(\d{2}):(\d{2})$").unwrap();
-            if !re.is_match(&record.arrival_time){
+            let at = &String::from_utf8(record[1].to_vec()).unwrap();
+            let dt = &String::from_utf8(record[2].to_vec()).unwrap();
+
+            if !re.is_match(at) {
                 panic!("Invalid arrival time!");
             }
 
-            if !re.is_match(&record.departure_time){
+            if !re.is_match(dt) {
                 panic!("Invalid departure time!");
             }      
 
             let  (mut h_arr, mut m_arr, mut s_arr) = (0,0,0);
             let  (mut h_dep, mut m_dep, mut s_dep) = (0,0,0);  
 
-            for cap in re.captures_iter(&record.arrival_time){
+            for cap in re.captures_iter(at){
                 h_arr = u32::from_str(&cap[1]).unwrap() % 24;
                 m_arr = u32::from_str(&cap[2]).unwrap();
                 s_arr = u32::from_str(&cap[3]).unwrap();
             }
 
-            for cap in re.captures_iter(&record.departure_time){
+            for cap in re.captures_iter(dt){
                 h_dep = u32::from_str(&cap[1]).unwrap() % 24;
                 m_dep = u32::from_str(&cap[2]).unwrap();
                 s_dep = u32::from_str(&cap[3]).unwrap();
@@ -302,13 +304,13 @@ fn parse_stop_times(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionMan
 
 
             stmt.execute(&[
-                &record.trip_id,
+                &String::from_utf8(record[0].to_vec()).unwrap(),
                 &arr_time,
                 &dep_time,
-                &record.stop_id,
-                &record.stop_sequence,
-                &record.pickup_type,
-                &record.drop_off_type,
+                &String::from_utf8(record[3].to_vec()).unwrap(),
+                &String::from_utf8(record[4].to_vec()).unwrap().parse::<i32>().unwrap(),
+                &String::from_utf8(record[5].to_vec()).unwrap().parse::<i32>().unwrap(),
+                &String::from_utf8(record[6].to_vec()).unwrap().parse::<i32>().unwrap(),
                 &feed_clone
             ]).expect("Unable to insert stop time");
         });
@@ -325,7 +327,7 @@ fn parse_feed(path: &str, pool: &Pool<PostgresConnectionManager>) -> String {
         let stmt = conn.prepare("INSERT INTO feed \
                 (id, publisher_name, publisher_url, lang,\
                 start_date, end_date, version) \
-                VALUES ($1, $2, $3, $4, $5, $6, $7)"
+                VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING"
         ).expect("Unable to create statement");
         let record: FeedCSV = result.unwrap();
         println!("Parsing Feed from {}",
