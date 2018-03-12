@@ -13,9 +13,12 @@ extern crate serde_derive;
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 
+use std::io;
 use std::io::BufReader;
 
 use std::str::FromStr;
+use std::io::BufRead;
+use csv::{Reader, Position, StringRecord};
 
 use regex::Regex;
 
@@ -240,16 +243,58 @@ fn parse_trips(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>
 }
 
 fn parse_stop_times(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
-    let f = File::open(path).expect("File not found");
+    let f : File = File::open(path).expect("File not found");
     let mut reader = BufReader::new(f);
-    let mut rdr = csv::Reader::from_reader(reader);
-    for result in rdr.byte_records() {
-        let record = result.unwrap();
-        let conn = pool.get().unwrap();
-        let feed_clone : String = String::from(feed_id).to_owned();
-        
-        thread::spawn(move || {
-            let stmt = conn.prepare("INSERT INTO stop_time (\
+    println!("Started counting lines...");
+
+    let lines = reader.lines();
+    let lines_count = lines.count().clone();
+
+    println!("Lines: {}", lines_count);
+
+    let nthread = 8;
+
+    let mut threads : Vec<thread::JoinHandle<()>>;
+    threads = Vec::with_capacity(nthread);
+
+    let f : File = File::open(path).expect("File not found");
+    let mut csvr = csv::Reader::from_reader(f);
+    let header = csvr.headers().unwrap().clone();
+    println!("{:?}", header);
+
+    let pool = pool.clone();
+
+    for i in 0..nthread {
+        let f2 = File::open(path).expect("File not found");
+
+        // 10 threads
+        let start = lines_count / nthread * i;
+        let end : usize;
+        if i == nthread-1 {
+            end = lines_count;
+        } else {
+            end = (lines_count / nthread * (i+1)) - 1;
+        }
+
+        println!("Reader: {}", end-start);
+
+        let reader = BufReader::new(f2);
+        let lines = reader.lines().skip(start).take(end-start);
+        let header = (&header).clone();
+        let feed_cloned = String::from(feed_id);
+
+        let pool = pool.clone();
+
+        threads.push(thread::spawn(move || {
+            for line in lines {
+                let header = (&header).clone();
+                let mut csvr = Reader::from_reader(io::Cursor::new(line.unwrap()));
+                csvr.set_headers(header);
+                let record = csvr.into_byte_records().nth(0).unwrap().unwrap();
+                //println!("{:?}", record);
+
+                let conn = pool.get().unwrap();
+                let stmt = conn.prepare("INSERT INTO stop_time (\
                     trip_id,
                     arrival_time,
                     departure_time,
@@ -260,61 +305,76 @@ fn parse_stop_times(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionMan
                     feed_id
                 )\
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING"
-            ).expect("Unable to create statement");
+                ).expect("Unable to create statement");
 
-            let re = Regex::new(r"^(\d{2}):(\d{2}):(\d{2})$").unwrap();
-            let at = &String::from_utf8(record[1].to_vec()).unwrap();
-            let dt = &String::from_utf8(record[2].to_vec()).unwrap();
+                let re = Regex::new(r"^(\d{2}):(\d{2}):(\d{2})$").unwrap();
+                let at = &String::from_utf8(record[1].to_vec()).unwrap();
+                let dt = &String::from_utf8(record[2].to_vec()).unwrap();
 
-            if !re.is_match(at) {
-                panic!("Invalid arrival time!");
+                if !re.is_match(at) {
+                    panic!("Invalid arrival time!");
+                }
+
+                if !re.is_match(dt) {
+                    panic!("Invalid departure time!");
+                }
+
+                let  (mut h_arr, mut m_arr, mut s_arr) = (0,0,0);
+                let  (mut h_dep, mut m_dep, mut s_dep) = (0,0,0);
+
+                for cap in re.captures_iter(at){
+                    h_arr = u32::from_str(&cap[1]).unwrap() % 24;
+                    m_arr = u32::from_str(&cap[2]).unwrap();
+                    s_arr = u32::from_str(&cap[3]).unwrap();
+                }
+
+                for cap in re.captures_iter(dt){
+                    h_dep = u32::from_str(&cap[1]).unwrap() % 24;
+                    m_dep = u32::from_str(&cap[2]).unwrap();
+                    s_dep = u32::from_str(&cap[3]).unwrap();
+                }
+
+
+                let arr_time = NaiveTime::from_hms(
+                    h_arr,
+                    m_arr,
+                    s_arr
+                );
+
+                let dep_time = NaiveTime::from_hms(
+                    h_dep,
+                    m_dep,
+                    s_dep
+                );
+
+
+                stmt.execute(&[
+                    &String::from_utf8(record[0].to_vec()).unwrap(),
+                    &arr_time,
+                    &dep_time,
+                    &String::from_utf8(record[3].to_vec()).unwrap(),
+                    &String::from_utf8(record[4].to_vec()).unwrap().parse::<i32>().unwrap(),
+                    &String::from_utf8(record[5].to_vec()).unwrap().parse::<i32>().unwrap(),
+                    &String::from_utf8(record[6].to_vec()).unwrap().parse::<i32>().unwrap(),
+                    &feed_cloned
+                ]).expect("Unable to insert stop time");
             }
 
-            if !re.is_match(dt) {
-                panic!("Invalid departure time!");
-            }      
-
-            let  (mut h_arr, mut m_arr, mut s_arr) = (0,0,0);
-            let  (mut h_dep, mut m_dep, mut s_dep) = (0,0,0);  
-
-            for cap in re.captures_iter(at){
-                h_arr = u32::from_str(&cap[1]).unwrap() % 24;
-                m_arr = u32::from_str(&cap[2]).unwrap();
-                s_arr = u32::from_str(&cap[3]).unwrap();
-            }
-
-            for cap in re.captures_iter(dt){
-                h_dep = u32::from_str(&cap[1]).unwrap() % 24;
-                m_dep = u32::from_str(&cap[2]).unwrap();
-                s_dep = u32::from_str(&cap[3]).unwrap();
-            }
-
-
-            let arr_time = NaiveTime::from_hms(
-                h_arr,
-                m_arr,
-                s_arr
-            );
-
-            let dep_time = NaiveTime::from_hms(
-                h_dep,
-                m_dep,
-                s_dep
-            );
-
-
-            stmt.execute(&[
-                &String::from_utf8(record[0].to_vec()).unwrap(),
-                &arr_time,
-                &dep_time,
-                &String::from_utf8(record[3].to_vec()).unwrap(),
-                &String::from_utf8(record[4].to_vec()).unwrap().parse::<i32>().unwrap(),
-                &String::from_utf8(record[5].to_vec()).unwrap().parse::<i32>().unwrap(),
-                &String::from_utf8(record[6].to_vec()).unwrap().parse::<i32>().unwrap(),
-                &feed_clone
-            ]).expect("Unable to insert stop time");
-        });
+            //println!("I'm {} - {}/{}", i, start, end);
+        }));
     }
+
+    for i in threads.into_iter() {
+        i.join();
+    }
+
+
+    /*
+
+    let mut rdr = csv::Reader::from_reader(reader);
+
+    }
+    */
 }
 
 fn parse_feed(path: &str, pool: &Pool<PostgresConnectionManager>) -> String {
