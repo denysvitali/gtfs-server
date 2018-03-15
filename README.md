@@ -27,9 +27,13 @@ docker network create --subnet=172.18.0.0/16 gtfs-server-net
 docker run --name gtfs-server-db --net gtfs-server-net --ip 172.18.0.2 -e POSTGRES_PASSWORD=mysecretpassword -d mdillon/postgis/
 ```
 
+### Run the server
 ```
 cargo run
 ```
+
+### Check if the data was imported
+http://127.0.0.1:8080/api/stops
 
 ### Data import
 `feed-id` is your feed unique identifier. It will be used across the DB to generate the stop IDs. 
