@@ -1,7 +1,9 @@
 use super::super::stop::Stop;
 use super::meta::Meta;
 
-use serde::ser::{Serialize, Serializer, SerializeStruct};
+extern crate serde;
+
+use self::serde::ser::{Serialize, Serializer, SerializeStruct};
 
 #[derive(Debug,Serialize)]
 pub struct StopResult {
@@ -9,7 +11,19 @@ pub struct StopResult {
     pub meta: Meta
 }
 
-impl Serialize for StopResult {
+#[derive(Debug,Serialize)]
+pub struct StopDistanceResult {
+    pub result: Vec<StopDistance>,
+    pub meta: Meta
+}
+
+#[derive(Debug,Serialize)]
+pub struct StopDistance {
+    pub stop: Stop,
+    pub distance: f64
+}
+
+/*impl Serialize for StopResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
@@ -18,4 +32,4 @@ impl Serialize for StopResult {
         state.serialize_field("meta", &self.meta)?;
         state.end()
     }
-}
+}*/

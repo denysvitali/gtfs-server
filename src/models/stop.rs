@@ -1,4 +1,4 @@
-#[derive(Debug,Deserialize)]
+#[derive(Debug,Serialize,Deserialize)]
 pub struct Stop {
     pub id: String,
     pub name: String,
