@@ -34,16 +34,16 @@ It may be a Bus Stop, a Train Station, ...
 ## Endpoints
 
 ### /api/stops
-Returns a list of [Stop](#stop)s
+Returns a list of [Stop](#stop-s)s
 
 #### /api/stops/near/`<latitude>`/`<longitude>`/`<range>`
-Returns a list of [Stop](#stop)s that are within `<range>` meters from the provided `<latitude>` and `<longitude>`
+Returns a list of [Stop](#stop-s)s that are within `<range>` meters from the provided `<latitude>` and `<longitude>`
 
 ### /api/trips
-Returns a list of [Trip](#trip)s
+Returns a list of [Trip](#trip-t)s
 
 #### /api/trips/`<stop_id>`
-Returns the available [Trip](#trip)s at the provided [Stop](#stop)
+Returns the available [Trip](#trip-t)s at the provided [Stop](#stop-s)
 
 ## Screenshots
 
