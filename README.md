@@ -36,20 +36,20 @@ It may be a Bus Stop, a Train Station, ...
 ### /api/stops
 Returns a list of [Stop](#stop)s
 
-#### /api/stops/near/<latitude>/<longitude>/<range>
+#### /api/stops/near/`<latitude>`/`<longitude>`/`<range>`
 Returns a list of [Stop](#stop)s that are within `<range>` meters from the provided `<latitude>` and `<longitude>`
 
 ### /api/trips
 Returns a list of [Trip](#trip)s
 
-#### /api/trips/<stop_id>
+#### /api/trips/`<stop_id>`
 Returns the available [Trip](#trip)s at the provided [Stop](#stop)
 
 ## Screenshots
 
-### /api/trips/<stop_id>
+### /api/trips/`<stop_id>`
 ![/api/trips/<stop_id>](screenshots/1.png)
 ### /api/stops/
 ![/api/stops/](screenshots/2.png)
-### /api/stops/near/<latitude>/<longitude>/<range>
+### /api/stops/near/`<latitude>`/`<longitude>`/`<range>`
 ![/api/stops/near/<latitude>/<longitude>/<range>](screenshots/3.png)
