@@ -10,7 +10,7 @@ unzip gtfs.zip
 
 ## Objects
 
-### Stop
+### Stop (s)
 A `Stop` represents a physical public transporation stop. 
 It may be a Bus Stop, a Train Station, ...
 
@@ -22,7 +22,7 @@ It may be a Bus Stop, a Train Station, ...
 | lat        | Latitude |
 | lng        | Longitude |
 
-### Trip
+### Trip (t)
 | Field Name | Description |
 | ---------- | ----------- |
 | uid        | Represents the unique identifier for this stop (`t-[a-f0-9]-[a-z0-9]`),   for example `t-8033c6-bioggiomolinazzostazione` |
