@@ -109,8 +109,8 @@ fn get_stops_near(pool: &Pool<PostgresConnectionManager>,
 
     for row in stops.expect("Query failed").iter() {
         //let a : String = row.get(2);
-        let lat : f64 = row.get(5);
-        let lng : f64 = row.get(6);
+        let lat : f64 = row.get(6);
+        let lng : f64 = row.get(7);
 
         let stop = Stop {
             id: row.get(0),
