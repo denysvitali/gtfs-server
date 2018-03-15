@@ -39,10 +39,10 @@ http://127.0.0.1:8080/api/stops
 `feed-id` is your feed unique identifier. It will be used across the DB to generate the stop IDs. 
 This will allow us to filter out the feeds that are no longer actives once the DB is populated.
 #### Stops
-http://127.0.0.1:8080/api/import/stops/`feed-id`
+http://127.0.0.1:8080/api/import/stops/feed-id
 
 #### Trips
-http://127.0.0.1:8080/api/import/stops/`feed-id`
+http://127.0.0.1:8080/api/import/stops/feed-id
 
 
 
