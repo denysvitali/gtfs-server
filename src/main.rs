@@ -1,4 +1,8 @@
-// https://opentransportdata.swiss/en/dataset/timetable-2018-gtfs/permalink
+#![feature(plugin)]
+#![plugin(rocket_codegen)]
+
+extern crate rocket;
+
 extern crate postgres;
 extern crate r2d2;
 extern crate r2d2_postgres;
