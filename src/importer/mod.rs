@@ -21,7 +21,7 @@ pub mod importer {
 
     use importer::chrono::{NaiveDate,NaiveTime};
     use std::thread;
-    
+
     use models::csv::agency::AgencyCSV;
     use models::csv::feed::FeedCSV;
     use models::csv::route::RouteCSV;
@@ -30,6 +30,11 @@ pub mod importer {
     use models::csv::trip::TripCSV;
 
     use importer::csv;
+
+    fn download_feed(feed_url: &str){
+        // Download feed from URL
+        // Example:  https://opentransportdata.swiss/en/dataset/timetable-2018-gtfs/permalink
+    }
 
     fn parse_agency(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>) {
         let f = File::open(path).expect("File not found");
