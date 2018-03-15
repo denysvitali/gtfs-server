@@ -6,6 +6,7 @@ extern crate rocket;
 extern crate postgres;
 extern crate r2d2;
 extern crate r2d2_postgres;
+extern crate rocket_contrib;
 
 mod importer;
 mod models;
@@ -35,6 +36,7 @@ fn start_server(rh : RoutesHandler){
     rocket::ignite()
         .manage(rh)
         .mount("/api", routes![
+        api::import::stops,
         api::stops::stops,
         api::stops::stops_near,
     ]).launch();

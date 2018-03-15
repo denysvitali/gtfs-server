@@ -11,6 +11,7 @@ use super::super::Json;
 use super::super::State;
 use super::super::Pool;
 use super::super::PostgresConnectionManager;
+use postgres::rows::Row;
 
 #[get("/stops")]
 pub fn stops(rh: State<RoutesHandler>) -> Json<StopResult> {
@@ -19,7 +20,7 @@ pub fn stops(rh: State<RoutesHandler>) -> Json<StopResult> {
         result: get_stops(&rh.pool),
         meta: Meta{
             success: true,
-            error: Error{ code: 0, message: String::new() }
+            error: Option::None
         }
     };
     Json(sr)
@@ -32,14 +33,40 @@ pub fn stops_near(rh: State<RoutesHandler>, lat: f32, lng: f32, meters: f64) -> 
         result: get_stops_near(&rh.pool, lat, lng, meters),
         meta: Meta{
             success: true,
-            error: Error{ code: 0, message: String::new() }
+            error: Option::None
         }
     };
     Json(sr)
 }
 
+fn parse_stop_row(row: &Row) -> Stop {
+    let lat : f64 = row.get(6);
+    let lng : f64 = row.get(7);
+
+    let uid = row.get(0);
+    let id = row.get(1);
+    let name = row.get(2);
+    let location_type = row.get(3);
+    let parent_station : String = row.get(4);
+    let parent_station : Option<String> = match &parent_station.as_str() {
+        &"" => Option::None,
+        s => Option::Some(s.to_string())
+    };
+    let feed_id = row.get(5);
+
+    let mut stop = Stop::new(
+        uid, name, lat, lng, location_type, parent_station
+    );
+
+    &stop.set_id(id);
+    &stop.set_feed_id(feed_id);
+
+    stop
+}
+
 fn get_stops(pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
     let query = "SELECT
+        uid,
         id,
         name,
         type,
@@ -57,20 +84,7 @@ fn get_stops(pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
     let mut stops_result : Vec<Stop> = Vec::new();
 
     for row in stops.expect("Query failed").iter() {
-        //let a : String = row.get(2);
-        let lat : f64 = row.get(5);
-        let lng : f64 = row.get(6);
-
-        let stop = Stop {
-            id: row.get(0),
-            name: row.get(1),
-            lat,
-            lng,
-            location_type: row.get(2),
-            parent_station: row.get(3),
-            feed_id: row.get(4)
-        };
-
+        let stop = parse_stop_row(&row);
         stops_result.push(stop);
     }
 
@@ -82,6 +96,7 @@ fn get_stops_near(pool: &Pool<PostgresConnectionManager>,
                   lng: f32,
                   meters: f64) -> Vec<StopDistance> {
     let query = "SELECT * FROM (SELECT
+        uid,
         id,
         name,
         type,
@@ -108,21 +123,8 @@ fn get_stops_near(pool: &Pool<PostgresConnectionManager>,
     let mut stops_result : Vec<StopDistance> = Vec::new();
 
     for row in stops.expect("Query failed").iter() {
-        //let a : String = row.get(2);
-        let lat : f64 = row.get(6);
-        let lng : f64 = row.get(7);
-
-        let stop = Stop {
-            id: row.get(0),
-            name: row.get(1),
-            lat,
-            lng,
-            location_type: row.get(2),
-            parent_station: row.get(3),
-            feed_id: row.get(4)
-        };
-
-        let distance = row.get(5);
+        let stop = parse_stop_row(&row);
+        let distance = row.get(6);
 
         let sd = StopDistance {
             stop,
