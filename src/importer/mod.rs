@@ -27,6 +27,7 @@ use models::csv::route::RouteCSV;
 use models::csv::stop::StopCSV;
 use models::csv::stoptime::StopTimeCSV;
 use models::csv::trip::TripCSV;
+
 fn download_feed(feed_url: &str){
     // Download feed from URL
     // Example:  https://opentransportdata.swiss/en/dataset/timetable-2018-gtfs/permalink
@@ -59,6 +60,27 @@ pub fn parse_agency(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionMan
     }
 }
 
+fn generate_uid(identifier : &str, fields : &str, name : &str) -> String {
+    let mut sha = Sha256::new();
+    sha.input_str(fields);
+    let mut stopsha : String = sha.result_str();
+    &stopsha.truncate(6);
+
+    let re = Regex::new(r"[^A-Za-z0-9]").unwrap();
+    let name_stripped = Regex::new(r"\s")
+        .unwrap()
+        .replace_all(name, "");
+    let name_stripped = Regex::new(r"[(),.]")
+        .unwrap()
+        .replace_all(&name_stripped, "");
+    let uid = re
+        .replace_all(&name_stripped, "-")
+        .to_owned()
+        .to_lowercase();
+    let uid = format!("{}-{}-{}", identifier, &stopsha, uid);
+    uid
+}
+
 pub fn parse_stops(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
     let f = File::open(path).expect("File not found");
     let mut rdr = csv::Reader::from_reader(f);
@@ -74,27 +96,11 @@ pub fn parse_stops(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionMana
                 ON CONFLICT DO NOTHING"
             ).expect("Unable to create statement");
 
-
-            let mut sha = Sha256::new();
-            sha.input_str(&format!("{}{}", feed_clone, &record.stop_name));
-            let mut stopsha : String = sha.result_str();
-            &stopsha.truncate(6);
-
-            let re = Regex::new(r"[^A-Za-z0-9]").unwrap();
-            let stop_name_stripped = Regex::new(r"\s")
-                .unwrap()
-                .replace_all(&record.stop_name, "");
-            let stop_name_stripped = Regex::new(r"[(),.]")
-                .unwrap()
-                .replace_all(&stop_name_stripped, "");
-            let uid = re
-                    .replace_all(&stop_name_stripped, "-")
-                    .to_owned()
-                    .to_lowercase();
-
-            let uid = format!("s-{}-{}", &stopsha, uid);
-
-
+            let uid = generate_uid(
+                "s",
+                &format!("{}{}{}", feed_clone, &record.stop_name, &record.stop_id),
+                &record.stop_name
+            );
 
             stmt.execute(&[
                 &uid,
@@ -110,8 +116,6 @@ pub fn parse_stops(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionMana
                 &feed_clone
             ]).expect("Cannot add stop");
         });
-
-        //println!("{}", record.stop_name);
     }
 }
 
@@ -151,7 +155,7 @@ fn parse_routes(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager
     }
 }
 
-fn parse_trips(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
+pub fn parse_trips(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
     let f = File::open(path).expect("File not found");
     let mut rdr = csv::Reader::from_reader(f);
     for result in rdr.deserialize() {
@@ -160,23 +164,30 @@ fn parse_trips(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>
 
         thread::spawn(move || {
             let stmt = conn.prepare("INSERT INTO trip (\
+                    uid,
                     route_id,
                     service_id,
+                    trip_id,
                     headsign,
                     short_name,
                     direction_id,
                     feed_id
                 )\
-                VALUES ($1, $2, $3, $4, $5, $6)"
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
             ).expect("Unable to create statement");
             let record: TripCSV = result.unwrap();
-            println!("Trip {}",
-                    record.trip_headsign
+
+            let uid = generate_uid(
+                "t",
+                &format!("{}{}{}", feed_clone, &record.trip_short_name, &record.trip_id),
+                &record.trip_headsign
             );
 
             stmt.execute(&[
+                &uid,
                 &record.route_id,
                 &record.service_id,
+                &record.trip_id,
                 &record.trip_headsign,
                 &record.trip_short_name,
                 &record.direction_id,
@@ -363,6 +374,13 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
         UNIQUE(id, feed_id)
     )", &[]).expect("Cannot create table \"stop\"");
 
+    /*
+        ALTER TABLE public.stop_time
+        ADD CONSTRAINT stop_time_stop_fk
+        FOREIGN KEY (stop_id,feed_id)
+        REFERENCES public.stop(id,feed_id);
+    */
+
     conn.execute("CREATE TABLE IF NOT EXISTS route\
     (\
         id VARCHAR(255) NOT NULL,\
@@ -378,13 +396,15 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
 
     conn.execute("CREATE TABLE IF NOT EXISTS trip\
     (\
+        uid VARCHAR(255) NOT NULL,
         route_id VARCHAR(255) NOT NULL,\
         service_id VARCHAR(255) NOT NULL,\
+        trip_id VARCHAR(255) NOT NULL,
         headsign VARCHAR(255) NOT NULL,\
         short_name VARCHAR(255) NOT NULL,\
         direction_id INTEGER,
         feed_id VARCHAR(64) NOT NULL,\
-        PRIMARY KEY (route_id, service_id, feed_id)\
+        PRIMARY KEY (uid)\
     )", &[]).expect("Cannot create table \"trip\"");
 
     conn.execute("CREATE TABLE IF NOT EXISTS stop_time\

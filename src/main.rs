@@ -37,8 +37,10 @@ fn start_server(rh : RoutesHandler){
         .manage(rh)
         .mount("/api", routes![
         api::import::stops,
+        api::import::trips,
         api::stops::stops,
         api::stops::stops_near,
+        api::trips::trips_stopid
     ]).launch();
 }
 
