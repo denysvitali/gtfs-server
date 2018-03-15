@@ -31,13 +31,64 @@ It may be a Bus Stop, a Train Station, ...
 | short_name | A short name for the trip. For example `713` (aka Bus Number / Line Number) |
 | direction_id | TODO: Describe this |
 
+### Meta
+This object represents a wrapper for a result.  
+In future versions this object will include pagination and offsets, as well as a count of items returned and the limit of results per page.
+
+| Field Name | Description |
+| ---------- | ----------- |
+| success    | `Boolean`, the request was successful |
+| error      | (Optional, only available when success is `true`) An [Error](#error) object. |
+
+### Error
+| Field Name | Description |
+| ---------- | ----------- |
+| code       | An error code - generally this should be unique (one error code per error type). |
+| message    | The error message associated - localized in English |
+
+
+
+### StopDistance
+A [Stop](#stop-s) with a distance.
+| Field Name | Description |
+| ---------- | ----------- |
+| stop       | Element of type [Stop](#stop-s) |
+| distance   | Float64 representing the distance between this [Stop](#stop-s) and a GPS coordinate specified in a previous request |
+
+
+## Results
+### StopResult
+| Field Name | Description |
+| ---------- | ----------- |
+| result     | Array of [Stop](#stop-s)s |
+| meta       | [Meta](#meta) |
+
+### StopDistanceResult
+| Field Name | Description |
+| ---------- | ----------- |
+| result     | Array of [StopDistance](#stop-distance)s |
+| meta       | [Meta](#meta) |
+
+### TripResult
+| Field Name | Description |
+| ---------- | ----------- |
+| result     | Array of [Trip](#trip-t)s |
+| meta       | [Meta](#meta) |
+
+### SuccessResult
+| Field Name | Description |
+| ---------- | ----------- |
+| success    | `Boolean`, if the value is true, then the request was successful |
+
+
 ## Endpoints
 
 ### /api/stops
 Returns a list of [Stop](#stop-s)s
 
 #### /api/stops/near/`<latitude>`/`<longitude>`/`<range>`
-Returns a list of [Stop](#stop-s)s that are within `<range>` meters from the provided `<latitude>` and `<longitude>`
+Returns a `StopDistanceResult` result which consists of a list of [Stop](#stop-s)s that are within `<range>` meters from
+the provided `<latitude>` and `<longitude>`
 
 ### /api/trips
 Returns a list of [Trip](#trip-t)s
