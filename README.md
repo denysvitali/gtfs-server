@@ -1,6 +1,18 @@
 # GTFS Server
+A [General Transit Feed Specification (GTFS)](https://en.wikipedia.org/wiki/General_Transit_Feed_Specification) server to expose
+some REST APIs.
+
+## Requirements
+- Rust (Nightly, preferably)  
+- PostgreSQL with GIS ([PostGIS](http://www.postgis.org/))
+- (Docker)
+
+### Data Visualization (not required)
+- QGIS
 
 ## Instructions
+
+### Download & Extract a feed
 ```bash
 mkdir resources/gtfs/sbb/
 wget https://opentransportdata.swiss/en/dataset/timetable-2018-gtfs/permalink -O resources/gtfs/sbb/gtfs.zip
@@ -8,10 +20,32 @@ cd resources/gtfs/sbb/
 unzip gtfs.zip
 ```
 
+### Deploy with Docker
+#### PostGIS
+```
+docker network create --subnet=172.18.0.0/16 gtfs-server-net
+docker run --name gtfs-server-db --net gtfs-server-net --ip 172.18.0.2 -e POSTGRES_PASSWORD=mysecretpassword -d mdillon/postgis/
+```
+
+```
+cargo run
+```
+
+### Data import
+`feed-id` is your feed unique identifier. It will be used across the DB to generate the stop IDs. 
+This will allow us to filter out the feeds that are no longer actives once the DB is populated.
+#### Stops
+http://127.0.0.1:8080/api/import/stops/`feed-id`
+
+#### Trips
+http://127.0.0.1:8080/api/import/stops/`feed-id`
+
+
+
 ## Objects
 
 ### Stop (s)
-A `Stop` represents a physical public transporation stop. 
+A `Stop` represents a physical public transportation stop. 
 It may be a Bus Stop, a Train Station, ...
 
 #### Fields
@@ -29,7 +63,7 @@ It may be a Bus Stop, a Train Station, ...
 | ---------- | ----------- |
 | uid        | Represents the unique identifier for this stop (`t-[a-f0-9]-[a-z0-9]`),   for example `t-8033c6-bioggiomolinazzostazione` |
 | service_id | The Service ID |
-| headsign   | This is the heasign for the trip, as it would appear on an LED panel |
+| headsign   | This is the heading for the trip, as it would appear on an LED panel |
 | short_name | A short name for the trip. For example `713` (aka Bus Number / Line Number) |
 | direction_id | TODO: Describe this |
 
