@@ -15,6 +15,7 @@ A `Stop` represents a physical public transporation stop.
 It may be a Bus Stop, a Train Station, ...
 
 #### Fields
+
 | Field Name | Description |
 | ---------- | ----------- |
 | uid        | Represents the unique identifier for this stop (`s-[a-f0-9]-[a-z0-9]`),   for example `s-c27ebe-mannolamonda` |
@@ -23,6 +24,7 @@ It may be a Bus Stop, a Train Station, ...
 | lng        | Longitude |
 
 ### Trip (t)
+
 | Field Name | Description |
 | ---------- | ----------- |
 | uid        | Represents the unique identifier for this stop (`t-[a-f0-9]-[a-z0-9]`),   for example `t-8033c6-bioggiomolinazzostazione` |
@@ -41,6 +43,7 @@ In future versions this object will include pagination and offsets, as well as a
 | error      | (Optional, only available when success is `true`) An [Error](#error) object. |
 
 ### Error
+
 | Field Name | Description |
 | ---------- | ----------- |
 | code       | An error code - generally this should be unique (one error code per error type). |
@@ -48,8 +51,9 @@ In future versions this object will include pagination and offsets, as well as a
 
 
 
-### StopDistance
-A [Stop](#stop-s) with a distance.
+### StopDistance  
+A [Stop](#stop-s) with a distance.  
+
 | Field Name | Description |
 | ---------- | ----------- |
 | stop       | Element of type [Stop](#stop-s) |
@@ -58,24 +62,28 @@ A [Stop](#stop-s) with a distance.
 
 ## Results
 ### StopResult
+
 | Field Name | Description |
 | ---------- | ----------- |
 | result     | Array of [Stop](#stop-s)s |
 | meta       | [Meta](#meta) |
 
 ### StopDistanceResult
+
 | Field Name | Description |
 | ---------- | ----------- |
 | result     | Array of [StopDistance](#stop-distance)s |
 | meta       | [Meta](#meta) |
 
 ### TripResult
+
 | Field Name | Description |
 | ---------- | ----------- |
 | result     | Array of [Trip](#trip-t)s |
 | meta       | [Meta](#meta) |
 
 ### SuccessResult
+
 | Field Name | Description |
 | ---------- | ----------- |
 | success    | `Boolean`, if the value is true, then the request was successful |
