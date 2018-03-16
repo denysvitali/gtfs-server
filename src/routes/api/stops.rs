@@ -1,6 +1,6 @@
-use super::model_api::stopresult::StopResult;
-use super::model_api::stopresult::StopDistance;
-use super::model_api::stopresult::StopDistanceResult;
+use super::model_api::result::Result;
+use super::model_api::resultarray::ResultArray;
+use super::model_api::stopdistance::StopDistance;
 use super::model_api::meta::Meta;
 use super::model_api::error::Error;
 
@@ -14,9 +14,9 @@ use super::super::PostgresConnectionManager;
 use postgres::rows::Row;
 
 #[get("/stops")]
-pub fn stops(rh: State<RoutesHandler>) -> Json<StopResult> {
+pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
 
-    let sr = StopResult {
+    let sr = ResultArray::<Stop> {
         result: get_stops(&rh.pool),
         meta: Meta{
             success: true,
@@ -27,9 +27,9 @@ pub fn stops(rh: State<RoutesHandler>) -> Json<StopResult> {
 }
 
 #[get("/stops/near/<lat>/<lng>/<meters>")]
-pub fn stops_near(rh: State<RoutesHandler>, lat: f32, lng: f32, meters: f64) -> Json<StopDistanceResult> {
+pub fn stops_near(rh: State<RoutesHandler>, lat: f32, lng: f32, meters: f64) -> Json<ResultArray<StopDistance>> {
 
-    let sr = StopDistanceResult {
+    let sr = ResultArray::<StopDistance> {
         result: get_stops_near(&rh.pool, lat, lng, meters),
         meta: Meta{
             success: true,

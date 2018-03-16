@@ -1,7 +1,8 @@
-use super::model_api::tripresult::TripResult;
 use super::model_api::meta::Meta;
 
 use models::trip::Trip;
+use super::model_api::result::Result;
+use super::model_api::resultarray::ResultArray;
 
 use super::super::RoutesHandler;
 use super::super::Json;
@@ -12,7 +13,7 @@ use super::super::PostgresConnectionManager;
 use postgres::rows::Row;
 
 #[get("/trips/by-stop/<stop_id>")]
-pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<TripResult>{
+pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray<Trip>>{
     let query =
         "SELECT \
         uid,\
@@ -45,7 +46,7 @@ pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<TripResul
         trips_result.push(route);
     }
 
-    let rr = TripResult {
+    let rr = ResultArray::<Trip> {
         result: trips_result,
         meta: Meta{
             success: true,
@@ -57,7 +58,7 @@ pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<TripResul
 }
 
 #[get("/trips/<trip_id>")]
-pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Trip>{
+pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>>{
     let query =
         "SELECT \
         uid,\
@@ -81,7 +82,15 @@ pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Trip>{
 
     let trip = parse_trip_row(&(trips).unwrap().get(0));
 
-    Json(trip)
+    let result = Result::<Trip> {
+        result: trip,
+        meta: Meta {
+            success: true,
+            error: Option::None
+        }
+    };
+
+    Json(result)
 }
 
 fn parse_trip_row(row: &Row) -> Trip {
