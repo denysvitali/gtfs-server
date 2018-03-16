@@ -11,7 +11,7 @@ use super::super::PostgresConnectionManager;
 
 use postgres::rows::Row;
 
-#[get("/trips/<stop_id>")]
+#[get("/trips/by-stop/<stop_id>")]
 pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<TripResult>{
     let query =
         "SELECT \
@@ -54,6 +54,34 @@ pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<TripResul
     };
 
     Json(rr)
+}
+
+#[get("/trips/<trip_id>")]
+pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Trip>{
+    let query =
+        "SELECT \
+        uid,\
+        route_id,\
+        service_id,\
+        trip_id,\
+        headsign,\
+        short_name,\
+        direction_id,\
+        feed_id \
+        FROM trip \
+        WHERE uid = $1";
+
+    let conn = rh.pool.clone().get().unwrap();
+    let trips = conn.query(
+        query,
+        &[
+            &trip_id
+        ]
+    );
+
+    let trip = parse_trip_row(&(trips).unwrap().get(0));
+
+    Json(trip)
 }
 
 fn parse_trip_row(row: &Row) -> Trip {

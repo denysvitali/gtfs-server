@@ -4,7 +4,10 @@ extern crate chrono;
 extern crate regex;
 extern crate r2d2;
 extern crate r2d2_postgres;
+pub extern crate serde;
 
+pub use self::serde::Deserializer;
+pub use self::serde::de as serde_de;
 
 use self::crypto::digest::Digest;
 use self::crypto::sha2::Sha256;
@@ -27,6 +30,7 @@ use models::csv::route::RouteCSV;
 use models::csv::stop::StopCSV;
 use models::csv::stoptime::StopTimeCSV;
 use models::csv::trip::TripCSV;
+use models::csv::calendar::CalendarCSV;
 
 fn download_feed(feed_url: &str){
     // Download feed from URL
@@ -42,12 +46,21 @@ pub fn parse_agency(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionMan
         let feed_clone : String = String::from(feed_id).to_owned();
         thread::spawn(move || {
             let stmt = conn.prepare("INSERT INTO agency \
-                (id, name, url, timezone, lang, phone, feed_id)\
-                VALUES($1, $2, $3, $4, $5, $6, $7)"
+                (uid, id, name, url, timezone, lang, phone, feed_id)\
+                VALUES($1, $2, $3, $4, $5, $6, $7, $8)"
             ).expect("Unable to create statement");
+
             let record: AgencyCSV = result.unwrap();
+
+            let uid = generate_uid(
+                "a",
+                &format!("{}{}", record.agency_id, feed_clone),
+                &record.agency_name
+            );
+
             println!("{}", record.agency_id);
             stmt.execute(&[
+                &uid,
                 &record.agency_id,
                 &record.agency_name,
                 &record.agency_url,
@@ -70,7 +83,7 @@ fn generate_uid(identifier : &str, fields : &str, name : &str) -> String {
     let name_stripped = Regex::new(r"\s")
         .unwrap()
         .replace_all(name, "");
-    let name_stripped = Regex::new(r"[(),.]")
+    let name_stripped = Regex::new(r"[(),.-]")
         .unwrap()
         .replace_all(&name_stripped, "");
     let uid = re
@@ -119,7 +132,7 @@ pub fn parse_stops(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionMana
     }
 }
 
-fn parse_routes(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
+pub fn parse_routes(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
     let f = File::open(path).expect("File not found");
     let mut rdr = csv::Reader::from_reader(f);
     for result in rdr.deserialize() {
@@ -129,8 +142,8 @@ fn parse_routes(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager
         thread::spawn(move || {
             let record: RouteCSV = result.unwrap();
             let stmt = conn.prepare(
-                "INSERT INTO route (id, agency, short_name, long_name, description, type, feed_id)\
-                VALUES ($1, $2, $3, $4, $5, $6, $7)"
+                "INSERT INTO route (uid, id, agency, short_name, long_name, description, type, feed_id)\
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
             ).expect("Unable to create statement");
             println!("Route ID {}, {}, {} ({})",
                 record.route_id,
@@ -139,9 +152,21 @@ fn parse_routes(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager
                 record.route_type
             );
 
+            let uid = generate_uid(
+                "r",
+                &format!("{}{}", record.route_id, feed_clone),
+                &record.route_short_name
+            );
+
             stmt.execute(&[
+                &uid,
                 &record.route_id,
-                &record.agency_id,
+                &(
+                    match record.agency_id.is_empty() {
+                        true => Option::None,
+                        false => Some(record.agency_id)
+                    }
+                ),
                 &record.route_short_name,
                 &record.route_long_name,
                 &record.route_desc,
@@ -334,6 +359,60 @@ fn parse_feed(path: &str, pool: &Pool<PostgresConnectionManager>) -> String {
     return String::new();
 }
 
+pub fn parse_calendar(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>) {
+    let f = File::open(path).expect("File not found");
+    let mut rdr = csv::Reader::from_reader(f);
+
+    for result in rdr.deserialize() {
+        let conn = pool.clone().get().unwrap();
+        let stmt = conn.prepare("INSERT INTO calendar \
+                (service_id, monday, tuesday, wednesday, thursday,\
+                 friday, saturday, sunday, start_date, end_date, feed_id) \
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) ON CONFLICT DO NOTHING"
+        ).expect("Unable to create statement");
+        let record: CalendarCSV = result.unwrap();
+
+        println!("{} - M:{} T:{} W:{} T:{} F:{} S:{} S:{} SD:{} ED:{}",
+                record.service_id,
+                record.monday,
+                record.tuesday,
+                record.wednesday,
+                record.thursday,
+                record.friday,
+                record.saturday,
+                record.sunday,
+                record.start_date,
+                record.end_date
+        );
+
+        let start_date =
+            NaiveDate::parse_from_str(
+                &record.start_date,
+                "%Y%m%d"
+            ).unwrap();
+
+        let end_date =
+            NaiveDate::parse_from_str(
+                &record.end_date,
+                "%Y%m%d"
+            ).unwrap();
+
+        stmt.execute(&[
+            &record.service_id,
+            &record.monday,
+            &record.tuesday,
+            &record.wednesday,
+            &record.thursday,
+            &record.friday,
+            &record.saturday,
+            &record.sunday,
+            &start_date,
+            &end_date,
+            &feed_id
+        ]).expect("Unable to insert calendar entry");
+    }
+}
+
 pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
 
     let conn = pool.clone().get().unwrap();
@@ -350,6 +429,7 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
 
     conn.execute("CREATE TABLE IF NOT EXISTS agency\
     (\
+        uid VARCHAR(255) NOT NULL,\
         id VARCHAR(255) NOT NULL,\
         name VARCHAR(255) NOT NULL,\
         url VARCHAR(512),\
@@ -383,8 +463,9 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
 
     conn.execute("CREATE TABLE IF NOT EXISTS route\
     (\
+        uid VARCHAR(255) NOT NULL,
         id VARCHAR(255) NOT NULL,\
-        agency VARCHAR(255) NOT NULL,\
+        agency VARCHAR(255),\
         short_name VARCHAR(255) NOT NULL,\
         long_name VARCHAR(255) NOT NULL,\
         description VARCHAR(255),\
@@ -393,6 +474,12 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
         PRIMARY KEY (id, feed_id)\
     )", &[]).expect("Cannot create table \"route\"");
 
+    /*
+        ALTER TABLE public.route
+        ADD CONSTRAINT route_agency_fk
+        FOREIGN KEY (agency,feed_id)
+        REFERENCES public.agency(id,feed_id);
+     */
 
     conn.execute("CREATE TABLE IF NOT EXISTS trip\
     (\
@@ -407,6 +494,10 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
         PRIMARY KEY (uid)\
     )", &[]).expect("Cannot create table \"trip\"");
 
+    // ALTER TABLE public.trip ADD CONSTRAINT trip_calendar_fk FOREIGN KEY (service_id,feed_id) REFERENCES public.calendar(service_id,feed_id) ;
+
+
+
     conn.execute("CREATE TABLE IF NOT EXISTS stop_time\
     (\
         trip_id VARCHAR(255) NOT NULL,\
@@ -418,5 +509,32 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
         drop_off_type INTEGER,
         feed_id VARCHAR(64) NOT NULL,\
         PRIMARY KEY (trip_id, stop_id, stop_sequence, feed_id)\
-    )", &[]).expect("Cannot create table \"trip\"");
+    )", &[]).expect("Cannot create table \"stop_time\"");
+
+    conn.execute("CREATE TABLE IF NOT EXISTS transfer\
+    (\
+        from_sid VARCHAR(255) NOT NULL,\
+        to_sid VARCHAR(255) NOT NULL,\
+        transfer_type INTEGER,\
+        min_transfer_time INTEGER,
+        feed_id VARCHAR(64) NOT NULL,\
+        PRIMARY KEY (from_sid, to_sid, feed_id)\
+    )", &[]).expect("Cannot create table \"transfers\"");
+
+    conn.execute("CREATE TABLE IF NOT EXISTS calendar\
+    (\
+        service_id VARCHAR(255) NOT NULL,\
+        monday BOOLEAN,\
+        tuesday BOOLEAN,\
+        wednesday BOOLEAN,\
+        thursday BOOLEAN,\
+        friday BOOLEAN,\
+        saturday BOOLEAN,\
+        sunday BOOLEAN,\
+        start_date DATE,\
+        end_date DATE,\
+        feed_id VARCHAR(64) NOT NULL,
+        PRIMARY KEY (service_id, feed_id)\
+    )", &[]).expect("Cannot create table \"calendar\"");
+
 }

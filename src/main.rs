@@ -36,11 +36,15 @@ fn start_server(rh : RoutesHandler){
     rocket::ignite()
         .manage(rh)
         .mount("/api", routes![
+        api::import::agency,
         api::import::stops,
         api::import::trips,
+        api::import::calendar,
+        api::import::routes,
         api::stops::stops,
         api::stops::stops_near,
-        api::trips::trips_stopid
+        api::trips::trips_stopid,
+        api::trips::trip
     ]).launch();
 }
 
