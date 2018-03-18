@@ -28,6 +28,8 @@ pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArr
         WHERE trip_id IN \
         (SELECT trip_id FROM stop_time WHERE \
             stop_id=(SELECT stop.id FROM stop WHERE uid=$1) \
+            AND \
+            feed_id = (SELECT stop.feed_id FROM stop WHERE uid=$1) \
             GROUP BY trip_id \
         ) LIMIT 50";
 

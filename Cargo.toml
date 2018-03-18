@@ -15,6 +15,9 @@ chrono = "0.4"
 regex = "0.2"
 rocket = "0.3.6"
 rocket_codegen = "0.3.6"
+num-traits = "0.2"
+num-derive = "0.2"
+
 
 [dependencies.rocket_contrib]
 version = "*"

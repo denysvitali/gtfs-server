@@ -7,6 +7,9 @@ extern crate postgres;
 extern crate r2d2;
 extern crate r2d2_postgres;
 extern crate rocket_contrib;
+extern crate num_traits;
+extern crate chrono;
+
 
 mod importer;
 mod models;
@@ -19,9 +22,12 @@ use models::stop::Stop;
 use routes::RoutesHandler;
 use routes::api;
 
+use chrono::NaiveTime;
+
 #[macro_use]
 extern crate serde_derive;
-
+#[macro_use]
+extern crate num_derive;
 
 fn create_pool() -> Pool<PostgresConnectionManager> {
     let manager = PostgresConnectionManager::new(
@@ -43,8 +49,11 @@ fn start_server(rh : RoutesHandler){
         api::import::routes,
         api::stops::stops,
         api::stops::stops_near,
+        api::stops::stops_by_trip,
         api::trips::trips_stopid,
-        api::trips::trip
+        api::trips::trip,
+        api::times::times_trip,
+        api::times::times_stop
     ]).launch();
 }
 

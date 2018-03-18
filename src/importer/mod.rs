@@ -21,7 +21,7 @@ use std::fs::File;
 use r2d2_postgres::{TlsMode, PostgresConnectionManager};
 use r2d2::Pool;
 
-use self::chrono::{NaiveDate,NaiveTime};
+pub use self::chrono::{NaiveDate,NaiveTime};
 use std::thread;
 
 use models::csv::agency::AgencyCSV;

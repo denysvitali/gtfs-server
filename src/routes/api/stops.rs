@@ -26,6 +26,19 @@ pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
     Json(sr)
 }
 
+#[get("/stops/by-trip/<trip_id>")]
+pub fn stops_by_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultArray<Stop>> {
+
+    let sr = ResultArray::<Stop> {
+        result: get_stops_by_trip(trip_id, &rh.pool),
+        meta: Meta{
+            success: true,
+            error: Option::None
+        }
+    };
+    Json(sr)
+}
+
 #[get("/stops/near/<lat>/<lng>/<meters>")]
 pub fn stops_near(rh: State<RoutesHandler>, lat: f32, lng: f32, meters: f64) -> Json<ResultArray<StopDistance>> {
 
@@ -135,4 +148,52 @@ fn get_stops_near(pool: &Pool<PostgresConnectionManager>,
     }
 
     stops_result
+}
+
+fn get_stops_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
+
+    /*
+        	stop_time.stop_sequence, \
+            stop_time.arrival_time, \
+            stop_time.departure_time \
+    */
+
+    let query = "SELECT \
+	stop.uid, \
+	stop.id, \
+	stop.name, \
+	stop.type, \
+	stop.parent_stop, \
+	stop.feed_id, \
+	ST_Y(position::geometry) as lat, \
+    ST_X(position::geometry) as lng \
+
+    FROM trip \
+    INNER JOIN stop_time ON (trip.trip_id = stop_time.trip_id) \
+    INNER JOIN stop ON (stop_time.stop_id = stop.id) \
+    WHERE \
+            trip.feed_id = stop_time.feed_id \
+            AND \
+            stop_time.feed_id = stop.feed_id \
+            AND \
+            trip.uid=$1 \
+    ORDER BY stop_time.stop_sequence ASC;";
+
+    let conn = pool.clone().get().unwrap();
+    let stops = conn.query(
+        query, &[&trip_id]
+    );
+
+    let mut stops_result : Vec<Stop> = Vec::new();
+
+    for row in stops.expect("Query failed").iter() {
+        let stop = parse_stop_row(&row);
+
+        stops_result.push(stop);
+    }
+
+    stops_result
+
+
+
 }
