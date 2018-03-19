@@ -84,12 +84,12 @@ pub fn stop_by_id() {
     let mut response : LocalResponse = req.dispatch();
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.content_type(), Some(ContentType::JSON));
-    let ra : Result<Stop> =
+    let res : Result<Stop> =
         serde_json::from_str(&response.body_string().unwrap()).unwrap();
 
-    assert_eq!(ra.meta.success, true, "Server responded w/ success:false");
+    assert_eq!(res.meta.success, true, "Server responded w/ success:false");
 
-    let stop : Stop = ra.result;
+    let stop : Stop = res.result;
     assert_eq!(stop.name, "Manno, La Monda");
     assert_eq!(stop.uid, "s-c27ebe-mannolamonda"); // May vary, in case of another feed SHA256sum
     assert_eq!(stop.lat, 46.02487);
