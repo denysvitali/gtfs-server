@@ -115,10 +115,11 @@ fn get_stops_near(pool: &Pool<PostgresConnectionManager>,
         type,
         parent_stop,
         feed_id,
-        ST_Distance(position, \
-        ST_GeomFromText($1)) as distance,
         ST_Y(position::geometry) as lat,
-        ST_X(position::geometry) as lng FROM stop) as s1 WHERE \
+        ST_X(position::geometry) as lng,
+        ST_Distance(position, \
+        ST_GeomFromText($1)) as distance \
+        FROM stop) as s1 WHERE \
         distance <= $2\
         ORDER BY distance ASC \
         LIMIT 50;";
@@ -137,7 +138,7 @@ fn get_stops_near(pool: &Pool<PostgresConnectionManager>,
 
     for row in stops.expect("Query failed").iter() {
         let stop = parse_stop_row(&row);
-        let distance = row.get(6);
+        let distance = row.get(8);
 
         let sd = StopDistance {
             stop,
