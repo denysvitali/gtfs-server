@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["parse_route_row",""],["rocket_route_fn_route_by_id",""],["rocket_route_fn_routes",""],["route_by_id",""],["routes",""]],"static":[["static_rocket_route_info_for_route_by_id","Rocket code generated static route information structure."],["static_rocket_route_info_for_routes","Rocket code generated static route information structure."]]});

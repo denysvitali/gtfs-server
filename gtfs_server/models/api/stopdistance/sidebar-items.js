@@ -1,0 +1,1 @@
+initSidebarItems({"constant":[["_IMPL_DESERIALIZE_FOR_StopDistance",""],["_IMPL_SERIALIZE_FOR_StopDistance",""]],"struct":[["StopDistance",""]]});
