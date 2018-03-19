@@ -26,11 +26,37 @@ pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
     Json(sr)
 }
 
+#[get("/stops/<stop_id>")]
+pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Stop>> {
+
+    let sr = Result::<Stop> {
+        result: get_stop_by_id(stop_id, &rh.pool),
+        meta: Meta{
+            success: true,
+            error: Option::None
+        }
+    };
+    Json(sr)
+}
+
 #[get("/stops/by-trip/<trip_id>")]
 pub fn stops_by_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultArray<Stop>> {
 
     let sr = ResultArray::<Stop> {
         result: get_stops_by_trip(trip_id, &rh.pool),
+        meta: Meta{
+            success: true,
+            error: Option::None
+        }
+    };
+    Json(sr)
+}
+
+#[get("/stops/near/<lat>/<lng>")]
+pub fn stops_near_default(rh: State<RoutesHandler>, lat: f32, lng: f32) -> Json<ResultArray<StopDistance>> {
+
+    let sr = ResultArray::<StopDistance> {
+        result: get_stops_near(&rh.pool, lat, lng, 100.0),
         meta: Meta{
             success: true,
             error: Option::None
@@ -74,6 +100,28 @@ fn parse_stop_row(row: &Row) -> Stop {
     &stop.set_id(id);
     &stop.set_feed_id(feed_id);
 
+    stop
+}
+
+fn get_stop_by_id(stop_id: String, pool: &Pool<PostgresConnectionManager>) -> Stop {
+    let query = "SELECT
+        uid,
+        id,
+        name,
+        type,
+        parent_stop,
+        feed_id,
+        ST_Y(position::geometry) as lat,
+        ST_X(position::geometry) as lng FROM stop
+        WHERE uid=$1
+        LIMIT 1";
+
+    let conn = pool.clone().get().unwrap();
+    let stops = conn.query(
+        query, &[&stop_id]
+    );
+
+    let stop = parse_stop_row(&stops.expect("Query failed").get(0));
     stop
 }
 

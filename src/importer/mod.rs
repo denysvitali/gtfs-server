@@ -5,6 +5,7 @@ extern crate regex;
 extern crate r2d2;
 extern crate r2d2_postgres;
 pub extern crate serde;
+pub extern crate serde_json;
 
 pub use self::serde::Deserializer;
 pub use self::serde::de as serde_de;

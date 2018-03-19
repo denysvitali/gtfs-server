@@ -4,7 +4,7 @@ extern crate serde;
 
 use self::serde::ser::{Serialize, Serializer, SerializeStruct};
 
-#[derive(Debug,Serialize)]
+#[derive(Debug,Serialize, Deserialize)]
 pub struct StopDistance {
     pub stop: Stop,
     pub distance: f64

@@ -1,7 +1,7 @@
 #[derive(Debug,Serialize,Deserialize)]
 pub struct Stop {
     pub uid: String, 
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing,skip_deserializing)]
     id: String,
     pub name: String,
     pub lat: f64,
@@ -9,7 +9,7 @@ pub struct Stop {
     pub location_type: i32,
     #[serde(skip_serializing_if="Option::is_none")]
     pub parent_station: Option<String>,
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing,skip_deserializing)]
     feed_id: String
 }
 

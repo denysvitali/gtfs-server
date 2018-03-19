@@ -10,6 +10,7 @@ extern crate rocket_contrib;
 extern crate num_traits;
 extern crate chrono;
 
+mod test;
 
 mod importer;
 mod models;
@@ -38,16 +39,19 @@ fn create_pool() -> Pool<PostgresConnectionManager> {
     pool
 }
 
-fn start_server(rh : RoutesHandler){
+fn start_server(rh : RoutesHandler) {
     rocket::ignite()
         .manage(rh)
         .mount("/api", routes![
+        api::main,
         api::import::agency,
         api::import::stops,
         api::import::trips,
         api::import::calendar,
         api::import::routes,
         api::stops::stops,
+        api::stops::stops_by_id,
+        api::stops::stops_near_default,
         api::stops::stops_near,
         api::stops::stops_by_trip,
         api::trips::trips_stopid,
@@ -72,7 +76,7 @@ fn main() {
 
     //stops_near(&pool, 46.00598, 8.952449, 200.0);
 
-    start_server(rh);
+    let rocket = start_server(rh);
     //parse_stops(&feed_id, "./resources/gtfs/sbb/stops.txt", &conn);
     //parse_routes(&feed_id, "./resources/gtfs/sbb/routes.txt", &conn);
     //parse_trips(&feed_id, "./resources/gtfs/sbb/trips.txt", &conn);
