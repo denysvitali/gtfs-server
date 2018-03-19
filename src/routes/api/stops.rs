@@ -29,8 +29,22 @@ pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
 #[get("/stops/<stop_id>")]
 pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Stop>> {
 
+    let stop = get_stop_by_id(stop_id, &rh.pool);
+    if stop.is_none() {
+        return Json(Result::<Stop> {
+            result: Option::None,
+            meta: Meta {
+                success: false,
+                error: Some(Error {
+                    code: 2,
+                    message: String::from("Invalid stop id")
+                })
+            }
+        });
+    }
+
     let sr = Result::<Stop> {
-        result: Some(get_stop_by_id(stop_id, &rh.pool)),
+        result: stop,
         meta: Meta{
             success: true,
             error: Option::None
@@ -103,7 +117,7 @@ fn parse_stop_row(row: &Row) -> Stop {
     stop
 }
 
-fn get_stop_by_id(stop_id: String, pool: &Pool<PostgresConnectionManager>) -> Stop {
+fn get_stop_by_id(stop_id: String, pool: &Pool<PostgresConnectionManager>) -> Option<Stop> {
     let query = "SELECT
         uid,
         id,
@@ -121,8 +135,14 @@ fn get_stop_by_id(stop_id: String, pool: &Pool<PostgresConnectionManager>) -> St
         query, &[&stop_id]
     );
 
-    let stop = parse_stop_row(&stops.expect("Query failed").get(0));
-    stop
+    let stops = &stops.expect("Query failed");
+
+    if stops.len() != 1 {
+        return Option::None;
+    }
+
+    let stop = parse_stop_row(&stops.get(0));
+    Some(stop)
 }
 
 fn get_stops(pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
