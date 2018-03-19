@@ -3,6 +3,7 @@ use super::model_api::meta::Meta;
 use models::trip::Trip;
 use super::model_api::result::Result;
 use super::model_api::resultarray::ResultArray;
+use super::model_api::error::Error;
 
 use super::super::RoutesHandler;
 use super::super::Json;
@@ -49,7 +50,7 @@ pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArr
     }
 
     let rr = ResultArray::<Trip> {
-        result: trips_result,
+        result: Some(trips_result),
         meta: Meta{
             success: true,
             error: Option::None
@@ -82,10 +83,25 @@ pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>>{
         ]
     );
 
-    let trip = parse_trip_row(&(trips).unwrap().get(0));
+    let trips = &trips.unwrap();
+
+    if trips.len() == 0 {
+        return Json(Result::<Trip> {
+            result: Option::None,
+            meta: Meta {
+                success: false,
+                error: Some(Error {
+                    code: 1,
+                    message: String::from("Trip not found")
+                })
+            }
+        });
+    }
+
+    let trip = parse_trip_row(&(trips).get(0));
 
     let result = Result::<Trip> {
-        result: trip,
+        result: Some(trip),
         meta: Meta {
             success: true,
             error: Option::None

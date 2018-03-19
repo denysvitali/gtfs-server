@@ -30,7 +30,7 @@ pub fn times_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultArray
     };
 
     Json(ResultArray::<Time>{
-        result,
+        result: Some(result),
         meta
     })
 }
@@ -45,7 +45,7 @@ pub fn times_stop(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray
     };
 
     Json(ResultArray::<Time>{
-        result,
+        result: Some(result),
         meta
     })
 }

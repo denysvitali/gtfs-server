@@ -96,3 +96,26 @@ pub fn stop_by_id() {
     assert_eq!(stop.lng, 8.917352);
     assert_eq!(stop.location_type, 0);
 }
+
+#[cfg(test)]
+#[test]
+pub fn stop_by_id() {
+    let r = create_server(routes![api::stops::stops_by_id]);
+
+    let client = Client::new(r).expect("valid rocket instance");
+    let req = client.get("/api/stops/s-c27ebe-mannolamonda");
+    let mut response : LocalResponse = req.dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(response.content_type(), Some(ContentType::JSON));
+    let res : Result<Stop> =
+        serde_json::from_str(&response.body_string().unwrap()).unwrap();
+
+    assert_eq!(res.meta.success, true, "Server responded w/ success:false");
+
+    let stop : Stop = res.result;
+    assert_eq!(stop.name, "Manno, La Monda");
+    assert_eq!(stop.uid, "s-c27ebe-mannolamonda"); // May vary, in case of another feed SHA256sum
+    assert_eq!(stop.lat, 46.02487);
+    assert_eq!(stop.lng, 8.917352);
+    assert_eq!(stop.location_type, 0);
+}

@@ -17,7 +17,7 @@ use postgres::rows::Row;
 pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
 
     let sr = ResultArray::<Stop> {
-        result: get_stops(&rh.pool),
+        result: Some(get_stops(&rh.pool)),
         meta: Meta{
             success: true,
             error: Option::None
@@ -30,7 +30,7 @@ pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
 pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Stop>> {
 
     let sr = Result::<Stop> {
-        result: get_stop_by_id(stop_id, &rh.pool),
+        result: Some(get_stop_by_id(stop_id, &rh.pool)),
         meta: Meta{
             success: true,
             error: Option::None
@@ -43,7 +43,7 @@ pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Sto
 pub fn stops_by_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultArray<Stop>> {
 
     let sr = ResultArray::<Stop> {
-        result: get_stops_by_trip(trip_id, &rh.pool),
+        result: Some(get_stops_by_trip(trip_id, &rh.pool)),
         meta: Meta{
             success: true,
             error: Option::None
@@ -56,7 +56,7 @@ pub fn stops_by_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultAr
 pub fn stops_near_default(rh: State<RoutesHandler>, lat: f32, lng: f32) -> Json<ResultArray<StopDistance>> {
 
     let sr = ResultArray::<StopDistance> {
-        result: get_stops_near(&rh.pool, lat, lng, 100.0),
+        result: Some(get_stops_near(&rh.pool, lat, lng, 100.0)),
         meta: Meta{
             success: true,
             error: Option::None
@@ -69,7 +69,7 @@ pub fn stops_near_default(rh: State<RoutesHandler>, lat: f32, lng: f32) -> Json<
 pub fn stops_near(rh: State<RoutesHandler>, lat: f32, lng: f32, meters: f64) -> Json<ResultArray<StopDistance>> {
 
     let sr = ResultArray::<StopDistance> {
-        result: get_stops_near(&rh.pool, lat, lng, meters),
+        result: Some(get_stops_near(&rh.pool, lat, lng, meters)),
         meta: Meta{
             success: true,
             error: Option::None
