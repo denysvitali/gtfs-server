@@ -84,6 +84,6 @@ fn parse_route_row(row: &Row, rh: &State<RoutesHandler>) -> Route {
         long_name: row.get(4),
         description: row.get(5),
         route_type: row.get(6),
-        feed_id: feed_id
+        feed_id
     }
 }
