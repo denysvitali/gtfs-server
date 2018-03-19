@@ -367,11 +367,15 @@ pub fn parse_calendar(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionM
     for result in rdr.deserialize() {
         let conn = pool.clone().get().unwrap();
         let stmt = conn.prepare("INSERT INTO calendar \
-                (service_id, monday, tuesday, wednesday, thursday,\
+                (uid, service_id, monday, tuesday, wednesday, thursday,\
                  friday, saturday, sunday, start_date, end_date, feed_id) \
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) ON CONFLICT DO NOTHING"
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) ON CONFLICT DO NOTHING"
         ).expect("Unable to create statement");
         let record: CalendarCSV = result.unwrap();
+
+        let uid = generate_uid("se",
+                               &format!("{}{}", &record.service_id, &feed_id),
+                               &record.service_id);
 
         println!("{} - M:{} T:{} W:{} T:{} F:{} S:{} S:{} SD:{} ED:{}",
                 record.service_id,
@@ -399,6 +403,7 @@ pub fn parse_calendar(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionM
             ).unwrap();
 
         stmt.execute(&[
+            &uid,
             &record.service_id,
             &record.monday,
             &record.tuesday,
@@ -524,6 +529,7 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
 
     conn.execute("CREATE TABLE IF NOT EXISTS calendar\
     (\
+        uid VARCHAR(255) NOT NULL,
         service_id VARCHAR(255) NOT NULL,\
         monday BOOLEAN,\
         tuesday BOOLEAN,\
@@ -535,7 +541,8 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
         start_date DATE,\
         end_date DATE,\
         feed_id VARCHAR(64) NOT NULL,
-        PRIMARY KEY (service_id, feed_id)\
+        PRIMARY KEY (uid),
+        UNIQUE (service_id, feed_id)\
     )", &[]).expect("Cannot create table \"calendar\"");
 
 }

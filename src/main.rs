@@ -23,7 +23,7 @@ use models::stop::Stop;
 use routes::RoutesHandler;
 use routes::api;
 
-use chrono::NaiveTime;
+use chrono::{NaiveTime, NaiveDate};
 
 #[macro_use]
 extern crate serde_derive;
@@ -49,6 +49,9 @@ fn start_server(rh : RoutesHandler) {
         api::import::trips,
         api::import::calendar,
         api::import::routes,
+        api::agency::agency_by_id,
+        api::routes::routes,
+        api::routes::route_by_id,
         api::stops::stops,
         api::stops::stops_by_id,
         api::stops::stops_near_default,

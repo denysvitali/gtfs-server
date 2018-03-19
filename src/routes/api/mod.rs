@@ -1,7 +1,10 @@
 use super::model_api;
-use super::super::NaiveTime;
-pub mod stops;
+use super::super::{NaiveTime, NaiveDate};
+
+pub mod agency;
 pub mod import;
+pub mod routes;
+pub mod stops;
 pub mod trips;
 pub mod times;
 

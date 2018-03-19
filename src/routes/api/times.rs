@@ -19,6 +19,7 @@ use num_traits as num;
 use num_traits::FromPrimitive;
 
 use super::NaiveTime;
+use super::NaiveDate;
 
 #[get("/times/by-trip/<trip_id>")]
 pub fn times_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultArray<Time>>{
@@ -59,7 +60,40 @@ fn get_times_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) ->
             (SELECT trip.feed_id FROM trip WHERE trip.uid='t-b119d6-lamone-cadempinostazione');
     */
 
-    let query = "SELECT  trip_id,\
+    let query = "SELECT t.uid,
+        arrival_time,
+        departure_time,
+        stop.uid,
+        stop_sequence,
+        pickup_type,
+        drop_off_type,
+        c.uid,
+        c.monday,
+        c.tuesday,
+        c.wednesday,
+        c.thursday,
+        c.friday,
+        c.saturday,
+        c.sunday,
+        c.start_date,
+        c.end_date,
+        a.feed_id
+        FROM (SELECT * FROM stop_time
+        WHERE
+        stop_time.trip_id = (
+            SELECT trip.trip_id FROM trip WHERE trip.uid=$1
+        ) AND
+        stop_time.feed_id = (
+            SELECT trip.feed_id FROM trip WHERE trip.uid=$1
+        )
+        ) as a
+        INNER JOIN stop ON (a.stop_id=stop.id)
+        INNER JOIN trip as t ON (a.trip_id = t.trip_id)
+        INNER JOIN calendar as c ON (t.service_id = c.service_id)
+        WHERE a.feed_id = stop.feed_id AND t.feed_id = stop.feed_id AND c.feed_id = t.feed_id
+        ORDER BY stop_sequence";
+
+    /*let query = "SELECT  trip_id,\
         arrival_time,\
         departure_time,\
         stop.uid,\
@@ -75,7 +109,7 @@ fn get_times_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) ->
         stop_time.feed_id = (\
             SELECT trip.feed_id FROM trip WHERE trip.uid=$1\
         ) \
-        ORDER BY stop_sequence) as a INNER JOIN stop ON (a.stop_id=stop.id) WHERE a.feed_id = stop.feed_id";
+        ORDER BY stop_sequence) as a INNER JOIN stop ON (a.stop_id=stop.id) WHERE a.feed_id = stop.feed_id";*/
 
     let conn = pool.clone().get().unwrap();
     let times = conn.query(
@@ -102,26 +136,37 @@ fn get_times_by_stop_id(stop_id: String, pool: &Pool<PostgresConnectionManager>)
         GROUP BY trip_id ORDER BY trip_id ASC;
     */
 
-    let query = "SELECT t.uid,\
-        arrival_time,\
-        departure_time,\
-        stop.uid,\
-        stop_sequence,\
-        pickup_type,\
-        drop_off_type,\
-        a.feed_id \
-        FROM (SELECT * FROM stop_time \
-        WHERE \
-        stop_time.stop_id = (\
-            SELECT stop.id FROM stop WHERE stop.uid=$1\
-        ) AND \
-        stop_time.feed_id = (\
-            SELECT stop.feed_id FROM stop WHERE stop.uid=$1\
-        ) \
-        ORDER BY arrival_time DESC) as a \
-        INNER JOIN stop ON (a.stop_id=stop.id) \
-        INNER JOIN trip as t ON (a.trip_id = t.trip_id) \
-        WHERE a.feed_id = stop.feed_id AND t.feed_id = stop.feed_id";
+    let query = "SELECT t.uid,
+        arrival_time,
+        departure_time,
+        stop.uid,
+        stop_sequence,
+        pickup_type,
+        drop_off_type,
+        c.uid,
+        c.monday,
+        c.tuesday,
+        c.wednesday,
+        c.thursday,
+        c.friday,
+        c.saturday,
+        c.sunday,
+        c.start_date,
+        c.end_date,
+        a.feed_id
+        FROM (SELECT * FROM stop_time
+        WHERE
+        stop_time.stop_id = (
+            SELECT stop.id FROM stop WHERE stop.uid=$1
+        ) AND
+        stop_time.feed_id = (
+            SELECT stop.feed_id FROM stop WHERE stop.uid=$1
+        )
+        ORDER BY arrival_time DESC) as a
+        INNER JOIN stop ON (a.stop_id=stop.id)
+        INNER JOIN trip as t ON (a.trip_id = t.trip_id)
+        INNER JOIN calendar as c ON (t.service_id = c.service_id)
+        WHERE a.feed_id = stop.feed_id AND t.feed_id = stop.feed_id AND c.feed_id = t.feed_id";
 
     let conn = pool.clone().get().unwrap();
     let times = conn.query(
@@ -146,17 +191,24 @@ fn parse_time_row(row: &Row) -> Time {
     let arrival : NaiveTime = row.get(1);
     let departure : NaiveTime = row.get(2);
 
-    let mut time = Time::new(
-        row.get(0),
-        arrival.format("%H:%M:%S").to_string(),
-        departure.format("%H:%M:%S").to_string(),
-        row.get(3),
-        row.get(4),
-        num::FromPrimitive::from_i32(pickup_int).unwrap(),
-        num::FromPrimitive::from_i32(dropoff_int).unwrap()
-    );
+    let start_date : NaiveDate = row.get(15);
+    let end_date: NaiveDate = row.get(16);
 
-    time.set_feed_id(row.get(7));
+    let mut time = Time {
+        trip_id: row.get(0),
+        arrival_time: arrival.format("%H:%M:%S").to_string(),
+        departure_time: departure.format("%H:%M:%S").to_string(),
+        stop_id: row.get(3),
+        stop_sequence: row.get(4),
+        pickup_type: num::FromPrimitive::from_i32(pickup_int).unwrap(),
+        drop_off_type: num::FromPrimitive::from_i32(dropoff_int).unwrap(),
+        service_days: vec![row.get(8), row.get(9), row.get(10), row.get(11),
+                           row.get(12), row.get(13), row.get(14)],
+        service_uid: row.get(7),
+        start_date,
+        end_date,
+        feed_id: row.get(17)
+    };
 
     time
 }

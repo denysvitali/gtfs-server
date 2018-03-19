@@ -17,22 +17,27 @@ use postgres::rows::Row;
 pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray<Trip>>{
     let query =
         "SELECT \
-        uid,\
-        route_id,\
-        service_id,\
+        t.uid,\
+        r.uid,\
+        c.uid,\
         trip_id,\
         headsign,\
-        short_name,\
+        t.short_name,\
         direction_id,\
-        feed_id \
-        FROM trip \
+        t.feed_id \
+        FROM trip as t \
+        INNER JOIN calendar as c ON c.service_id=t.service_id \
+        INNER JOIN route as r ON r.id = t.route_id \
         WHERE trip_id IN \
         (SELECT trip_id FROM stop_time WHERE \
             stop_id=(SELECT stop.id FROM stop WHERE uid=$1) \
             AND \
             feed_id = (SELECT stop.feed_id FROM stop WHERE uid=$1) \
             GROUP BY trip_id \
-        ) LIMIT 50";
+        ) \
+        AND c.feed_id = t.feed_id \
+        AND r.feed_id = t.feed_id \
+        LIMIT 50";
 
     let conn = rh.pool.clone().get().unwrap();
     let trips = conn.query(
