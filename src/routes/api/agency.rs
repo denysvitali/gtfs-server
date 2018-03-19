@@ -1,3 +1,5 @@
+//! `/agency` related routes
+
 use super::model_api::meta::Meta;
 
 use models::agency::Agency;
@@ -15,8 +17,29 @@ use super::super::State;
 use super::super::Pool;
 use super::super::PostgresConnectionManager;
 
-use postgres::rows::Row;
-
+/// Handles `/agency/<agency_uid>` route,
+/// returns a [Result](../../../models/api/result/struct.Result.html)<[Agency](../../../models/agency/struct.Agency.html)>
+///
+/// ### Example
+/// `/api/agency/a-cfb94d-aroserverkehrsbetriebe` returns:
+/**
+    ```json
+    {
+      "result": {
+        "uid": "a-cfb94d-aroserverkehrsbetriebe",
+        "name": "Aroser Verkehrsbetriebe",
+        "url": "http://www.sbb.ch/",
+        "timezone": "Europe/Berlin",
+        "lang": "DE",
+        "phone": "0900 300 300 "
+      },
+      "meta": {
+        "success": true
+      }
+    }
+    ```
+**/
+////////////////////////////////////////////////////////////////////////////////
 #[get("/agency/<agency_uid>")]
 pub fn agency_by_id(rh: State<RoutesHandler>, agency_uid: String) -> Json<Result<Agency>>{
     let res = get_agency_by_uid(rh, agency_uid);
@@ -42,6 +65,8 @@ pub fn agency_by_id(rh: State<RoutesHandler>, agency_uid: String) -> Json<Result
         }
     })
 }
+
+use postgres::rows::Row;
 
 pub fn get_agency_by_uid(rh: State<RoutesHandler>, agency_uid: String) -> Option<Agency> {
     let query = "SELECT \

@@ -1,3 +1,6 @@
+//! This is the documentation for `gtfs-server`
+//!
+
 #![feature(plugin)]
 #![plugin(rocket_codegen)]
 

@@ -1,3 +1,5 @@
+//! `/trips` related routes
+
 use super::model_api::meta::Meta;
 
 use models::trip::Trip;

@@ -1,3 +1,5 @@
+//! `/stops` related routes
+
 use super::model_api::result::Result;
 use super::model_api::resultarray::ResultArray;
 use super::model_api::stopdistance::StopDistance;
@@ -13,6 +15,38 @@ use super::super::Pool;
 use super::super::PostgresConnectionManager;
 use postgres::rows::Row;
 
+/// Handles `/stops` route,
+/// returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)<[Stop](../../../models/stop/struct.Stop.html)>
+///
+/// ### Example
+/// `/api/stops/` returns:
+/**
+    ```json
+    {
+      "result": [
+        {
+          "uid": "s-f8f952-anzolachiesa",
+          "name": "Anzola, chiesa",
+          "lat": 45.989902,
+          "lng": 8.345061,
+          "location_type": 0
+        },
+        {
+          "uid": "s-90980f-bognancotvillaelda",
+          "name": "Bognanco, T. Villa Elda",
+          "lat": 46.122295,
+          "lng": 8.2107725,
+          "location_type": 0
+        },
+        (...)
+      ],
+      "meta": {
+        "success": true
+      }
+    }
+    ```
+**/
+////////////////////////////////////////////////////////////////////////////////
 #[get("/stops")]
 pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
 

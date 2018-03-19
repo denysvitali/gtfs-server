@@ -1,5 +1,5 @@
 [package]
-name = "prj"
+name = "gtfs-server"
 version = "0.1.0"
 authors = ["Denys Vitali <denys@denv.it>"]
 
