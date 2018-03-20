@@ -129,13 +129,14 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
         WHERE a.feed_id = stop.feed_id AND t.feed_id = stop.feed_id AND c.feed_id = t.feed_id 
         ");
 
+    let mut dates : Vec<NaiveDate> = Vec::new();
+    let mut values : Vec<&bool> = Vec::new();
     let mut params: Vec<&ToSql> = Vec::new();
     let mut i = 1;
 
     let mut addition : String;
 
     params.push(&trip_id);
-    let mut values : Vec<&bool> = Vec::new();
 
     if time_search.monday.is_some() {
         values.push(time_search.monday.as_ref().unwrap());
@@ -186,8 +187,8 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
         query.push_str(&addition);
     }
     
-    for val in values.iter() {
-        params.push(val.to_owned());
+    for val in &values {
+        params.push(val);
     }
     
     let mut values : Vec<&String> = Vec::new();
@@ -203,15 +204,13 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
         query.push_str(&addition);
     }
     
-    let mut dates : Vec<NaiveDate> = Vec::new();
     for &val in values.iter() {
         &dates.push(val.parse::<NaiveDate>().unwrap());
     }
     
-    // This part is failing:
-    /*for val in dates.into_iter() {
+    for val in &dates {
         params.push(val);
-    }*/
+    }
 
     /*let query = "SELECT  trip_id,\
         arrival_time,\
