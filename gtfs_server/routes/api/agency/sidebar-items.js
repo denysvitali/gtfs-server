@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["agency_by_id","Handles `/agency/<agency_uid>` route, returns a Result<Agency>"],["get_agency",""],["get_agency_by_uid",""],["get_agency_id",""],["parse_agency_row",""],["rocket_route_fn_agency_by_id",""]],"static":[["static_rocket_route_info_for_agency_by_id","Rocket code generated static route information structure."]]});

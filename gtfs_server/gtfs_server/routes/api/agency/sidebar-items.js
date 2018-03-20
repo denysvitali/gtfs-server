@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["agency_by_id","`/agency/<agency_uid>`   Get the the specified Agency by its specified UID.   Returns a Result<Agency>"],["get_agency_id","Returns the UID of the `agency_id` and `feed_id` provided."]],"static":[["static_rocket_route_info_for_agency_by_id","Rocket code generated static route information structure."]]});

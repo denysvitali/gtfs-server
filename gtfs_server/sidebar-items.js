@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["create_pool",""],["main",""],["start_server",""]],"mod":[["importer",""],["models",""],["routes",""],["test",""]]});
