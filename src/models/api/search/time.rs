@@ -7,8 +7,7 @@ use models::dropoff::DropOff;
 
 #[derive(FromForm,Serialize,Deserialize)]
 pub struct TimeSearch {
-    pub start_date: Option<String>,
-    pub end_date: Option<String>,
+    pub date: Option<String>,
     pub service_uid: Option<String>,
     pub monday: Option<bool>,
     pub tuesday: Option<bool>,
