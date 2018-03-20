@@ -192,7 +192,7 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
     
     let mut values : Vec<&String> = Vec::new();
     
-    /*if time_search.start_date.is_some() {
+    if time_search.start_date.is_some() {
         values.push(
             time_search.start_date
                 .as_ref()
@@ -203,9 +203,14 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
         query.push_str(&addition);
     }
     
-    let mut dates : Vec<&'a NaiveDate> = Vec::new();
+    let mut dates : Vec<NaiveDate> = Vec::new();
     for &val in values.iter() {
-        dates.push(&val.parse::<NaiveDate>().as_ref().unwrap());
+        &dates.push(val.parse::<NaiveDate>().unwrap());
+    }
+    
+    // This part is failing:
+    /*for val in dates.into_iter() {
+        params.push(val);
     }*/
 
     /*let query = "SELECT  trip_id,\
