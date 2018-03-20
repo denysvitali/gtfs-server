@@ -1,3 +1,5 @@
+//! API related models
+
 pub mod stopdistance;
 pub mod error;
 pub mod meta;

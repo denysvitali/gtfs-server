@@ -15,6 +15,10 @@ use super::super::PostgresConnectionManager;
 
 use postgres::rows::Row;
 
+/// `/trips/by-stop/<stop_id>`, returns the [Trip](../../../models/trip/struct.Trip.html)s associated
+/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `<stop_id>`.
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[Trip](../../../models/trip/struct.Trip.html)>
 #[get("/trips/by-stop/<stop_id>")]
 pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray<Trip>>{
     let query =
@@ -67,6 +71,10 @@ pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArr
     Json(rr)
 }
 
+/// `/trips/<trip_id>`, returns the [Trip](../../../models/trip/struct.Trip.html)s associated
+/// to the specified [Trip](../../../models/trip/struct.Trip.html) UID, parametrized as `<trip_id>`.
+/// Returns a [Result](../../../models/api/result/struct.Result.html)
+/// <[Trip](../../../models/trip/struct.Trip.html)>
 #[get("/trips/<trip_id>")]
 pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>>{
     let query =

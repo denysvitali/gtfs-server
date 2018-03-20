@@ -1,3 +1,4 @@
+//! Agency related structs and implementations
 #[derive(Debug,Serialize,Deserialize)]
 pub struct Agency {
     pub uid: String,

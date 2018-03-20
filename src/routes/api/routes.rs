@@ -17,6 +17,9 @@ use super::super::PostgresConnectionManager;
 
 use postgres::rows::Row;
 
+/// `/routes`  
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[Route](../../../models/route/struct.Route.html)>
 #[get("/routes")]
 pub fn routes(rh: State<RoutesHandler>) -> Json<ResultArray<Route>>{
     let query = "SELECT * FROM route LIMIT 50";
@@ -41,6 +44,11 @@ pub fn routes(rh: State<RoutesHandler>) -> Json<ResultArray<Route>>{
     })
 }
 
+/// `/routes/<route_uid>`  
+/// Gets the specified [Route](../../../models/route/struct.Route.html) by its UID,
+/// parametrized as `<route_uid>`.  
+/// Returns a [Result](../../../models/api/result/struct.Result.html)
+/// <[Route](../../../models/route/struct.Route.html)>
 #[get("/routes/<route_uid>")]
 pub fn route_by_id(rh: State<RoutesHandler>, route_uid: String) -> Json<Result<Route>>{
     let query = "SELECT * FROM route WHERE uid = $1 LIMIT 1";

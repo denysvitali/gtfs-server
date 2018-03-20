@@ -16,8 +16,8 @@ extern crate chrono;
 mod test;
 
 mod importer;
-mod models;
-mod routes;
+pub mod models;
+pub mod routes;
 
 use r2d2_postgres::{TlsMode, PostgresConnectionManager};
 use r2d2::Pool;

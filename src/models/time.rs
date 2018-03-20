@@ -1,3 +1,5 @@
+//! Time related structs and implementations
+
 use super::pickup::PickUp;
 use super::dropoff::DropOff;
 

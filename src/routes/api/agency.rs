@@ -17,8 +17,9 @@ use super::super::State;
 use super::super::Pool;
 use super::super::PostgresConnectionManager;
 
-/// Handles `/agency/<agency_uid>` route,
-/// returns a [Result](../../../models/api/result/struct.Result.html)<[Agency](../../../models/agency/struct.Agency.html)>
+/// `/agency/<agency_uid>`  
+/// Get the the specified [Agency](../../../models/agency/struct.Agency.html) by its specified UID.  
+/// Returns a [Result](../../../models/api/result/struct.Result.html)<[Agency](../../../models/agency/struct.Agency.html)>
 ///
 /// ### Example
 /// `/api/agency/a-cfb94d-aroserverkehrsbetriebe` returns:
@@ -39,7 +40,6 @@ use super::super::PostgresConnectionManager;
     }
     ```
 **/
-////////////////////////////////////////////////////////////////////////////////
 #[get("/agency/<agency_uid>")]
 pub fn agency_by_id(rh: State<RoutesHandler>, agency_uid: String) -> Json<Result<Agency>>{
     let res = get_agency_by_uid(rh, agency_uid);
@@ -68,7 +68,7 @@ pub fn agency_by_id(rh: State<RoutesHandler>, agency_uid: String) -> Json<Result
 
 use postgres::rows::Row;
 
-pub fn get_agency_by_uid(rh: State<RoutesHandler>, agency_uid: String) -> Option<Agency> {
+fn get_agency_by_uid(rh: State<RoutesHandler>, agency_uid: String) -> Option<Agency> {
     let query = "SELECT \
         uid, \
         id, \
@@ -98,7 +98,7 @@ pub fn get_agency_by_uid(rh: State<RoutesHandler>, agency_uid: String) -> Option
     return Some(parse_agency_row(&agency.get(0)));
 }
 
-pub fn get_agency(agency_id: Option<String>, feed_id: &String, rh: &State<RoutesHandler>) -> Option<Agency> {
+fn get_agency(agency_id: Option<String>, feed_id: &String, rh: &State<RoutesHandler>) -> Option<Agency> {
     if agency_id.is_none() {
         return Option::None;
     }
@@ -132,6 +132,7 @@ pub fn get_agency(agency_id: Option<String>, feed_id: &String, rh: &State<Routes
     return Some(parse_agency_row(&result.get(0)));
 }
 
+/// Returns the UID of the `agency_id` and `feed_id` provided.
 pub fn get_agency_id(agency_id: Option<String>, feed_id: &String, rh: &State<RoutesHandler>) -> Option<String> {
     if agency_id.is_none() {
         return Option::None;

@@ -1,3 +1,4 @@
+//! PickUp related enums and implementations
 #[derive(Debug, Serialize, FromPrimitive, ToPrimitive)]
 pub enum PickUp {
     RegularlyScheduled = 0,

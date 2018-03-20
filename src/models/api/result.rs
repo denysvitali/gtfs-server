@@ -1,3 +1,5 @@
+//! Result related structs and implementations
+
 use super::meta::Meta;
 
 #[derive(Debug,Serialize, Deserialize)]

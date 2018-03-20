@@ -1,3 +1,5 @@
+//! Stop related structs and implementations
+
 #[derive(Debug,Serialize,Deserialize)]
 pub struct Stop {
     pub uid: String, 

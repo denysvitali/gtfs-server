@@ -1,3 +1,5 @@
+//! Meta related structs and implementations
+
 use super::error::Error;
 #[derive(Debug, Serialize,Deserialize)]
 pub struct Meta {

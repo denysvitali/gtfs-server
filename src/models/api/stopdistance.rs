@@ -1,3 +1,5 @@
+//! StopDistance related structs and implementations
+
 use super::super::stop::Stop;
 
 extern crate serde;

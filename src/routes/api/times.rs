@@ -23,6 +23,11 @@ use num_traits::FromPrimitive;
 use super::NaiveTime;
 use super::NaiveDate;
 
+/// `/times/by-trip/<trip_id>`  
+/// Gets the [Time](../../../models/time/struct.Time.html)s associated
+/// to the specified [Trip](../../../models/trip/struct.Trip.html) UID, parametrized as `<trip_id>`.  
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[Time](../../../models/time/struct.Time.html)>
 #[get("/times/by-trip/<trip_id>")]
 pub fn times_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultArray<Time>>{
     let result = get_times_by_trip(trip_id, &rh.pool);
@@ -38,6 +43,11 @@ pub fn times_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultArray
     })
 }
 
+/// `/times/by-stop/<stop_id>`  
+/// Gets the [Time](../../../models/time/struct.Time.html)s associated
+/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `<stop_id>`.  
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[Time](../../../models/time/struct.Time.html)>
 #[get("/times/by-stop/<stop_id>")]
 pub fn times_stop(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray<Time>>{
     let result = get_times_by_stop_id(stop_id, &rh.pool);

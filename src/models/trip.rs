@@ -1,3 +1,5 @@
+//! Trip related structs and implementations
+
 #[derive(Debug, Serialize)]
 pub struct Trip {
     pub uid : String,

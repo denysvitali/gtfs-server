@@ -15,12 +15,12 @@ use super::super::Pool;
 use super::super::PostgresConnectionManager;
 use postgres::rows::Row;
 
-/// `/stops`,
-/// returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)<[Stop](../../../models/stop/struct.Stop.html)>
-///
+/// `/stops`  
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)<[Stop](../../../models/stop/struct.Stop.html)>
+///  
 /// ### Example
-/// `/api/stops/` returns:
-/**
+/// `/api/stops/` returns:  
+/**  
     ```json
     {
       "result": [
@@ -59,8 +59,8 @@ pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
     Json(sr)
 }
 
-/// `/stops/<stop_id>`,
-/// gets a single [Stop](../../../models/stop/struct.Stop.html) from its `stop_id`.
+/// `/stops/<stop_id>`  
+/// Gets a single [Stop](../../../models/stop/struct.Stop.html) from its `stop_id`.  
 /// Returns a [Result](../../../models/api/result/struct.Result.html)<[Stop](../../../models/stop/struct.Stop.html)>
 #[get("/stops/<stop_id>")]
 pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Stop>> {
@@ -88,9 +88,9 @@ pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Sto
     };
     Json(sr)
 }
-/// `/stops/by-trip/<trip_id>`,
-/// get the [Stop](../../../models/stop/struct.Stop.html)s visited by a [Trip](../../../models/trip/struct.Trip.html) uid.
-/// returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)<[Stop](../../../models/stop/struct.Stop.html)>
+/// `/stops/by-trip/<trip_id>`  
+/// get the [Stop](../../../models/stop/struct.Stop.html)s visited by a [Trip](../../../models/trip/struct.Trip.html) uid.  
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)<[Stop](../../../models/stop/struct.Stop.html)>
 #[get("/stops/by-trip/<trip_id>")]
 pub fn stops_by_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultArray<Stop>> {
 
@@ -104,6 +104,11 @@ pub fn stops_by_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultAr
     Json(sr)
 }
 
+/// `/stops/near/<lat>/<lng>`  
+/// Gets an array of [StopDistance](../../../models/api/stopdistance/struct.StopDistance.html)s,
+/// within 100.0 meters from <lat>,<lng> - nearest first.  
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[StopDistance](../../../models/api/stopdistance/struct.StopDistance.html)>
 #[get("/stops/near/<lat>/<lng>")]
 pub fn stops_near_default(rh: State<RoutesHandler>, lat: f32, lng: f32) -> Json<ResultArray<StopDistance>> {
 
@@ -117,6 +122,12 @@ pub fn stops_near_default(rh: State<RoutesHandler>, lat: f32, lng: f32) -> Json<
     Json(sr)
 }
 
+/// `/stops/near/<lat>/<lng>/<meters>`  
+/// Gets an array of [StopDistance](../../../models/api/stopdistance/struct.StopDistance.html)s,
+/// within <meters> meters from <lat>,<lng>
+/// nearest first, of Stops near the provided coordinate.  
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[StopDistance](../../../models/api/stopdistance/struct.StopDistance.html)>
 #[get("/stops/near/<lat>/<lng>/<meters>")]
 pub fn stops_near(rh: State<RoutesHandler>, lat: f32, lng: f32, meters: f64) -> Json<ResultArray<StopDistance>> {
 
