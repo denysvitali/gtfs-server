@@ -60,12 +60,104 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../../../../src/gtfs_server/routes/api/times.rs.html#296-308' title='goto source code'>[src]</a></span></h1>
-<pre class='rust fn'>pub fn times_stop_query(<br>&nbsp;&nbsp;&nbsp;&nbsp;rh: <a class="struct" href="https://api.rocket.rs/rocket/request/state/struct.State.html" title="struct rocket::request::state::State">State</a>&lt;<a class="struct" href="../../../../gtfs_server/routes/struct.RoutesHandler.html" title="struct gtfs_server::routes::RoutesHandler">RoutesHandler</a>&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;stop_id: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;time_search: <a class="struct" href="../../../../gtfs_server/models/api/search/time/struct.TimeSearch.html" title="struct gtfs_server::models::api::search::time::TimeSearch">TimeSearch</a><br>) -&gt; <a class="struct" href="https://api.rocket.rs/rocket_contrib/json/struct.Json.html" title="struct rocket_contrib::json::Json">Json</a>&lt;<a class="struct" href="../../../../gtfs_server/models/api/resultarray/struct.ResultArray.html" title="struct gtfs_server::models::api::resultarray::ResultArray">ResultArray</a>&lt;<a class="struct" href="../../../../gtfs_server/models/time/struct.Time.html" title="struct gtfs_server::models::time::Time">Time</a>&gt;&gt;</pre><div class='docblock'><p><code>/times/by-stop/&lt;stop_id&gt;?&lt;time_search&gt;</code><br />
+               </span><a class='srclink' href='../../../../src/gtfs_server/routes/api/times.rs.html#169-181' title='goto source code'>[src]</a></span></h1>
+<pre class='rust fn'>pub fn times_stop_query(<br>&nbsp;&nbsp;&nbsp;&nbsp;rh: <a class="struct" href="https://api.rocket.rs/rocket/request/state/struct.State.html" title="struct rocket::request::state::State">State</a>&lt;<a class="struct" href="../../../../gtfs_server/routes/struct.RoutesHandler.html" title="struct gtfs_server::routes::RoutesHandler">RoutesHandler</a>&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;stop_id: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;time_search: <a class="struct" href="../../../../gtfs_server/models/api/search/time/struct.TimeSearch.html" title="struct gtfs_server::models::api::search::time::TimeSearch">TimeSearch</a><br>) -&gt; <a class="struct" href="https://api.rocket.rs/rocket_contrib/json/struct.Json.html" title="struct rocket_contrib::json::Json">Json</a>&lt;<a class="struct" href="../../../../gtfs_server/models/api/resultarray/struct.ResultArray.html" title="struct gtfs_server::models::api::resultarray::ResultArray">ResultArray</a>&lt;<a class="struct" href="../../../../gtfs_server/models/time/struct.Time.html" title="struct gtfs_server::models::time::Time">Time</a>&gt;&gt;</pre><div class='docblock'><p><code>/times/by-stop/&lt;stop_id&gt;</code><br />
 Gets the <a href="../../../models/time/struct.Time.html">Time</a>s associated
 to the specified <a href="../../../models/stop/struct.Stop.html">Stop</a> UID, parametrized as <code>&lt;stop_id&gt;</code>.<br />
+The results can be filtered with <code>&lt;time_search&gt;</code> parameters (check <a href="../../../models/api/search/time/struct.TimeSearch.html">TimeSearch</a>)<br />
 Returns a <a href="../../../models/api/resultarray/struct.ResultArray.html">ResultArray</a>
 &lt;<a href="../../../models/time/struct.Time.html">Time</a>&gt;</p>
+<h2 id="query-parameters" class="section-header"><a href="#query-parameters">Query Parameters</a></h2><h3 id="date" class="section-header"><a href="#date">date</a></h3>
+<p>A date on which the time is valid.
+This field only validates the <code>start_date</code> and <code>end_date</code> fields,
+this means that you'll still need to check if the requested trip is available in
+the <code>date</code> weekday.</p>
+<h3 id="service_id" class="section-header"><a href="#service_id">service_id</a></h3>
+<p>Filter by this service_id</p>
+<h3 id="monday-tuesday--sunday" class="section-header"><a href="#monday-tuesday--sunday">monday, tuesday, ..., sunday</a></h3>
+<p>When they're set (to either true or false) a filter will be applied on these week days service conditions</p>
+<h3 id="at_a" class="section-header"><a href="#at_a">at_a</a></h3>
+<p>Arrival time is after ... (00:00:00)</p>
+<h3 id="at_b" class="section-header"><a href="#at_b">at_b</a></h3>
+<p>Arrival time is before ... (00:00:00)</p>
+<h3 id="dt_a" class="section-header"><a href="#dt_a">dt_a</a></h3>
+<p>Departure time is after ... (00:00:00)</p>
+<h3 id="dt_b" class="section-header"><a href="#dt_b">dt_b</a></h3>
+<p>Departure time is before ... (00:00:00)</p>
+<h3 id="trip_id" class="section-header"><a href="#trip_id">trip_id</a></h3>
+<p>Filter by trip_id (for example <code>t-32c94c-castagnolacapolinea</code>)</p>
+<h3 id="pickup_type" class="section-header"><a href="#pickup_type">pickup_type</a></h3>
+<p>Only show Time Stops with this pickup condition.<br />
+For example: <code>RegularlyScheduled</code></p>
+<h3 id="drop_off_type" class="section-header"><a href="#drop_off_type">drop_off_type</a></h3>
+<p>Only show Time Stops with this drop-off condition.<br />
+For example: <code>RegularlyScheduled</code></p>
+<h3 id="stop_sequence" class="section-header"><a href="#stop_sequence">stop_sequence</a></h3>
+<p>Only show Time Stops with this stop_sequence.<br />
+For example: <code>1</code></p>
+<h3 id="sort_by" class="section-header"><a href="#sort_by">sort_by</a></h3>
+<p>Sort by ...<br />
+Possible values are available in the <a href="../../../models/api/search/time/enum.TimeSort.html">TimeSort</a> enum.<br />
+For example: <code>arrival_time</code></p>
+<h3 id="sort-order" class="section-header"><a href="#sort-order">Sort order</a></h3>
+<p>Ascending (<code>asc</code>) or Descending (<code>desc</code>)
+These sorting order conditions will only affect the query if <code>sort_by</code> is set.</p>
+<h2 id="example" class="section-header"><a href="#example">Example</a></h2>
+<p>Transports that reach <code>s-bdf67e-luganostazione</code> (Lugano, Stazione) on a Sunday, between 2PM and 3 PM, sorted by arrival time in Ascending order:</p>
+<h3 id="request" class="section-header"><a href="#request">Request</a></h3>
+<p><code>/times/by-stop/s-bdf67e-luganostazione?sunday=true&amp;at_a=14:00:00&amp;at_b=15:00:00&amp;sort_by=arrival_time&amp;sort_order=asc</code></p>
+<h3 id="response" class="section-header"><a href="#response">Response</a></h3>
+<pre><code class="language-json">{
+  &quot;result&quot;: [
+    {
+      &quot;trip_id&quot;: &quot;t-32c94c-castagnolacapolinea&quot;,
+      &quot;arrival_time&quot;: &quot;14:07:00&quot;,
+      &quot;departure_time&quot;: &quot;14:07:00&quot;,
+      &quot;stop_id&quot;: &quot;s-bdf67e-luganostazione&quot;,
+      &quot;stop_sequence&quot;: 9,
+      &quot;pickup_type&quot;: &quot;RegularlyScheduled&quot;,
+      &quot;drop_off_type&quot;: &quot;RegularlyScheduled&quot;,
+      &quot;service_days&quot;: [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      &quot;service_uid&quot;: &quot;se-3e10af-ta-b0013&quot;,
+      &quot;start_date&quot;: &quot;2017-12-10&quot;,
+      &quot;end_date&quot;: &quot;2018-12-08&quot;
+    },
+    {
+      &quot;trip_id&quot;: &quot;t-3f5dd9-canobbioganna&quot;,
+      &quot;arrival_time&quot;: &quot;14:07:00&quot;,
+      &quot;departure_time&quot;: &quot;14:10:00&quot;,
+      &quot;stop_id&quot;: &quot;s-bdf67e-luganostazione&quot;,
+      &quot;stop_sequence&quot;: 10,
+      &quot;pickup_type&quot;: &quot;RegularlyScheduled&quot;,
+      &quot;drop_off_type&quot;: &quot;RegularlyScheduled&quot;,
+      &quot;service_days&quot;: [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      &quot;service_uid&quot;: &quot;se-f80c67-ta-b001r&quot;,
+      &quot;start_date&quot;: &quot;2017-12-10&quot;,
+      &quot;end_date&quot;: &quot;2018-12-08&quot;
+    },
+    (...)
+  ],
+  &quot;meta&quot;: {
+    &quot;success&quot;: true
+  }
+}
+</code></pre>
 </div></section>
     <section id='search' class="content hidden"></section>
 

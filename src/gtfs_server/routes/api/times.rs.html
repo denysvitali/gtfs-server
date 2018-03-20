@@ -524,6 +524,111 @@
 <span id="467">467</span>
 <span id="468">468</span>
 <span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/times` related routes</span>
 
@@ -579,6 +684,137 @@
 <span class="doccomment">/// `/times/by-stop/&lt;stop_id&gt;`  </span>
 <span class="doccomment">/// Gets the [Time](../../../models/time/struct.Time.html)s associated</span>
 <span class="doccomment">/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `&lt;stop_id&gt;`.  </span>
+<span class="doccomment">/// The results can be filtered with `&lt;time_search&gt;` parameters (check [TimeSearch](../../../models/api/search/time/struct.TimeSearch.html))  </span>
+<span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
+<span class="doccomment">/// &lt;[Time](../../../models/time/struct.Time.html)&gt;</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// ## Query Parameters</span>
+<span class="doccomment">/// ### date</span>
+<span class="doccomment">/// A date on which the time is valid.</span>
+<span class="doccomment">/// This field only validates the `start_date` and `end_date` fields,</span>
+<span class="doccomment">/// this means that you&#39;ll still need to check if the requested trip is available in</span>
+<span class="doccomment">/// the `date` weekday.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// ### service_id</span>
+<span class="doccomment">/// Filter by this service_id</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// ### monday, tuesday, ..., sunday</span>
+<span class="doccomment">/// When they&#39;re set (to either true or false) a filter will be applied on these week days service conditions</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ### at_a</span>
+<span class="doccomment">/// Arrival time is after ... (00:00:00)</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// ### at_b</span>
+<span class="doccomment">/// Arrival time is before ... (00:00:00)</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// ### dt_a</span>
+<span class="doccomment">/// Departure time is after ... (00:00:00)</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// ### dt_b</span>
+<span class="doccomment">/// Departure time is before ... (00:00:00)</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// ### trip_id</span>
+<span class="doccomment">/// Filter by trip_id (for example `t-32c94c-castagnolacapolinea`)</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// ### pickup_type</span>
+<span class="doccomment">/// Only show Time Stops with this pickup condition.  </span>
+<span class="doccomment">/// For example: `RegularlyScheduled`</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// ### drop_off_type</span>
+<span class="doccomment">/// Only show Time Stops with this drop-off condition.  </span>
+<span class="doccomment">/// For example: `RegularlyScheduled` </span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// ### stop_sequence</span>
+<span class="doccomment">/// Only show Time Stops with this stop_sequence.  </span>
+<span class="doccomment">/// For example: `1`</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// ### sort_by</span>
+<span class="doccomment">/// Sort by ...  </span>
+<span class="doccomment">/// Possible values are available in the [TimeSort](../../../models/api/search/time/enum.TimeSort.html) enum.  </span>
+<span class="doccomment">/// For example: `arrival_time`</span>
+<span class="doccomment">///   </span>
+<span class="doccomment">/// ### Sort order</span>
+<span class="doccomment">/// Ascending (`asc`) or Descending (`desc`)</span>
+<span class="doccomment">/// These sorting order conditions will only affect the query if `sort_by` is set.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// ## Example</span>
+<span class="doccomment">/// Transports that reach `s-bdf67e-luganostazione` (Lugano, Stazione) on a Sunday, between 2PM and 3 PM, sorted by arrival time in Ascending order:  </span>
+<span class="doccomment">/// ### Request</span>
+<span class="doccomment">/// `/times/by-stop/s-bdf67e-luganostazione?sunday=true&amp;at_a=14:00:00&amp;at_b=15:00:00&amp;sort_by=arrival_time&amp;sort_order=asc`</span>
+<span class="doccomment">/// ### Response</span>
+<span class="doccomment">/**
+    ```json
+    {
+      &quot;result&quot;: [
+        {
+          &quot;trip_id&quot;: &quot;t-32c94c-castagnolacapolinea&quot;,
+          &quot;arrival_time&quot;: &quot;14:07:00&quot;,
+          &quot;departure_time&quot;: &quot;14:07:00&quot;,
+          &quot;stop_id&quot;: &quot;s-bdf67e-luganostazione&quot;,
+          &quot;stop_sequence&quot;: 9,
+          &quot;pickup_type&quot;: &quot;RegularlyScheduled&quot;,
+          &quot;drop_off_type&quot;: &quot;RegularlyScheduled&quot;,
+          &quot;service_days&quot;: [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            true
+          ],
+          &quot;service_uid&quot;: &quot;se-3e10af-ta-b0013&quot;,
+          &quot;start_date&quot;: &quot;2017-12-10&quot;,
+          &quot;end_date&quot;: &quot;2018-12-08&quot;
+        },
+        {
+          &quot;trip_id&quot;: &quot;t-3f5dd9-canobbioganna&quot;,
+          &quot;arrival_time&quot;: &quot;14:07:00&quot;,
+          &quot;departure_time&quot;: &quot;14:10:00&quot;,
+          &quot;stop_id&quot;: &quot;s-bdf67e-luganostazione&quot;,
+          &quot;stop_sequence&quot;: 10,
+          &quot;pickup_type&quot;: &quot;RegularlyScheduled&quot;,
+          &quot;drop_off_type&quot;: &quot;RegularlyScheduled&quot;,
+          &quot;service_days&quot;: [
+            false,
+            false,
+            false,
+            false,
+            false,
+            true,
+            true
+          ],
+          &quot;service_uid&quot;: &quot;se-f80c67-ta-b001r&quot;,
+          &quot;start_date&quot;: &quot;2017-12-10&quot;,
+          &quot;end_date&quot;: &quot;2018-12-08&quot;
+        },
+        (...)
+      ],
+      &quot;meta&quot;: {
+        &quot;success&quot;: true
+      }
+    }
+    ```
+**/</span>
+<span class="doccomment">/// </span>
+<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/times/by-stop/&lt;stop_id&gt;?&lt;time_search&gt;&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">times_stop_query</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">stop_id</span>: <span class="ident">String</span>, <span class="ident">time_search</span>: <span class="ident">TimeSearch</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;&gt;</span>{
+    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">get_times_by_stop_id_query</span>(<span class="ident">stop_id</span>, <span class="kw-2">&amp;</span><span class="ident">time_search</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
+
+    <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Meta</span>{
+        <span class="ident">success</span>: <span class="bool-val">true</span>,
+        <span class="ident">error</span>: <span class="prelude-val">None</span>,
+    };
+
+    <span class="ident">Json</span>(<span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
+        <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">result</span>),
+        <span class="ident">meta</span>
+    })
+}
+
+<span class="doccomment">/// `/times/by-stop/&lt;stop_id&gt;?&lt;time_search&gt;`  </span>
+<span class="doccomment">/// Gets the [Time](../../../models/time/struct.Time.html)s associated</span>
+<span class="doccomment">/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `&lt;stop_id&gt;`.  </span>
 <span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
 <span class="doccomment">/// &lt;[Time](../../../models/time/struct.Time.html)&gt;</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/times/by-stop/&lt;stop_id&gt;&quot;</span>)]</span>
@@ -597,13 +833,6 @@
 }
 
 <span class="kw">fn</span> <span class="ident">get_times_by_stop_id_query</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">trip_id</span>: <span class="ident">String</span>, <span class="ident">time_search</span>: <span class="kw-2">&amp;</span><span class="ident">TimeSearch</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
-    <span class="comment">/*
-        SELECT * FROM stop_time WHERE
-        stop_time.trip_id =
-            (SELECT trip.trip_id FROM trip WHERE trip.uid=&#39;t-b119d6-lamone-cadempinostazione&#39;)
-        AND stop_time.feed_id =
-            (SELECT trip.feed_id FROM trip WHERE trip.uid=&#39;t-b119d6-lamone-cadempinostazione&#39;);
-    */</span>
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">query</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;SELECT t.uid,
         arrival_time,
@@ -814,25 +1043,6 @@
     <span class="ident">times_result</span>
 }
 
-<span class="doccomment">/// `/times/by-stop/&lt;stop_id&gt;?&lt;time_search&gt;`  </span>
-<span class="doccomment">/// Gets the [Time](../../../models/time/struct.Time.html)s associated</span>
-<span class="doccomment">/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `&lt;stop_id&gt;`.  </span>
-<span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
-<span class="doccomment">/// &lt;[Time](../../../models/time/struct.Time.html)&gt;</span>
-<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/times/by-stop/&lt;stop_id&gt;?&lt;time_search&gt;&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">times_stop_query</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">stop_id</span>: <span class="ident">String</span>, <span class="ident">time_search</span>: <span class="ident">TimeSearch</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;&gt;</span>{
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">get_times_by_stop_id_query</span>(<span class="ident">stop_id</span>, <span class="kw-2">&amp;</span><span class="ident">time_search</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
-    
-    <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Meta</span>{
-        <span class="ident">success</span>: <span class="bool-val">true</span>,
-        <span class="ident">error</span>: <span class="prelude-val">None</span>,
-    };
-
-    <span class="ident">Json</span>(<span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
-        <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">result</span>),
-        <span class="ident">meta</span>
-    })
-}
 <span class="kw">fn</span> <span class="ident">get_times_by_trip</span>(<span class="ident">trip_id</span>: <span class="ident">String</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
     <span class="comment">/*
         SELECT * FROM stop_time WHERE
