@@ -464,6 +464,66 @@
 <span id="407">407</span>
 <span id="408">408</span>
 <span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/times` related routes</span>
 
@@ -493,6 +553,8 @@
 <span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">types</span>::<span class="ident">ToSql</span>;
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">search</span>::<span class="ident">time</span>::<span class="ident">TimeSearch</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">search</span>::<span class="ident">time</span>::<span class="ident">TimeSort</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">search</span>::<span class="ident">ascdesc</span>::<span class="ident">AscDesc</span>;
 
 <span class="doccomment">/// `/times/by-trip/&lt;trip_id&gt;`  </span>
 <span class="doccomment">/// Gets the [Time](../../../models/time/struct.Time.html)s associated</span>
@@ -523,26 +585,6 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">times_stop</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">stop_id</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;&gt;</span>{
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">get_times_by_stop_id</span>(<span class="ident">stop_id</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
 
-    <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Meta</span>{
-        <span class="ident">success</span>: <span class="bool-val">true</span>,
-        <span class="ident">error</span>: <span class="prelude-val">None</span>,
-    };
-
-    <span class="ident">Json</span>(<span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
-        <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">result</span>),
-        <span class="ident">meta</span>
-    })
-}
-
-<span class="doccomment">/// `/times/by-stop/&lt;stop_id&gt;?&lt;time_search&gt;`  </span>
-<span class="doccomment">/// Gets the [Time](../../../models/time/struct.Time.html)s associated</span>
-<span class="doccomment">/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `&lt;stop_id&gt;`.  </span>
-<span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
-<span class="doccomment">/// &lt;[Time](../../../models/time/struct.Time.html)&gt;</span>
-<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/times/by-stop/&lt;stop_id&gt;?&lt;time_search&gt;&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">times_stop_query</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">stop_id</span>: <span class="ident">String</span>, <span class="ident">time_search</span>: <span class="ident">TimeSearch</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;&gt;</span>{
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">get_times_by_stop_id_query</span>(<span class="ident">stop_id</span>, <span class="kw-2">&amp;</span><span class="ident">time_search</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
-    
     <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Meta</span>{
         <span class="ident">success</span>: <span class="bool-val">true</span>,
         <span class="ident">error</span>: <span class="prelude-val">None</span>,
@@ -597,6 +639,7 @@
         &quot;</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dates</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">NaiveDate</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">times</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">NaiveTime</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">values</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">string_values</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ToSql</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
@@ -619,28 +662,28 @@
         <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND tuesday = ${}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
         <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
     }
-    
+
     <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">wednesday</span>.<span class="ident">is_some</span>() {
         <span class="ident">values</span>.<span class="ident">push</span>(<span class="ident">time_search</span>.<span class="ident">wednesday</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
         <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
         <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND wednesday = ${}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
         <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
     }
-    
+
     <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">thursday</span>.<span class="ident">is_some</span>() {
         <span class="ident">values</span>.<span class="ident">push</span>(<span class="ident">time_search</span>.<span class="ident">thursday</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
         <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
         <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND thursday = ${}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
         <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
     }
-    
+
     <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">friday</span>.<span class="ident">is_some</span>() {
         <span class="ident">values</span>.<span class="ident">push</span>(<span class="ident">time_search</span>.<span class="ident">friday</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
         <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
         <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND friday = ${}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
         <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
     }
-    
+
     <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">saturday</span>.<span class="ident">is_some</span>() {
         <span class="ident">values</span>.<span class="ident">push</span>(<span class="ident">time_search</span>.<span class="ident">saturday</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
         <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
@@ -654,11 +697,11 @@
         <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND sunday = ${}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
         <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
     }
-    
+
     <span class="kw">for</span> <span class="ident">val</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">values</span> {
         <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">val</span>);
     }
-    
+
     <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">date</span>.<span class="ident">is_some</span>() {
         <span class="ident">string_values</span>.<span class="ident">push</span>(
             <span class="ident">time_search</span>.<span class="ident">date</span>
@@ -669,13 +712,70 @@
         <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND start_date &lt;= ${0} AND end_date &gt;= ${0}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
         <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
     }
-    
+
     <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">val</span> <span class="kw">in</span> <span class="ident">string_values</span>.<span class="ident">iter</span>() {
         <span class="kw-2">&amp;</span><span class="ident">dates</span>.<span class="ident">push</span>(<span class="ident">val</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">NaiveDate</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
     }
-    
+
     <span class="kw">for</span> <span class="ident">val</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">dates</span> {
         <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">val</span>);
+    }
+
+    <span class="ident">string_values</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+
+    <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">at_a</span>.<span class="ident">is_some</span>() {
+
+        <span class="ident">string_values</span>.<span class="ident">push</span>(
+            <span class="ident">time_search</span>.<span class="ident">at_a</span>
+                .<span class="ident">as_ref</span>()
+                .<span class="ident">unwrap</span>()
+        );
+
+        <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
+        <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND arrival_time &gt;= ${}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
+        <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
+    }
+
+    <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">at_b</span>.<span class="ident">is_some</span>() {
+        <span class="ident">string_values</span>.<span class="ident">push</span>(
+            <span class="ident">time_search</span>.<span class="ident">at_b</span>
+                .<span class="ident">as_ref</span>()
+                .<span class="ident">unwrap</span>()
+        );
+
+        <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
+        <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND arrival_time &lt;= ${}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
+        <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
+    }
+
+    <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">val</span> <span class="kw">in</span> <span class="ident">string_values</span>.<span class="ident">iter</span>() {
+        <span class="kw-2">&amp;</span><span class="ident">times</span>.<span class="ident">push</span>(<span class="ident">val</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">NaiveTime</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
+    }
+
+    <span class="kw">for</span> <span class="ident">val</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">times</span> {
+        <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">val</span>);
+    }
+
+    <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">sort_by</span>.<span class="ident">is_some</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sort</span>: <span class="ident">AscDesc</span> <span class="op">=</span> <span class="ident">AscDesc</span>::<span class="ident">ASC</span>;
+        <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">sort_order</span>.<span class="ident">as_ref</span>().<span class="ident">is_some</span>() {
+            <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">time_search</span>.<span class="ident">sort_order</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>();
+            <span class="ident">sort</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">res</span>.<span class="ident">to_lowercase</span>().<span class="ident">as_str</span>() {
+                <span class="string">&quot;asc&quot;</span> <span class="op">=&gt;</span> <span class="ident">AscDesc</span>::<span class="ident">ASC</span>,
+                <span class="string">&quot;desc&quot;</span> <span class="op">=&gt;</span> <span class="ident">AscDesc</span>::<span class="ident">DESC</span>,
+                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">AscDesc</span>::<span class="ident">ASC</span>
+            };
+        }
+        
+        <span class="kw">let</span> <span class="ident">sort_by</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">time_search</span>.<span class="ident">sort_by</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">as_str</span>() {
+            <span class="string">&quot;arrival_time&quot;</span> <span class="op">=&gt;</span> <span class="ident">TimeSort</span>::<span class="ident">arrival_time</span>,
+            <span class="string">&quot;departure_time&quot;</span> <span class="op">=&gt;</span> <span class="ident">TimeSort</span>::<span class="ident">departure_time</span>,
+            <span class="string">&quot;stop_sequence&quot;</span> <span class="op">=&gt;</span> <span class="ident">TimeSort</span>::<span class="ident">stop_sequence</span>,
+            <span class="kw-2">&amp;</span><span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">TimeSort</span>::<span class="ident">arrival_time</span>
+        };
+        
+        <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; ORDER BY {} {}&quot;</span>, <span class="ident">sort_by</span>.<span class="ident">as_str</span>(), <span class="ident">sort</span>.<span class="ident">as_str</span>());
+        <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
     }
 
     <span class="comment">/*let query = &quot;SELECT  trip_id,\
@@ -700,7 +800,7 @@
     <span class="kw">let</span> <span class="ident">times</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(
         <span class="kw-2">&amp;</span><span class="ident">query</span>, <span class="kw-2">&amp;</span><span class="ident">params</span>.<span class="ident">as_slice</span>()
     );
-    
+
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">query</span>);
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">params</span>.<span class="ident">as_slice</span>());
 
@@ -712,6 +812,26 @@
     }
 
     <span class="ident">times_result</span>
+}
+
+<span class="doccomment">/// `/times/by-stop/&lt;stop_id&gt;?&lt;time_search&gt;`  </span>
+<span class="doccomment">/// Gets the [Time](../../../models/time/struct.Time.html)s associated</span>
+<span class="doccomment">/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `&lt;stop_id&gt;`.  </span>
+<span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
+<span class="doccomment">/// &lt;[Time](../../../models/time/struct.Time.html)&gt;</span>
+<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/times/by-stop/&lt;stop_id&gt;?&lt;time_search&gt;&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">times_stop_query</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">stop_id</span>: <span class="ident">String</span>, <span class="ident">time_search</span>: <span class="ident">TimeSearch</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;&gt;</span>{
+    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">get_times_by_stop_id_query</span>(<span class="ident">stop_id</span>, <span class="kw-2">&amp;</span><span class="ident">time_search</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
+    
+    <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Meta</span>{
+        <span class="ident">success</span>: <span class="bool-val">true</span>,
+        <span class="ident">error</span>: <span class="prelude-val">None</span>,
+    };
+
+    <span class="ident">Json</span>(<span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
+        <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">result</span>),
+        <span class="ident">meta</span>
+    })
 }
 <span class="kw">fn</span> <span class="ident">get_times_by_trip</span>(<span class="ident">trip_id</span>: <span class="ident">String</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
     <span class="comment">/*

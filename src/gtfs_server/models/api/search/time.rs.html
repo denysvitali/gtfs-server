@@ -82,12 +82,35 @@
 <span id="25">25</span>
 <span id="26">26</span>
 <span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! TimeSearch related structs and implementations</span>
 <span class="kw">use</span> <span class="ident">importer</span>::<span class="ident">NaiveDate</span>;
 <span class="kw">use</span> <span class="ident">importer</span>::<span class="ident">NaiveTime</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">pickup</span>::<span class="ident">PickUp</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">dropoff</span>::<span class="ident">DropOff</span>;
+
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">ascdesc</span>::<span class="ident">AscDesc</span>;
 
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">FromForm</span>,<span class="ident">Serialize</span>,<span class="ident">Deserialize</span>)]</span>
@@ -101,14 +124,33 @@
     <span class="kw">pub</span> <span class="ident">friday</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">saturday</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">sunday</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">arrival_time_between_a</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">arrival_time_between_b</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">departure_time_between_a</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">departure_time_between_b</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">at_a</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">at_b</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">dt_a</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">dt_b</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">trip_id</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">pickup_type</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">drop_off_type</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">stop_sequence</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="ident">stop_sequence</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">sort_by</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="comment">// TODO: Switch to TimeSort later (https://github.com/SergioBenitez/Rocket/issues/16)</span>
+    <span class="kw">pub</span> <span class="ident">sort_order</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="comment">// TODO: Switch to AscDesc, see above</span>
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>,<span class="ident">Deserialize</span>,<span class="ident">FromPrimitive</span>, <span class="ident">ToPrimitive</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">TimeSort</span> {
+    <span class="ident">arrival_time</span>,
+    <span class="ident">departure_time</span>,
+    <span class="ident">stop_sequence</span>
+}
+
+<span class="kw">impl</span> <span class="ident">TimeSort</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">str</span>{
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="kw-2">&amp;</span><span class="ident">TimeSort</span>::<span class="ident">arrival_time</span> <span class="op">=&gt;</span> <span class="string">&quot;arrival_time&quot;</span>,
+            <span class="kw-2">&amp;</span><span class="ident">TimeSort</span>::<span class="ident">departure_time</span> <span class="op">=&gt;</span> <span class="string">&quot;departure_time&quot;</span>,
+            <span class="kw-2">&amp;</span><span class="ident">TimeSort</span>::<span class="ident">stop_sequence</span> <span class="op">=&gt;</span> <span class="string">&quot;stop_sequence&quot;</span>
+        }
+    }
 }
 </pre>
 </section>

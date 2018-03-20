@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["TimeSearch",""]]});
+initSidebarItems({"enum":[["TimeSort",""]],"struct":[["TimeSearch",""]]});
