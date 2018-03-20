@@ -15,7 +15,7 @@ use super::super::Pool;
 use super::super::PostgresConnectionManager;
 use postgres::rows::Row;
 
-/// Handles `/stops` route,
+/// `/stops`,
 /// returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)<[Stop](../../../models/stop/struct.Stop.html)>
 ///
 /// ### Example
@@ -46,7 +46,6 @@ use postgres::rows::Row;
     }
     ```
 **/
-////////////////////////////////////////////////////////////////////////////////
 #[get("/stops")]
 pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
 
@@ -60,6 +59,9 @@ pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
     Json(sr)
 }
 
+/// `/stops/<stop_id>`,
+/// gets a single [Stop](../../../models/stop/struct.Stop.html) from its `stop_id`.
+/// Returns a [Result](../../../models/api/result/struct.Result.html)<[Stop](../../../models/stop/struct.Stop.html)>
 #[get("/stops/<stop_id>")]
 pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Stop>> {
 
@@ -86,7 +88,9 @@ pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Sto
     };
     Json(sr)
 }
-
+/// `/stops/by-trip/<trip_id>`,
+/// get the [Stop](../../../models/stop/struct.Stop.html)s visited by a [Trip](../../../models/trip/struct.Trip.html) uid.
+/// returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)<[Stop](../../../models/stop/struct.Stop.html)>
 #[get("/stops/by-trip/<trip_id>")]
 pub fn stops_by_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultArray<Stop>> {
 
