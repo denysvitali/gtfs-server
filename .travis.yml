@@ -1,4 +1,6 @@
 language: rust
+rust:
+  - nightly
 script: 
   - cargo rustdoc --open -- --no-defaults --passes collapse-docs --passes unindent-comments --passes strip-priv-imports --passes strip-private --passes strip-hidden
 after_success: curl https://raw.githubusercontent.com/denysvitali/gtfs-server/master/scripts/travis-doc-upload.sh | sh
