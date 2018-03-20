@@ -2,6 +2,7 @@
 //!
 
 #![feature(plugin)]
+#![feature(custom_derive)]
 #![plugin(rocket_codegen)]
 
 extern crate rocket;
@@ -60,10 +61,12 @@ fn start_server(rh : RoutesHandler) {
         api::stops::stops_near_default,
         api::stops::stops_near,
         api::stops::stops_by_trip,
+        api::trips::trips,
         api::trips::trips_stopid,
         api::trips::trip,
         api::times::times_trip,
-        api::times::times_stop
+        api::times::times_stop,
+        api::times::times_stop_query
     ]).launch();
 }
 

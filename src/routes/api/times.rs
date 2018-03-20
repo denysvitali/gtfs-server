@@ -23,6 +23,10 @@ use num_traits::FromPrimitive;
 use super::NaiveTime;
 use super::NaiveDate;
 
+use postgres::types::ToSql;
+
+use super::model_api::search::time::TimeSearch;
+
 /// `/times/by-trip/<trip_id>`  
 /// Gets the [Time](../../../models/time/struct.Time.html)s associated
 /// to the specified [Trip](../../../models/trip/struct.Trip.html) UID, parametrized as `<trip_id>`.  
@@ -63,6 +67,182 @@ pub fn times_stop(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray
     })
 }
 
+/// `/times/by-stop/<stop_id>?<time_search>`  
+/// Gets the [Time](../../../models/time/struct.Time.html)s associated
+/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `<stop_id>`.  
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[Time](../../../models/time/struct.Time.html)>
+#[get("/times/by-stop/<stop_id>?<time_search>")]
+pub fn times_stop_query(rh: State<RoutesHandler>, stop_id: String, time_search: TimeSearch) -> Json<ResultArray<Time>>{
+    let result = get_times_by_stop_id_query(stop_id, &time_search, &rh.pool);
+    
+    let meta = Meta{
+        success: true,
+        error: None,
+    };
+
+    Json(ResultArray::<Time>{
+        result: Some(result),
+        meta
+    })
+}
+
+fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, pool: &Pool<PostgresConnectionManager>) -> Vec<Time>{
+    /*
+        SELECT * FROM stop_time WHERE
+        stop_time.trip_id =
+            (SELECT trip.trip_id FROM trip WHERE trip.uid='t-b119d6-lamone-cadempinostazione')
+        AND stop_time.feed_id =
+            (SELECT trip.feed_id FROM trip WHERE trip.uid='t-b119d6-lamone-cadempinostazione');
+    */
+
+    let mut query = String::from("SELECT t.uid,
+        arrival_time,
+        departure_time,
+        stop.uid,
+        stop_sequence,
+        pickup_type,
+        drop_off_type,
+        c.uid,
+        c.monday,
+        c.tuesday,
+        c.wednesday,
+        c.thursday,
+        c.friday,
+        c.saturday,
+        c.sunday,
+        c.start_date,
+        c.end_date,
+        a.feed_id
+        FROM (SELECT * FROM stop_time
+        WHERE
+        stop_time.stop_id = (
+            SELECT stop.id FROM stop WHERE stop.uid=$1
+        ) AND
+        stop_time.feed_id = (
+            SELECT stop.feed_id FROM stop WHERE stop.uid=$1
+        )
+        ) as a
+        INNER JOIN stop ON (a.stop_id=stop.id)
+        INNER JOIN trip as t ON (a.trip_id = t.trip_id)
+        INNER JOIN calendar as c ON (t.service_id = c.service_id)
+        WHERE a.feed_id = stop.feed_id AND t.feed_id = stop.feed_id AND c.feed_id = t.feed_id 
+        ");
+
+    let mut params: Vec<&ToSql> = Vec::new();
+    let mut i = 1;
+
+    let mut addition : String;
+
+    params.push(&trip_id);
+    let mut values : Vec<&bool> = Vec::new();
+
+    if time_search.monday.is_some() {
+        values.push(time_search.monday.as_ref().unwrap());
+        i+= 1;
+        addition = format!(" AND monday = ${}", &i);
+        query.push_str(&addition);
+    }
+
+    if time_search.tuesday.is_some() {
+        values.push(time_search.tuesday.as_ref().unwrap());
+        i+= 1;
+        addition = format!(" AND tuesday = ${}", &i);
+        query.push_str(&addition);
+    }
+    
+    if time_search.wednesday.is_some() {
+        values.push(time_search.wednesday.as_ref().unwrap());
+        i+= 1;
+        addition = format!(" AND wednesday = ${}", &i);
+        query.push_str(&addition);
+    }
+    
+    if time_search.thursday.is_some() {
+        values.push(time_search.thursday.as_ref().unwrap());
+        i+= 1;
+        addition = format!(" AND thursday = ${}", &i);
+        query.push_str(&addition);
+    }
+    
+    if time_search.friday.is_some() {
+        values.push(time_search.friday.as_ref().unwrap());
+        i+= 1;
+        addition = format!(" AND friday = ${}", &i);
+        query.push_str(&addition);
+    }
+    
+    if time_search.saturday.is_some() {
+        values.push(time_search.saturday.as_ref().unwrap());
+        i+= 1;
+        addition = format!(" AND saturday = ${}", &i);
+        query.push_str(&addition);
+    }
+
+    if time_search.sunday.is_some() {
+        values.push(time_search.sunday.as_ref().unwrap());
+        i+= 1;
+        addition = format!(" AND sunday = ${}", &i);
+        query.push_str(&addition);
+    }
+    
+    for val in values.iter() {
+        params.push(val.to_owned());
+    }
+    
+    let mut values : Vec<&String> = Vec::new();
+    
+    /*if time_search.start_date.is_some() {
+        values.push(
+            time_search.start_date
+                .as_ref()
+                .unwrap()
+        );
+        i+= 1;
+        addition = format!(" AND ${0} >= start_date AND end_date <= ${0}", &i);
+        query.push_str(&addition);
+    }
+    
+    let mut dates : Vec<&'a NaiveDate> = Vec::new();
+    for &val in values.iter() {
+        dates.push(&val.parse::<NaiveDate>().as_ref().unwrap());
+    }*/
+
+    /*let query = "SELECT  trip_id,\
+        arrival_time,\
+        departure_time,\
+        stop.uid,\
+        stop_sequence,\
+        pickup_type,\
+        drop_off_type,\
+        a.feed_id \
+        FROM (SELECT * FROM stop_time \
+        WHERE \
+        stop_time.trip_id = (\
+            SELECT trip.trip_id FROM trip WHERE trip.uid=$1\
+        ) AND \
+        stop_time.feed_id = (\
+            SELECT trip.feed_id FROM trip WHERE trip.uid=$1\
+        ) \
+        ORDER BY stop_sequence) as a INNER JOIN stop ON (a.stop_id=stop.id) WHERE a.feed_id = stop.feed_id";*/
+
+    let conn = pool.clone().get().unwrap();
+    let times = conn.query(
+        &query, &params.as_slice()
+    );
+    
+    println!("{}", query);
+    println!("{:?}", params.as_slice());
+
+    let mut times_result : Vec<Time> = Vec::new();
+
+    for row in times.expect("Query failed").iter() {
+        let time = parse_time_row(&row);
+        times_result.push(time);
+    }
+
+    times_result
+}
 fn get_times_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Time>{
     /*
         SELECT * FROM stop_time WHERE

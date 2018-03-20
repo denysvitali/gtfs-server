@@ -15,6 +15,52 @@ use super::super::PostgresConnectionManager;
 
 use postgres::rows::Row;
 
+/// `/trips/`, returns a list of [Trip](../../../models/trip/struct.Trip.html)s.  
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[Trip](../../../models/trip/struct.Trip.html)>
+#[get("/trips")]
+pub fn trips(rh: State<RoutesHandler>) -> Json<ResultArray<Trip>>{
+    let query =
+        "SELECT \
+        t.uid,\
+        r.uid,\
+        c.uid,\
+        trip_id,\
+        headsign,\
+        t.short_name,\
+        direction_id,\
+        t.feed_id \
+        FROM trip as t \
+        INNER JOIN calendar as c ON c.service_id=t.service_id \
+        INNER JOIN route as r ON r.id = t.route_id \
+        WHERE c.feed_id = t.feed_id \
+        AND r.feed_id = t.feed_id \
+        LIMIT 50";
+
+    let conn = rh.pool.clone().get().unwrap();
+    let trips = conn.query(
+        query,
+        &[]
+    );
+
+    let mut trips_result: Vec<Trip> = Vec::new();
+
+    for row in trips.expect("Query failed").iter() {
+        let route = parse_trip_row(&row);
+        trips_result.push(route);
+    }
+
+    let rr = ResultArray::<Trip> {
+        result: Some(trips_result),
+        meta: Meta{
+            success: true,
+            error: Option::None
+        }
+    };
+
+    Json(rr)
+}
+
 /// `/trips/by-stop/<stop_id>`, returns the [Trip](../../../models/trip/struct.Trip.html)s associated
 /// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `<stop_id>`.
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
