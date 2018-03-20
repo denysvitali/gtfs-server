@@ -52,6 +52,137 @@ pub fn times_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultArray
 /// `/times/by-stop/<stop_id>`  
 /// Gets the [Time](../../../models/time/struct.Time.html)s associated
 /// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `<stop_id>`.  
+/// The results can be filtered with `<time_search>` parameters (check [TimeSearch](../../../models/api/search/time/struct.TimeSearch.html))  
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[Time](../../../models/time/struct.Time.html)>
+/// 
+/// ## Query Parameters
+/// ### date
+/// A date on which the time is valid.
+/// This field only validates the `start_date` and `end_date` fields,
+/// this means that you'll still need to check if the requested trip is available in
+/// the `date` weekday.
+/// 
+/// ### service_id
+/// Filter by this service_id
+/// 
+/// ### monday, tuesday, ..., sunday
+/// When they're set (to either true or false) a filter will be applied on these week days service conditions
+///
+/// ### at_a
+/// Arrival time is after ... (00:00:00)
+/// 
+/// ### at_b
+/// Arrival time is before ... (00:00:00)
+/// 
+/// ### dt_a
+/// Departure time is after ... (00:00:00)
+/// 
+/// ### dt_b
+/// Departure time is before ... (00:00:00)
+/// 
+/// ### trip_id
+/// Filter by trip_id (for example `t-32c94c-castagnolacapolinea`)
+/// 
+/// ### pickup_type
+/// Only show Time Stops with this pickup condition.  
+/// For example: `RegularlyScheduled`
+/// 
+/// ### drop_off_type
+/// Only show Time Stops with this drop-off condition.  
+/// For example: `RegularlyScheduled` 
+/// 
+/// ### stop_sequence
+/// Only show Time Stops with this stop_sequence.  
+/// For example: `1`
+/// 
+/// ### sort_by
+/// Sort by ...  
+/// Possible values are available in the [TimeSort](../../../models/api/search/time/enum.TimeSort.html) enum.  
+/// For example: `arrival_time`
+///   
+/// ### Sort order
+/// Ascending (`asc`) or Descending (`desc`)
+/// These sorting order conditions will only affect the query if `sort_by` is set.
+/// 
+/// ## Example
+/// Transports that reach `s-bdf67e-luganostazione` (Lugano, Stazione) on a Sunday, between 2PM and 3 PM, sorted by arrival time in Ascending order:  
+/// ### Request
+/// `/times/by-stop/s-bdf67e-luganostazione?sunday=true&at_a=14:00:00&at_b=15:00:00&sort_by=arrival_time&sort_order=asc`
+/// ### Response
+/**
+    ```json
+    {
+      "result": [
+        {
+          "trip_id": "t-32c94c-castagnolacapolinea",
+          "arrival_time": "14:07:00",
+          "departure_time": "14:07:00",
+          "stop_id": "s-bdf67e-luganostazione",
+          "stop_sequence": 9,
+          "pickup_type": "RegularlyScheduled",
+          "drop_off_type": "RegularlyScheduled",
+          "service_days": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            true
+          ],
+          "service_uid": "se-3e10af-ta-b0013",
+          "start_date": "2017-12-10",
+          "end_date": "2018-12-08"
+        },
+        {
+          "trip_id": "t-3f5dd9-canobbioganna",
+          "arrival_time": "14:07:00",
+          "departure_time": "14:10:00",
+          "stop_id": "s-bdf67e-luganostazione",
+          "stop_sequence": 10,
+          "pickup_type": "RegularlyScheduled",
+          "drop_off_type": "RegularlyScheduled",
+          "service_days": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            true,
+            true
+          ],
+          "service_uid": "se-f80c67-ta-b001r",
+          "start_date": "2017-12-10",
+          "end_date": "2018-12-08"
+        },
+        (...)
+      ],
+      "meta": {
+        "success": true
+      }
+    }
+    ```
+**/
+/// 
+#[get("/times/by-stop/<stop_id>?<time_search>")]
+pub fn times_stop_query(rh: State<RoutesHandler>, stop_id: String, time_search: TimeSearch) -> Json<ResultArray<Time>>{
+    let result = get_times_by_stop_id_query(stop_id, &time_search, &rh.pool);
+
+    let meta = Meta{
+        success: true,
+        error: None,
+    };
+
+    Json(ResultArray::<Time>{
+        result: Some(result),
+        meta
+    })
+}
+
+/// `/times/by-stop/<stop_id>?<time_search>`  
+/// Gets the [Time](../../../models/time/struct.Time.html)s associated
+/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `<stop_id>`.  
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[Time](../../../models/time/struct.Time.html)>
 #[get("/times/by-stop/<stop_id>")]
@@ -70,13 +201,6 @@ pub fn times_stop(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray
 }
 
 fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, pool: &Pool<PostgresConnectionManager>) -> Vec<Time>{
-    /*
-        SELECT * FROM stop_time WHERE
-        stop_time.trip_id =
-            (SELECT trip.trip_id FROM trip WHERE trip.uid='t-b119d6-lamone-cadempinostazione')
-        AND stop_time.feed_id =
-            (SELECT trip.feed_id FROM trip WHERE trip.uid='t-b119d6-lamone-cadempinostazione');
-    */
 
     let mut query = String::from("SELECT t.uid,
         arrival_time,
@@ -287,25 +411,6 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
     times_result
 }
 
-/// `/times/by-stop/<stop_id>?<time_search>`  
-/// Gets the [Time](../../../models/time/struct.Time.html)s associated
-/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `<stop_id>`.  
-/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
-/// <[Time](../../../models/time/struct.Time.html)>
-#[get("/times/by-stop/<stop_id>?<time_search>")]
-pub fn times_stop_query(rh: State<RoutesHandler>, stop_id: String, time_search: TimeSearch) -> Json<ResultArray<Time>>{
-    let result = get_times_by_stop_id_query(stop_id, &time_search, &rh.pool);
-    
-    let meta = Meta{
-        success: true,
-        error: None,
-    };
-
-    Json(ResultArray::<Time>{
-        result: Some(result),
-        meta
-    })
-}
 fn get_times_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Time>{
     /*
         SELECT * FROM stop_time WHERE
