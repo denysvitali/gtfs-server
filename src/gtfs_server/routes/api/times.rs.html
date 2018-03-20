@@ -464,8 +464,6 @@
 <span id="407">407</span>
 <span id="408">408</span>
 <span id="409">409</span>
-<span id="410">410</span>
-<span id="411">411</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/times` related routes</span>
 
@@ -598,13 +596,15 @@
         WHERE a.feed_id = stop.feed_id AND t.feed_id = stop.feed_id AND c.feed_id = t.feed_id 
         &quot;</span>);
 
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dates</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">NaiveDate</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">values</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">string_values</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ToSql</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="number">1</span>;
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">addition</span> : <span class="ident">String</span>;
 
     <span class="ident">params</span>.<span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="ident">trip_id</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">values</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">monday</span>.<span class="ident">is_some</span>() {
         <span class="ident">values</span>.<span class="ident">push</span>(<span class="ident">time_search</span>.<span class="ident">monday</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
@@ -655,32 +655,28 @@
         <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
     }
     
-    <span class="kw">for</span> <span class="ident">val</span> <span class="kw">in</span> <span class="ident">values</span>.<span class="ident">iter</span>() {
-        <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">val</span>.<span class="ident">to_owned</span>());
+    <span class="kw">for</span> <span class="ident">val</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">values</span> {
+        <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">val</span>);
     }
     
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">values</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
-    
-    <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">start_date</span>.<span class="ident">is_some</span>() {
-        <span class="ident">values</span>.<span class="ident">push</span>(
-            <span class="ident">time_search</span>.<span class="ident">start_date</span>
+    <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">date</span>.<span class="ident">is_some</span>() {
+        <span class="ident">string_values</span>.<span class="ident">push</span>(
+            <span class="ident">time_search</span>.<span class="ident">date</span>
                 .<span class="ident">as_ref</span>()
                 .<span class="ident">unwrap</span>()
         );
         <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
-        <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND ${0} &gt;= start_date AND end_date &lt;= ${0}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
+        <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND start_date &lt;= ${0} AND end_date &gt;= ${0}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
         <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
     }
     
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dates</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">NaiveDate</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
-    <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">val</span> <span class="kw">in</span> <span class="ident">values</span>.<span class="ident">iter</span>() {
+    <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">val</span> <span class="kw">in</span> <span class="ident">string_values</span>.<span class="ident">iter</span>() {
         <span class="kw-2">&amp;</span><span class="ident">dates</span>.<span class="ident">push</span>(<span class="ident">val</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">NaiveDate</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
     }
     
-    <span class="comment">// This part is failing:</span>
-    <span class="comment">/*for val in dates.into_iter() {
-        params.push(val);
-    }*/</span>
+    <span class="kw">for</span> <span class="ident">val</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">dates</span> {
+        <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">val</span>);
+    }
 
     <span class="comment">/*let query = &quot;SELECT  trip_id,\
         arrival_time,\
@@ -877,7 +873,8 @@
     };
 
     <span class="ident">time</span>
-}</pre>
+}
+</pre>
 </section>
     <section id='search' class="content hidden"></section>
 

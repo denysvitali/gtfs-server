@@ -82,7 +82,6 @@
 <span id="25">25</span>
 <span id="26">26</span>
 <span id="27">27</span>
-<span id="28">28</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! TimeSearch related structs and implementations</span>
 <span class="kw">use</span> <span class="ident">importer</span>::<span class="ident">NaiveDate</span>;
@@ -93,8 +92,7 @@
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">FromForm</span>,<span class="ident">Serialize</span>,<span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TimeSearch</span> {
-    <span class="kw">pub</span> <span class="ident">start_date</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">end_date</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">date</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">service_uid</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">monday</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">tuesday</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>,
