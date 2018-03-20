@@ -26,6 +26,8 @@ use super::NaiveDate;
 use postgres::types::ToSql;
 
 use super::model_api::search::time::TimeSearch;
+use super::model_api::search::time::TimeSort;
+use super::model_api::search::ascdesc::AscDesc;
 
 /// `/times/by-trip/<trip_id>`  
 /// Gets the [Time](../../../models/time/struct.Time.html)s associated
@@ -56,26 +58,6 @@ pub fn times_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultArray
 pub fn times_stop(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray<Time>>{
     let result = get_times_by_stop_id(stop_id, &rh.pool);
 
-    let meta = Meta{
-        success: true,
-        error: None,
-    };
-
-    Json(ResultArray::<Time>{
-        result: Some(result),
-        meta
-    })
-}
-
-/// `/times/by-stop/<stop_id>?<time_search>`  
-/// Gets the [Time](../../../models/time/struct.Time.html)s associated
-/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `<stop_id>`.  
-/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
-/// <[Time](../../../models/time/struct.Time.html)>
-#[get("/times/by-stop/<stop_id>?<time_search>")]
-pub fn times_stop_query(rh: State<RoutesHandler>, stop_id: String, time_search: TimeSearch) -> Json<ResultArray<Time>>{
-    let result = get_times_by_stop_id_query(stop_id, &time_search, &rh.pool);
-    
     let meta = Meta{
         success: true,
         error: None,
@@ -130,6 +112,7 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
         ");
 
     let mut dates : Vec<NaiveDate> = Vec::new();
+    let mut times : Vec<NaiveTime> = Vec::new();
     let mut values : Vec<&bool> = Vec::new();
     let mut string_values : Vec<&String> = Vec::new();
     let mut params: Vec<&ToSql> = Vec::new();
@@ -152,28 +135,28 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
         addition = format!(" AND tuesday = ${}", &i);
         query.push_str(&addition);
     }
-    
+
     if time_search.wednesday.is_some() {
         values.push(time_search.wednesday.as_ref().unwrap());
         i+= 1;
         addition = format!(" AND wednesday = ${}", &i);
         query.push_str(&addition);
     }
-    
+
     if time_search.thursday.is_some() {
         values.push(time_search.thursday.as_ref().unwrap());
         i+= 1;
         addition = format!(" AND thursday = ${}", &i);
         query.push_str(&addition);
     }
-    
+
     if time_search.friday.is_some() {
         values.push(time_search.friday.as_ref().unwrap());
         i+= 1;
         addition = format!(" AND friday = ${}", &i);
         query.push_str(&addition);
     }
-    
+
     if time_search.saturday.is_some() {
         values.push(time_search.saturday.as_ref().unwrap());
         i+= 1;
@@ -187,11 +170,11 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
         addition = format!(" AND sunday = ${}", &i);
         query.push_str(&addition);
     }
-    
+
     for val in &values {
         params.push(val);
     }
-    
+
     if time_search.date.is_some() {
         string_values.push(
             time_search.date
@@ -202,13 +185,70 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
         addition = format!(" AND start_date <= ${0} AND end_date >= ${0}", &i);
         query.push_str(&addition);
     }
-    
+
     for &val in string_values.iter() {
         &dates.push(val.parse::<NaiveDate>().unwrap());
     }
-    
+
     for val in &dates {
         params.push(val);
+    }
+
+    string_values = Vec::new();
+
+    if time_search.at_a.is_some() {
+
+        string_values.push(
+            time_search.at_a
+                .as_ref()
+                .unwrap()
+        );
+
+        i+= 1;
+        addition = format!(" AND arrival_time >= ${}", &i);
+        query.push_str(&addition);
+    }
+
+    if time_search.at_b.is_some() {
+        string_values.push(
+            time_search.at_b
+                .as_ref()
+                .unwrap()
+        );
+
+        i+= 1;
+        addition = format!(" AND arrival_time <= ${}", &i);
+        query.push_str(&addition);
+    }
+
+    for &val in string_values.iter() {
+        &times.push(val.parse::<NaiveTime>().unwrap());
+    }
+
+    for val in &times {
+        params.push(val);
+    }
+
+    if time_search.sort_by.is_some() {
+        let mut sort: AscDesc = AscDesc::ASC;
+        if time_search.sort_order.as_ref().is_some() {
+            let res = time_search.sort_order.as_ref().unwrap();
+            sort = match res.to_lowercase().as_str() {
+                "asc" => AscDesc::ASC,
+                "desc" => AscDesc::DESC,
+                _ => AscDesc::ASC
+            };
+        }
+        
+        let sort_by = match time_search.sort_by.as_ref().unwrap().as_str() {
+            "arrival_time" => TimeSort::arrival_time,
+            "departure_time" => TimeSort::departure_time,
+            "stop_sequence" => TimeSort::stop_sequence,
+            &_ => TimeSort::arrival_time
+        };
+        
+        addition = format!(" ORDER BY {} {}", sort_by.as_str(), sort.as_str());
+        query.push_str(&addition);
     }
 
     /*let query = "SELECT  trip_id,\
@@ -233,7 +273,7 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
     let times = conn.query(
         &query, &params.as_slice()
     );
-    
+
     println!("{}", query);
     println!("{:?}", params.as_slice());
 
@@ -245,6 +285,26 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
     }
 
     times_result
+}
+
+/// `/times/by-stop/<stop_id>?<time_search>`  
+/// Gets the [Time](../../../models/time/struct.Time.html)s associated
+/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `<stop_id>`.  
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[Time](../../../models/time/struct.Time.html)>
+#[get("/times/by-stop/<stop_id>?<time_search>")]
+pub fn times_stop_query(rh: State<RoutesHandler>, stop_id: String, time_search: TimeSearch) -> Json<ResultArray<Time>>{
+    let result = get_times_by_stop_id_query(stop_id, &time_search, &rh.pool);
+    
+    let meta = Meta{
+        success: true,
+        error: None,
+    };
+
+    Json(ResultArray::<Time>{
+        result: Some(result),
+        meta
+    })
 }
 fn get_times_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Time>{
     /*
