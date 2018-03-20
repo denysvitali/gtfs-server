@@ -356,6 +356,10 @@
 <span id="300">300</span>
 <span id="301">301</span>
 <span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/stops` related routes</span>
 
@@ -374,7 +378,7 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">PostgresConnectionManager</span>;
 <span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">rows</span>::<span class="ident">Row</span>;
 
-<span class="doccomment">/// Handles `/stops` route,</span>
+<span class="doccomment">/// `/stops`,</span>
 <span class="doccomment">/// returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)&lt;[Stop](../../../models/stop/struct.Stop.html)&gt;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ### Example</span>
@@ -405,7 +409,6 @@
     }
     ```
 **/</span>
-<span class="comment">////////////////////////////////////////////////////////////////////////////////</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/stops&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;&gt;</span> {
 
@@ -419,6 +422,9 @@
     <span class="ident">Json</span>(<span class="ident">sr</span>)
 }
 
+<span class="doccomment">/// `/stops/&lt;stop_id&gt;`,</span>
+<span class="doccomment">/// gets a single [Stop](../../../models/stop/struct.Stop.html) from its `stop_id`.</span>
+<span class="doccomment">/// Returns a [Result](../../../models/api/result/struct.Result.html)&lt;[Stop](../../../models/stop/struct.Stop.html)&gt;</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/stops/&lt;stop_id&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops_by_id</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">stop_id</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;&gt;</span> {
 
@@ -445,7 +451,9 @@
     };
     <span class="ident">Json</span>(<span class="ident">sr</span>)
 }
-
+<span class="doccomment">/// `/stops/by-trip/&lt;trip_id&gt;`,</span>
+<span class="doccomment">/// get the [Stop](../../../models/stop/struct.Stop.html)s visited by a [Trip](../../../models/trip/struct.Trip.html) uid.</span>
+<span class="doccomment">/// returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)&lt;[Stop](../../../models/stop/struct.Stop.html)&gt;</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/stops/by-trip/&lt;trip_id&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops_by_trip</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">trip_id</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;&gt;</span> {
 
