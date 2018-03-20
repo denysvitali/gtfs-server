@@ -25,7 +25,16 @@ cd deploy_docs
 git config user.name "Doc Upload Bot"
 git config user.email "docupload@denv.it"
 rm -rf *
-mv ../target/doc .
+mv ../target/doc/* .
+CRATE_DIR=$(find . -maxdepth 1 -mindepth 1 -type d -not -iname '.git' -not -iname 'implementors' -not -iname 'src' -exec basename \{\} \;)
+cat <<EOF > index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="refresh" content="0;$CRATE_DIR/index.html"/>
+</head>
+</html>
+EOF
 git add -A .
 git commit -qm "Doc upload for $PROJECT_NAME ($TRAVIS_REPO_SLUG)"
 git push -q origin gh-pages
