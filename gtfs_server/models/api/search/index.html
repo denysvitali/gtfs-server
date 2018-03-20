@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `static_rocket_route_info_for_trip` static in crate `gtfs_server`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, static_rocket_route_info_for_trip">
+    <meta name="description" content="API documentation for the Rust `search` mod in crate `gtfs_server`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, search">
 
-    <title>gtfs_server::routes::api::trips::static_rocket_route_info_for_trip - Rust</title>
+    <title>gtfs_server::models::api::search - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../../../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css"
@@ -21,7 +21,7 @@
     
     
 </head>
-<body class="rustdoc static">
+<body class="rustdoc mod">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -34,7 +34,7 @@
     <nav class="sidebar">
         <div class="sidebar-menu">&#9776;</div>
         
-        <div class="sidebar-elems"><p class='location'><a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>trips</a></p><script>window.sidebarCurrent = {name: 'static_rocket_route_info_for_trip', ty: 'static', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+        <p class='location'>Module search</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li></ul></div><p class='location'><a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>models</a>::<wbr><a href='../index.html'>api</a></p><script>window.sidebarCurrent = {name: 'search', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div>
     </nav>
 
     <div class="theme-picker">
@@ -56,17 +56,22 @@
     </nav>
 
     <section id='main' class="content">
-<h1 class='fqn'><span class='in-band'>Static <a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>trips</a>::<wbr><a class="static" href=''>static_rocket_route_info_for_trip</a></span><span class='out-of-band'><span id='render-detail'>
+<h1 class='fqn'><span class='in-band'>Module <a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>models</a>::<wbr><a href='../index.html'>api</a>::<wbr><a class="mod" href=''>search</a></span><span class='out-of-band'><span id='render-detail'>
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../../../../src/gtfs_server/routes/api/trips.rs.html#124' title='goto source code'>[src]</a></span></h1>
-<pre class='rust static'>pub static static_rocket_route_info_for_trip: <a class="struct" href="https://api.rocket.rs/rocket/codegen/struct.StaticRouteInfo.html" title="struct rocket::codegen::StaticRouteInfo">StaticRouteInfo</a><code> = </code><code>::rocket::StaticRouteInfo{method: ::rocket::http::Method::Get,
-                          path: &quot;/trips/&lt;trip_id&gt;&quot;,
-                          handler: rocket_route_fn_trip,
-                          format: None,
-                          rank: None,}</code></pre><div class='docblock'><p>Rocket code generated static route information structure.</p>
-</div></section>
+               </span><a class='srclink' href='../../../../src/gtfs_server/models/api/search/mod.rs.html#1-2' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Search Related Models (Query Parameters)</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="time/index.html"
+                                  title='mod gtfs_server::models::api::search::time'>time</a></td>
+                           <td class='docblock-short'>
+                                <p>TimeSearch related structs and implementations</p>
+
+                           </td>
+                       </tr></table></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>

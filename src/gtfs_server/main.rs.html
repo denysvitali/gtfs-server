@@ -145,11 +145,15 @@
 <span id="88">88</span>
 <span id="89">89</span>
 <span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! This is the documentation for `gtfs-server`</span>
 <span class="doccomment">//!</span>
 
 <span class="attribute">#![<span class="ident">feature</span>(<span class="ident">plugin</span>)]</span>
+<span class="attribute">#![<span class="ident">feature</span>(<span class="ident">custom_derive</span>)]</span>
 <span class="attribute">#![<span class="ident">plugin</span>(<span class="ident">rocket_codegen</span>)]</span>
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">rocket</span>;
@@ -208,10 +212,12 @@
         <span class="ident">api</span>::<span class="ident">stops</span>::<span class="ident">stops_near_default</span>,
         <span class="ident">api</span>::<span class="ident">stops</span>::<span class="ident">stops_near</span>,
         <span class="ident">api</span>::<span class="ident">stops</span>::<span class="ident">stops_by_trip</span>,
+        <span class="ident">api</span>::<span class="ident">trips</span>::<span class="ident">trips</span>,
         <span class="ident">api</span>::<span class="ident">trips</span>::<span class="ident">trips_stopid</span>,
         <span class="ident">api</span>::<span class="ident">trips</span>::<span class="ident">trip</span>,
         <span class="ident">api</span>::<span class="ident">times</span>::<span class="ident">times_trip</span>,
-        <span class="ident">api</span>::<span class="ident">times</span>::<span class="ident">times_stop</span>
+        <span class="ident">api</span>::<span class="ident">times</span>::<span class="ident">times_stop</span>,
+        <span class="ident">api</span>::<span class="ident">times</span>::<span class="ident">times_stop_query</span>
     ]).<span class="ident">launch</span>();
 }
 

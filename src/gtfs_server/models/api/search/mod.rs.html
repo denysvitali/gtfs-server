@@ -4,24 +4,24 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `static_rocket_route_info_for_trip` static in crate `gtfs_server`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, static_rocket_route_info_for_trip">
+    <meta name="description" content="Source to the Rust file `src/models/api/search/mod.rs`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang">
 
-    <title>gtfs_server::routes::api::trips::static_rocket_route_info_for_trip - Rust</title>
+    <title>mod.rs.html -- source</title>
 
-    <link rel="stylesheet" type="text/css" href="../../../../normalize.css">
-    <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css"
+    <link rel="stylesheet" type="text/css" href="../../../../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css"
           id="mainThemeStyle">
     
-    <link rel="stylesheet" type="text/css" href="../../../../dark.css">
-    <link rel="stylesheet" type="text/css" href="../../../../main.css" id="themeStyle">
-    <script src="../../../../storage.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../../../../dark.css">
+    <link rel="stylesheet" type="text/css" href="../../../../../main.css" id="themeStyle">
+    <script src="../../../../../storage.js"></script>
     
 
     
     
 </head>
-<body class="rustdoc static">
+<body class="rustdoc source">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -34,16 +34,16 @@
     <nav class="sidebar">
         <div class="sidebar-menu">&#9776;</div>
         
-        <div class="sidebar-elems"><p class='location'><a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>trips</a></p><script>window.sidebarCurrent = {name: 'static_rocket_route_info_for_trip', ty: 'static', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+        
     </nav>
 
     <div class="theme-picker">
         <button id="theme-picker" aria-label="Pick another theme!">
-            <img src="../../../../brush.svg" width="18" alt="Pick another theme!">
+            <img src="../../../../../brush.svg" width="18" alt="Pick another theme!">
         </button>
         <div id="theme-choices"></div>
     </div>
-    <script src="../../../../theme.js"></script>
+    <script src="../../../../../theme.js"></script>
     <nav class="sub">
         <form class="search-form js-only">
             <div class="search-container">
@@ -55,18 +55,12 @@
         </form>
     </nav>
 
-    <section id='main' class="content">
-<h1 class='fqn'><span class='in-band'>Static <a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>trips</a>::<wbr><a class="static" href=''>static_rocket_route_info_for_trip</a></span><span class='out-of-band'><span id='render-detail'>
-                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                       [<span class='inner'>&#x2212;</span>]
-                   </a>
-               </span><a class='srclink' href='../../../../src/gtfs_server/routes/api/trips.rs.html#124' title='goto source code'>[src]</a></span></h1>
-<pre class='rust static'>pub static static_rocket_route_info_for_trip: <a class="struct" href="https://api.rocket.rs/rocket/codegen/struct.StaticRouteInfo.html" title="struct rocket::codegen::StaticRouteInfo">StaticRouteInfo</a><code> = </code><code>::rocket::StaticRouteInfo{method: ::rocket::http::Method::Get,
-                          path: &quot;/trips/&lt;trip_id&gt;&quot;,
-                          handler: rocket_route_fn_trip,
-                          format: None,
-                          rank: None,}</code></pre><div class='docblock'><p>Rocket code generated static route information structure.</p>
-</div></section>
+    <section id='main' class="content"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+</pre><pre class="rust ">
+<span class="doccomment">//! Search Related Models (Query Parameters)</span>
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">time</span>;</pre>
+</section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -124,10 +118,10 @@
     
 
     <script>
-        window.rootPath = "../../../../";
+        window.rootPath = "../../../../../";
         window.currentCrate = "gtfs_server";
     </script>
-    <script src="../../../../main.js"></script>
-    <script defer src="../../../../search-index.js"></script>
+    <script src="../../../../../main.js"></script>
+    <script defer src="../../../../../search-index.js"></script>
 </body>
 </html>
