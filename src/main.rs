@@ -26,6 +26,8 @@ use r2d2::Pool;
 use models::stop::Stop;
 use routes::RoutesHandler;
 use routes::api;
+use std::env;
+use std::ffi::OsString;
 
 use chrono::{NaiveTime, NaiveDate};
 
@@ -35,8 +37,26 @@ extern crate serde_derive;
 extern crate num_derive;
 
 fn create_pool() -> Pool<PostgresConnectionManager> {
+    let mut os_str : Option<OsString>;
+    let mut os : &OsString;
+    let mut hostname = "172.18.0.2";
+    let mut password = String::from("mysecretpassword");
+
+    if env::var_os("IN_DOCKER").is_some() && 
+        env::var_os("IN_DOCKER").unwrap().to_str().unwrap() == "true" {
+        hostname = "postgres";
+        password = String::from(
+            env::var_os("POSTGRES_PASSWORD").unwrap().to_str().unwrap().clone());
+    }
+
+
+    let connection_string = format!("postgres://postgres:{}@{}:5432",
+        password,
+        hostname
+    );
+
     let manager = PostgresConnectionManager::new(
-        "postgres://postgres:mysecretpassword@172.18.0.2:5432",
+        connection_string,
         TlsMode::None
     ).unwrap();
     let pool = Pool::new(manager).unwrap();
