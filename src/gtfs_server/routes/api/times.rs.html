@@ -629,6 +629,24 @@
 <span id="572">572</span>
 <span id="573">573</span>
 <span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/times` related routes</span>
 
@@ -982,6 +1000,24 @@
     }
 
     <span class="kw">for</span> <span class="ident">val</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">times</span> {
+        <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">val</span>);
+    }
+    
+    <span class="ident">string_values</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    
+    <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">trip_id</span>.<span class="ident">is_some</span>() {
+        <span class="ident">string_values</span>.<span class="ident">push</span>(
+            <span class="ident">time_search</span>.<span class="ident">trip_id</span>
+                .<span class="ident">as_ref</span>()
+                .<span class="ident">unwrap</span>()
+        );
+        
+        <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
+        <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND t.uid = ${}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
+        <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
+    }
+
+    <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">val</span> <span class="kw">in</span> <span class="ident">string_values</span>.<span class="ident">iter</span>() {
         <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">val</span>);
     }
 
