@@ -3,4 +3,4 @@ RUN mkdir /app
 COPY . /app
 WORKDIR /app
 RUN cargo build ---release
-ENTRYPOINT [ "./target/release/gtfs-server ]
+ENTRYPOINT [ "./target/release/gtfs-server" ]
