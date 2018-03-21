@@ -4,8 +4,8 @@ services:
     build: .
     image: dvitali/gtfs-server:latest
     ports:
-     - "8000:8000"
+     - "80"
     env_file: .env.production
-  postgis:
+  postgres:
     image: "mdillon/postgis:latest"
     env_file: .env.production
