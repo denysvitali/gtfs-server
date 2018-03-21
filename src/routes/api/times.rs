@@ -352,6 +352,24 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
     for val in &times {
         params.push(val);
     }
+    
+    string_values = Vec::new();
+    
+    if time_search.trip_id.is_some() {
+        string_values.push(
+            time_search.trip_id
+                .as_ref()
+                .unwrap()
+        );
+        
+        i+= 1;
+        addition = format!(" AND t.uid = ${}", &i);
+        query.push_str(&addition);
+    }
+
+    for &val in string_values.iter() {
+        params.push(val);
+    }
 
     if time_search.sort_by.is_some() {
         let mut sort: AscDesc = AscDesc::ASC;
