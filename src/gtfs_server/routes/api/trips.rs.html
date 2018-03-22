@@ -242,12 +242,107 @@
 <span id="185">185</span>
 <span id="186">186</span>
 <span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/trips` related routes</span>
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">meta</span>::<span class="ident">Meta</span>;
 
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">trip</span>::<span class="ident">Trip</span>;
+<span class="kw">use</span> <span class="ident">models</span>::<span class="ident">stop</span>::<span class="ident">StopTrip</span>;
+<span class="kw">use</span> <span class="ident">models</span>::<span class="ident">stop</span>::<span class="ident">Stop</span>;
+
+<span class="kw">use</span> <span class="ident">models</span>::<span class="ident">pickup</span>::<span class="ident">PickUp</span>;
+<span class="kw">use</span> <span class="ident">models</span>::<span class="ident">dropoff</span>::<span class="ident">DropOff</span>;
+
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">resultarray</span>::<span class="ident">ResultArray</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
@@ -258,7 +353,10 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">Pool</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">PostgresConnectionManager</span>;
 
+<span class="kw">use</span> <span class="ident">chrono</span>::<span class="ident">NaiveTime</span>;
 <span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">rows</span>::<span class="ident">Row</span>;
+
+<span class="kw">use</span> <span class="ident">num_traits</span> <span class="kw">as</span> <span class="ident">num</span>;
 
 <span class="doccomment">/// `/trips/`, returns a list of [Trip](../../../models/trip/struct.Trip.html)s.  </span>
 <span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
@@ -291,7 +389,11 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trips_result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Trip</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">trips</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>).<span class="ident">iter</span>() {
-        <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">parse_trip_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>);
+        <span class="kw">let</span> <span class="ident">sequence</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">parse_trip_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>);
+        <span class="kw">let</span> <span class="ident">route_uid</span> <span class="op">=</span> <span class="ident">route</span>.<span class="ident">uid</span>.<span class="ident">clone</span>();
+        <span class="ident">sequence</span> <span class="op">=</span> <span class="ident">get_stop_trip</span>(<span class="ident">route_uid</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
+        <span class="ident">route</span>.<span class="ident">stop_sequence</span> <span class="op">=</span> <span class="ident">sequence</span>;
         <span class="ident">trips_result</span>.<span class="ident">push</span>(<span class="ident">route</span>);
     }
 
@@ -347,7 +449,11 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trips_result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Trip</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">trips</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>).<span class="ident">iter</span>() {
-        <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">parse_trip_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>);
+        <span class="kw">let</span> <span class="ident">sequence</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">parse_trip_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>);
+        <span class="kw">let</span> <span class="ident">route_uid</span> <span class="op">=</span> <span class="ident">route</span>.<span class="ident">uid</span>.<span class="ident">clone</span>();
+        <span class="ident">sequence</span> <span class="op">=</span> <span class="ident">get_stop_trip</span>(<span class="ident">route_uid</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
+        <span class="ident">route</span>.<span class="ident">stop_sequence</span> <span class="op">=</span> <span class="ident">sequence</span>;
         <span class="ident">trips_result</span>.<span class="ident">push</span>(<span class="ident">route</span>);
     }
 
@@ -403,8 +509,12 @@
             }
         });
     }
-
-    <span class="kw">let</span> <span class="ident">trip</span> <span class="op">=</span> <span class="ident">parse_trip_row</span>(<span class="kw-2">&amp;</span>(<span class="ident">trips</span>).<span class="ident">get</span>(<span class="number">0</span>));
+    <span class="kw">let</span> <span class="ident">sequence</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trip</span> <span class="op">=</span> <span class="ident">parse_trip_row</span>(<span class="kw-2">&amp;</span>(<span class="ident">trips</span>).<span class="ident">get</span>(<span class="number">0</span>));
+    <span class="kw">let</span> <span class="ident">trip_uid</span> <span class="op">=</span> <span class="ident">trip</span>.<span class="ident">uid</span>.<span class="ident">clone</span>();
+    <span class="ident">sequence</span> <span class="op">=</span> <span class="ident">get_stop_trip</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">trip_uid</span>), <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
+    
+    <span class="ident">trip</span>.<span class="ident">stop_sequence</span> <span class="op">=</span> <span class="ident">sequence</span>;
 
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="prelude-ty">Result</span>::<span class="op">&lt;</span><span class="ident">Trip</span><span class="op">&gt;</span> {
         <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">trip</span>),
@@ -415,6 +525,43 @@
     };
 
     <span class="ident">Json</span>(<span class="ident">result</span>)
+}
+
+<span class="kw">fn</span> <span class="ident">get_stop_trip</span>(<span class="ident">trip_uid</span>: <span class="ident">String</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span>
+    <span class="string">r#&quot;SELECT 
+    stop.uid, 
+    stop.name, 
+    ST_Y(position::geometry) as lat, 
+    ST_Y(position::geometry) as lng, 
+    stop.&quot;type&quot;, 
+    (SELECT stop.uid FROM stop as s WHERE s.id = stop.parent_stop AND s.feed_id = stop.feed_id) as parent_stop, 
+    stop_time.stop_sequence, 
+    stop_time.drop_off_type,
+    stop_time.pickup_type,
+    stop_time.arrival_time, 
+    stop_time.departure_time 
+    FROM stop_time 
+    INNER JOIN stop ON stop.id = stop_time.stop_id 
+    WHERE stop_time.trip_id = (SELECT trip.trip_id FROM trip WHERE trip.uid = $1) 
+    AND stop.feed_id = stop_time.feed_id 
+    ORDER BY stop_sequence ASC&quot;#</span>;
+    
+    <span class="kw">let</span> <span class="ident">connection</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">stop_trips</span> <span class="op">=</span> <span class="ident">connection</span>.<span class="ident">query</span>(
+        <span class="ident">query</span>, 
+        <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">trip_uid</span>]
+    );
+    
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stop_trip_result</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    
+    <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">stop_trips</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>).<span class="ident">iter</span>() {
+        <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">parse_stop_trip_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>);
+        <span class="ident">stop_trip_result</span>.<span class="ident">push</span>(<span class="ident">route</span>);
+    }
+    
+    <span class="ident">stop_trip_result</span>
+    
 }
 
 <span class="kw">fn</span> <span class="ident">parse_trip_row</span>(<span class="ident">row</span>: <span class="kw-2">&amp;</span><span class="ident">Row</span>) <span class="op">-&gt;</span> <span class="ident">Trip</span> {
@@ -429,6 +576,37 @@
     <span class="ident">t</span>.<span class="ident">set_id</span>(<span class="ident">row</span>.<span class="ident">get</span>(<span class="number">3</span>));
     <span class="ident">t</span>.<span class="ident">set_feed_id</span>(<span class="ident">row</span>.<span class="ident">get</span>(<span class="number">7</span>));
     <span class="ident">t</span>
+}
+
+<span class="kw">fn</span> <span class="ident">parse_stop_trip_row</span>(<span class="ident">row</span>: <span class="kw-2">&amp;</span><span class="ident">Row</span>) <span class="op">-&gt;</span> <span class="ident">StopTrip</span> {
+    <span class="kw">let</span> <span class="ident">stop</span> <span class="op">=</span> <span class="ident">Stop</span>::<span class="ident">new</span>(
+        <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>),
+        <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">1</span>),
+        <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">2</span>),
+        <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">3</span>),
+        <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">4</span>),
+        <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">5</span>)
+    );
+    
+    <span class="kw">let</span> <span class="ident">drop_off_i</span> : <span class="ident">i32</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">7</span>);
+    <span class="kw">let</span> <span class="ident">pickup_i</span> : <span class="ident">i32</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">8</span>);
+    
+    <span class="kw">let</span> <span class="ident">drop_off</span> : <span class="ident">DropOff</span> <span class="op">=</span> <span class="ident">num</span>::<span class="ident">FromPrimitive</span>::<span class="ident">from_i32</span>(<span class="ident">drop_off_i</span>).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">pickup</span> : <span class="ident">PickUp</span> <span class="op">=</span> <span class="ident">num</span>::<span class="ident">FromPrimitive</span>::<span class="ident">from_i32</span>(<span class="ident">pickup_i</span>).<span class="ident">unwrap</span>();
+    
+    <span class="kw">let</span> <span class="ident">arrival_time</span> : <span class="ident">NaiveTime</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">9</span>);
+    <span class="kw">let</span> <span class="ident">departure_time</span> : <span class="ident">NaiveTime</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">10</span>);
+    
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">st</span> <span class="op">=</span> <span class="ident">StopTrip</span>{
+        <span class="ident">stop</span>,
+        <span class="ident">arrival_time</span>,
+        <span class="ident">departure_time</span>,
+        <span class="ident">stop_sequence</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">6</span>),
+        <span class="ident">drop_off</span>,
+        <span class="ident">pickup</span>
+    };
+    
+    <span class="ident">st</span>
 }</pre>
 </section>
     <section id='search' class="content hidden"></section>

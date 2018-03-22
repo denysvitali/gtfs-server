@@ -99,8 +99,12 @@
 <span id="42">42</span>
 <span id="43">43</span>
 <span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! Trip related structs and implementations</span>
+<span class="kw">use</span> <span class="ident">models</span>::<span class="ident">stop</span>::<span class="ident">StopTrip</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Serialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Trip</span> {
@@ -112,6 +116,7 @@
     <span class="ident">trip_id</span> : <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">short_name</span> : <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">direction_id</span>: <span class="ident">i32</span>,
+    <span class="kw">pub</span> <span class="ident">stop_sequence</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing</span>)]</span>
     <span class="ident">feed_id</span>: <span class="ident">String</span>
 }
@@ -132,6 +137,7 @@
             <span class="ident">headsign</span>,
             <span class="ident">short_name</span>,
             <span class="ident">direction_id</span>,
+            <span class="ident">stop_sequence</span>: <span class="macro">vec</span><span class="macro">!</span>(),
             <span class="ident">feed_id</span>: <span class="ident">String</span>::<span class="ident">new</span>()
         }
     }

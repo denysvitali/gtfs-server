@@ -95,8 +95,30 @@
 <span id="38">38</span>
 <span id="39">39</span>
 <span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! Stop related structs and implementations</span>
+<span class="kw">use</span> <span class="ident">importer</span>::<span class="ident">NaiveTime</span>;
+<span class="kw">use</span> <span class="ident">importer</span>::<span class="ident">NaiveDate</span>;
+
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">dropoff</span>::<span class="ident">DropOff</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">pickup</span>::<span class="ident">PickUp</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">time</span>::<span class="ident">Time</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>,<span class="ident">Serialize</span>,<span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Stop</span> {
@@ -111,6 +133,16 @@
     <span class="kw">pub</span> <span class="ident">parent_station</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing</span>,<span class="ident">skip_deserializing</span>)]</span>
     <span class="ident">feed_id</span>: <span class="ident">String</span>
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Serialize</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StopTrip</span> {
+    <span class="kw">pub</span> <span class="ident">stop</span>: <span class="ident">Stop</span>,
+    <span class="kw">pub</span> <span class="ident">arrival_time</span>: <span class="ident">NaiveTime</span>,
+    <span class="kw">pub</span> <span class="ident">departure_time</span>: <span class="ident">NaiveTime</span>,
+    <span class="kw">pub</span> <span class="ident">stop_sequence</span>: <span class="ident">i32</span>,
+    <span class="kw">pub</span> <span class="ident">drop_off</span>: <span class="ident">DropOff</span>,
+    <span class="kw">pub</span> <span class="ident">pickup</span>: <span class="ident">PickUp</span>
 }
 
 <span class="kw">impl</span> <span class="ident">Stop</span> {
