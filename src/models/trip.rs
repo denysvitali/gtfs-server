@@ -1,4 +1,5 @@
 //! Trip related structs and implementations
+use models::stop::StopTrip;
 
 #[derive(Debug, Serialize)]
 pub struct Trip {
@@ -10,6 +11,7 @@ pub struct Trip {
     trip_id : String,
     pub short_name : String,
     pub direction_id: i32,
+    pub stop_sequence: Vec<StopTrip>,
     #[serde(skip_serializing)]
     feed_id: String
 }
@@ -30,6 +32,7 @@ impl Trip {
             headsign,
             short_name,
             direction_id,
+            stop_sequence: vec!(),
             feed_id: String::new()
         }
     }

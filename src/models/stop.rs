@@ -1,4 +1,10 @@
 //! Stop related structs and implementations
+use importer::NaiveTime;
+use importer::NaiveDate;
+
+use super::dropoff::DropOff;
+use super::pickup::PickUp;
+use super::time::Time;
 
 #[derive(Debug,Serialize,Deserialize)]
 pub struct Stop {
@@ -13,6 +19,16 @@ pub struct Stop {
     pub parent_station: Option<String>,
     #[serde(skip_serializing,skip_deserializing)]
     feed_id: String
+}
+
+#[derive(Debug, Serialize)]
+pub struct StopTrip {
+    pub stop: Stop,
+    pub arrival_time: NaiveTime,
+    pub departure_time: NaiveTime,
+    pub stop_sequence: i32,
+    pub drop_off: DropOff,
+    pub pickup: PickUp
 }
 
 impl Stop {

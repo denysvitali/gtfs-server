@@ -429,7 +429,7 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
     times_result
 }
 
-fn get_times_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Time>{
+pub fn get_times_by_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Time>{
     /*
         SELECT * FROM stop_time WHERE
         stop_time.trip_id =
@@ -491,7 +491,7 @@ fn get_times_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) ->
 
     let conn = pool.clone().get().unwrap();
     let times = conn.query(
-        query, &[&trip_id]
+        query, &[&trip_uid]
     );
 
     let mut times_result : Vec<Time> = Vec::new();
