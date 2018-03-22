@@ -149,11 +149,7 @@ fn parse_stop_row(row: &Row) -> Stop {
     let id = row.get(1);
     let name = row.get(2);
     let location_type = row.get(3);
-    let parent_station : String = row.get(4);
-    let parent_station : Option<String> = match &parent_station.as_str() {
-        &"" => Option::None,
-        s => Option::Some(s.to_string())
-    };
+    let parent_station: Option<String> = row.get(4);
     let feed_id = row.get(5);
 
     let mut stop = Stop::new(
@@ -200,7 +196,7 @@ fn get_stops(pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
         id,
         name,
         type,
-        parent_stop,
+        (SELECT stop.uid FROM stop as s WHERE s.id = stop.parent_stop AND s.feed_id = stop.feed_id) as parent_stop,
         feed_id,
         ST_Y(position::geometry) as lat,
         ST_X(position::geometry) as lng FROM stop
@@ -230,7 +226,7 @@ fn get_stops_near(pool: &Pool<PostgresConnectionManager>,
         id,
         name,
         type,
-        parent_stop,
+        (SELECT stop.uid FROM stop as s WHERE s.id = stop.parent_stop AND s.feed_id = stop.feed_id) as parent_stop,
         feed_id,
         ST_Y(position::geometry) as lat,
         ST_X(position::geometry) as lng,
@@ -281,7 +277,7 @@ fn get_stops_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) ->
 	stop.id, \
 	stop.name, \
 	stop.type, \
-	stop.parent_stop, \
+	(SELECT stop.uid FROM stop as s WHERE s.id = stop.parent_stop AND s.feed_id = stop.feed_id) as parent_stop, \
 	stop.feed_id, \
 	ST_Y(position::geometry) as lat, \
     ST_X(position::geometry) as lng \
