@@ -368,10 +368,6 @@
 <span id="311">311</span>
 <span id="312">312</span>
 <span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/stops` related routes</span>
 
@@ -524,11 +520,7 @@
     <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">1</span>);
     <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">2</span>);
     <span class="kw">let</span> <span class="ident">location_type</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">3</span>);
-    <span class="kw">let</span> <span class="ident">parent_station</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">4</span>);
-    <span class="kw">let</span> <span class="ident">parent_station</span> : <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">parent_station</span>.<span class="ident">as_str</span>() {
-        <span class="kw-2">&amp;</span><span class="string">&quot;&quot;</span> <span class="op">=&gt;</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
-        <span class="ident">s</span> <span class="op">=&gt;</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">Some</span>(<span class="ident">s</span>.<span class="ident">to_string</span>())
-    };
+    <span class="kw">let</span> <span class="ident">parent_station</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">4</span>);
     <span class="kw">let</span> <span class="ident">feed_id</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">5</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stop</span> <span class="op">=</span> <span class="ident">Stop</span>::<span class="ident">new</span>(
@@ -575,7 +567,7 @@
         id,
         name,
         type,
-        parent_stop,
+        (SELECT stop.uid FROM stop as s WHERE s.id = stop.parent_stop AND s.feed_id = stop.feed_id) as parent_stop,
         feed_id,
         ST_Y(position::geometry) as lat,
         ST_X(position::geometry) as lng FROM stop
@@ -605,7 +597,7 @@
         id,
         name,
         type,
-        parent_stop,
+        (SELECT stop.uid FROM stop as s WHERE s.id = stop.parent_stop AND s.feed_id = stop.feed_id) as parent_stop,
         feed_id,
         ST_Y(position::geometry) as lat,
         ST_X(position::geometry) as lng,
@@ -656,7 +648,7 @@
 	stop.id, \
 	stop.name, \
 	stop.type, \
-	stop.parent_stop, \
+	(SELECT stop.uid FROM stop as s WHERE s.id = stop.parent_stop AND s.feed_id = stop.feed_id) as parent_stop, \
 	stop.feed_id, \
 	ST_Y(position::geometry) as lat, \
     ST_X(position::geometry) as lng \
