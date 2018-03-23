@@ -168,7 +168,7 @@ fn get_stop_by_id(stop_id: String, pool: &Pool<PostgresConnectionManager>) -> Op
         id,
         name,
         type,
-        parent_stop,
+        (SELECT s.uid FROM stop as s WHERE s.id = stop.parent_stop AND s.feed_id = stop.feed_id) as parent_stop,
         feed_id,
         ST_Y(position::geometry) as lat,
         ST_X(position::geometry) as lng FROM stop
