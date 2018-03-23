@@ -69,9 +69,38 @@
 <span id="12">12</span>
 <span id="13">13</span>
 <span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::{<span class="ident">NaiveTime</span>, <span class="ident">NaiveDate</span>};
+
+<span class="kw">use</span> <span class="ident">rocket</span>::<span class="ident">response</span>::<span class="ident">content</span>;
+<span class="kw">use</span> <span class="ident">rocket</span>::<span class="ident">http</span>::<span class="ident">ContentType</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">agency</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">import</span>;
@@ -80,9 +109,32 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">trips</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">times</span>;
 
+<span class="kw">use</span> <span class="ident">rocket</span>;
+
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">main</span>() <span class="op">-&gt;</span> <span class="ident">String</span> {
-    <span class="kw">return</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;gtfs-server&quot;</span>);
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">main</span>() <span class="op">-&gt;</span> <span class="ident">content</span>::<span class="ident">Html</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">return</span> <span class="ident">content</span>::<span class="ident">Html</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">r#&quot;&lt;!DOCTYPE html&gt;
+    &lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;GTFS API&lt;/title&gt;
+        &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;//fonts.googleapis.com/css?family=Open+Sans&quot; /&gt;
+        &lt;style&gt;
+            body {{
+                font-family: &#39;Open Sans&#39;;
+            }}
+        &lt;/style&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;GTFS Server&lt;/h1&gt;
+        &lt;p&gt;
+            Commit: &lt;a href=&quot;https://github.com/denysvitali/gtfs-server/commit/{0}&quot;&gt;{0}&lt;/a&gt; - {1}
+        &lt;/p&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;
+    &quot;#</span>,
+                   <span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;GIT_HASH&quot;</span>),
+                   <span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;BUILD_DATE&quot;</span>)
+    ));
 }</pre>
 </section>
     <section id='search' class="content hidden"></section>
