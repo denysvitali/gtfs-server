@@ -1,6 +1,5 @@
 FROM rustlang/rust:nightly
-RUN mkdir /app
-RUN git clone https://github.com/denysvitali/gtfs-server.git /app
+COPY . /app
 WORKDIR /app
 RUN cargo build ---release
 RUN mv target/release/gtfs-server .
