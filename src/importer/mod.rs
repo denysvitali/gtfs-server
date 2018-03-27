@@ -223,7 +223,7 @@ pub fn parse_trips(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionMana
     }
 }
 
-fn parse_stop_times(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
+pub fn parse_stop_times(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>){
     let f = File::open(path).expect("File not found");
     let mut reader = BufReader::new(f);
     let mut rdr = csv::Reader::from_reader(reader);

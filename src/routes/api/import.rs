@@ -35,6 +35,18 @@ pub fn stops(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
     Json(sr)
 }
 
+#[get("/import/times/<feed_id>")]
+pub fn times(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
+    let pool : Pool<PostgresConnectionManager> = rh.pool.clone();
+    thread::spawn(move || {
+        importer::create_tables(&pool);
+        importer::parse_stop_times(&feed_id, "./resources/gtfs/sbb/stop_times.txt", &pool);
+        println!("Stop Times parsed!");
+    });
+    let sr = SuccessResult { success: true };
+    Json(sr)
+}
+
 #[get("/import/routes/<feed_id>")]
 pub fn routes(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
     let pool : Pool<PostgresConnectionManager> = rh.pool.clone();

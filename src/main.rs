@@ -73,6 +73,7 @@ fn start_server(rh : RoutesHandler) {
         api::import::trips,
         api::import::calendar,
         api::import::routes,
+        api::import::times,
         api::agency::agency_by_id,
         api::routes::routes,
         api::routes::route_by_id,
