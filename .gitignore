@@ -4,3 +4,4 @@
 resources/gtfs/*
 *.iml
 .idea/
+*.sql
