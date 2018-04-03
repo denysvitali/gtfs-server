@@ -237,6 +237,7 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
 
     let mut dates : Vec<NaiveDate> = Vec::new();
     let mut times : Vec<NaiveTime> = Vec::new();
+    let mut i32_values : Vec<i32> = Vec::new();
     let mut values : Vec<&bool> = Vec::new();
     let mut string_values : Vec<&String> = Vec::new();
     let mut params: Vec<&ToSql> = Vec::new();
@@ -317,6 +318,20 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
     for val in &dates {
         params.push(val);
     }
+
+    i32_values = Vec::new();
+
+    if time_search.stop_sequence.is_some() {
+        i32_values.push(time_search.stop_sequence.unwrap());
+        i+= 1;
+        addition = format!(" AND stop_sequence = ${}", &i);
+        query.push_str(&addition);
+    }
+
+    for val in &i32_values {
+        params.push(val);
+    }
+
 
     string_values = Vec::new();
 
