@@ -6,3 +6,15 @@ pub enum PickUp {
     MustArrangeWithAgency = 2,
     MustCoordinateWithDriver = 3
 }
+
+impl PickUp {
+    pub fn from_string(input: &str) -> PickUp {
+        match input {
+            "RegularlyScheduled" => PickUp::RegularlyScheduled,
+            "NoPickupAvailable" => PickUp::NoPickupAvailable,
+            "MustArrangeWithAgency" => PickUp::MustArrangeWithAgency,
+            "MustCoordinateWithDriver" => PickUp::MustCoordinateWithDriver,
+            _ => PickUp::RegularlyScheduled
+        }
+    }
+}

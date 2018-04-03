@@ -328,6 +328,28 @@ fn get_times_by_stop_id_query<'a>(trip_id: String, time_search: &TimeSearch, poo
         query.push_str(&addition);
     }
 
+    if time_search.drop_off_type.is_some() {
+        let drop_off : DropOff = DropOff::from_string(time_search.drop_off_type.as_ref().unwrap());
+
+        i32_values.push(
+            num::ToPrimitive::to_i32(&drop_off).unwrap()
+        );
+        i+= 1;
+        addition = format!(" AND a.drop_off_type = ${}", &i);
+        query.push_str(&addition);
+    }
+
+    if time_search.pickup_type.is_some() {
+        let pickup : PickUp = PickUp::from_string(time_search.pickup_type.as_ref().unwrap());
+
+        i32_values.push(
+            num::ToPrimitive::to_i32(&pickup).unwrap()
+        );
+        i+= 1;
+        addition = format!(" AND a.pickup_type = ${}", &i);
+        query.push_str(&addition);
+    }
+
     for val in &i32_values {
         params.push(val);
     }
