@@ -4,6 +4,8 @@ extern crate chrono;
 extern crate regex;
 extern crate r2d2;
 extern crate r2d2_postgres;
+extern crate reqwest;
+
 pub extern crate serde;
 pub extern crate serde_json;
 
@@ -32,10 +34,16 @@ use models::csv::stop::StopCSV;
 use models::csv::stoptime::StopTimeCSV;
 use models::csv::trip::TripCSV;
 use models::csv::calendar::CalendarCSV;
+use std::io::Read;
 
-fn download_feed(feed_url: &str){
+pub fn download_feed(feed_url: &str, pool: &Pool<PostgresConnectionManager>){
     // Download feed from URL
     // Example:  https://opentransportdata.swiss/en/dataset/timetable-2018-gtfs/permalink
+    let mut resp = reqwest::get(feed_url);
+    //resp.
+
+
+
 }
 
 pub fn parse_agency(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>) {
@@ -500,6 +508,8 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
         PRIMARY KEY (uid)\
     )", &[]).expect("Cannot create table \"trip\"");
 
+
+
     // ALTER TABLE public.trip ADD CONSTRAINT trip_calendar_fk FOREIGN KEY (service_id,feed_id) REFERENCES public.calendar(service_id,feed_id) ;
 
 
@@ -545,4 +555,23 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
         UNIQUE (service_id, feed_id)\
     )", &[]).expect("Cannot create table \"calendar\"");
 
+
+    // Create Indexes
+    conn.execute("ALTER TABLE public.stop_time
+        ADD CONSTRAINT stop_time_stop_fk
+        FOREIGN KEY (stop_id,feed_id)
+        REFERENCES public.stop(id,feed_id);", &[])
+        .expect("Add stop_time constraints");
+
+    conn.execute("ALTER TABLE public.route
+        ADD CONSTRAINT route_agency_fk
+        FOREIGN KEY (agency,feed_id)
+        REFERENCES public.agency(id,feed_id);", &[])
+        .expect("Add stop_time constraints");
+
+    conn.execute("ALTER TABLE public.trip \
+        ADD CONSTRAINT trip_calendar_fk \
+        FOREIGN KEY (service_id,feed_id) \
+        REFERENCES public.calendar(service_id,feed_id);", &[])
+        .expect("Add stop_time constraints");
 }

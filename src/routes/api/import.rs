@@ -11,6 +11,18 @@ use super::model_api::successresult::SuccessResult;
 use super::super::super::importer;
 use std::thread;
 
+#[get("/import/url/<feed_url>")]
+pub fn url(rh: State<RoutesHandler>, feed_url: String) -> Json<SuccessResult> {
+    let pool : Pool<PostgresConnectionManager> = rh.pool.clone();
+    thread::spawn(move || {
+        importer::create_tables(&pool);
+        importer::download_feed(&feed_url, &pool);
+        println!("Agency parsed!");
+    });
+    let sr = SuccessResult { success: true };
+    Json(sr)
+}
+
 #[get("/import/agency/<feed_id>")]
 pub fn agency(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
     let pool : Pool<PostgresConnectionManager> = rh.pool.clone();

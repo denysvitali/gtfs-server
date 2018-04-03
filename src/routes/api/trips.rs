@@ -198,8 +198,8 @@ fn get_stop_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager>) -> Ve
     r#"SELECT 
     stop.uid, 
     stop.name, 
-    ST_Y(position::geometry) as lat, 
-    ST_Y(position::geometry) as lng, 
+    ST_Y(position::geometry) as lat,
+    ST_X(position::geometry) as lng,
     stop."type", 
     (SELECT stop.uid FROM stop as s WHERE s.id = stop.parent_stop AND s.feed_id = stop.feed_id) as parent_stop, 
     stop_time.stop_sequence, 
