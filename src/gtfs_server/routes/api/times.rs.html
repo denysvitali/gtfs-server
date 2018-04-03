@@ -647,6 +647,21 @@
 <span id="590">590</span>
 <span id="591">591</span>
 <span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/times` related routes</span>
 
@@ -887,6 +902,7 @@
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dates</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">NaiveDate</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">times</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">NaiveTime</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i32_values</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">values</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">string_values</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ToSql</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
@@ -967,6 +983,20 @@
     <span class="kw">for</span> <span class="ident">val</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">dates</span> {
         <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">val</span>);
     }
+
+    <span class="ident">i32_values</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+
+    <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">stop_sequence</span>.<span class="ident">is_some</span>() {
+        <span class="ident">i32_values</span>.<span class="ident">push</span>(<span class="ident">time_search</span>.<span class="ident">stop_sequence</span>.<span class="ident">unwrap</span>());
+        <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
+        <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND stop_sequence = ${}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
+        <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
+    }
+
+    <span class="kw">for</span> <span class="ident">val</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">i32_values</span> {
+        <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">val</span>);
+    }
+
 
     <span class="ident">string_values</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
