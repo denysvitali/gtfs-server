@@ -14,7 +14,7 @@
           id="mainThemeStyle">
     
     <link rel="stylesheet" type="text/css" href="../../../../dark.css">
-    <link rel="stylesheet" type="text/css" href="../../../../main.css" id="themeStyle">
+    <link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle">
     <script src="../../../../storage.js"></script>
     
 
@@ -532,8 +532,8 @@
     <span class="string">r#&quot;SELECT 
     stop.uid, 
     stop.name, 
-    ST_Y(position::geometry) as lat, 
-    ST_Y(position::geometry) as lng, 
+    ST_Y(position::geometry) as lat,
+    ST_X(position::geometry) as lng,
     stop.&quot;type&quot;, 
     (SELECT stop.uid FROM stop as s WHERE s.id = stop.parent_stop AND s.feed_id = stop.feed_id) as parent_stop, 
     stop_time.stop_sequence, 

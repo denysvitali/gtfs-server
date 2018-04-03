@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `agency` fn in crate `gtfs_server`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, agency">
+    <meta name="description" content="API documentation for the Rust `static_rocket_route_info_for_url` static in crate `gtfs_server`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, static_rocket_route_info_for_url">
 
-    <title>gtfs_server::routes::api::import::agency - Rust</title>
+    <title>gtfs_server::routes::api::import::static_rocket_route_info_for_url - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../../../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css"
@@ -21,7 +21,7 @@
     
     
 </head>
-<body class="rustdoc fn">
+<body class="rustdoc static">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -34,7 +34,7 @@
     <nav class="sidebar">
         <div class="sidebar-menu">&#9776;</div>
         
-        <div class="sidebar-elems"><p class='location'><a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>import</a></p><script>window.sidebarCurrent = {name: 'agency', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+        <div class="sidebar-elems"><p class='location'><a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>import</a></p><script>window.sidebarCurrent = {name: 'static_rocket_route_info_for_url', ty: 'static', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
     </nav>
 
     <div class="theme-picker">
@@ -55,11 +55,16 @@
         </form>
     </nav>
 
-    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Function <a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>import</a>::<wbr><a class="fn" href=''>agency</a></span><span class='out-of-band'><span id='render-detail'>
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Static <a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>import</a>::<wbr><a class="static" href=''>static_rocket_route_info_for_url</a></span><span class='out-of-band'><span id='render-detail'>
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../../../../src/gtfs_server/routes/api/import.rs.html#27-36' title='goto source code'>[src]</a></span></h1><pre class='rust fn'>pub fn agency(rh: <a class="struct" href="https://api.rocket.rs/rocket/request/state/struct.State.html" title="struct rocket::request::state::State">State</a>&lt;<a class="struct" href="../../../../gtfs_server/routes/struct.RoutesHandler.html" title="struct gtfs_server::routes::RoutesHandler">RoutesHandler</a>&gt;, feed_id: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>) -&gt; <a class="struct" href="https://api.rocket.rs/rocket_contrib/json/struct.Json.html" title="struct rocket_contrib::json::Json">Json</a>&lt;<a class="struct" href="../../../../gtfs_server/models/api/successresult/struct.SuccessResult.html" title="struct gtfs_server::models::api::successresult::SuccessResult">SuccessResult</a>&gt;</pre></section>
+               </span><a class='srclink' href='../../../../src/gtfs_server/routes/api/import.rs.html#14' title='goto source code'>[src]</a></span></h1><pre class='rust static'>pub static static_rocket_route_info_for_url: <a class="struct" href="https://api.rocket.rs/rocket/codegen/struct.StaticRouteInfo.html" title="struct rocket::codegen::StaticRouteInfo">StaticRouteInfo</a><code> = </code><code>::rocket::StaticRouteInfo{method: ::rocket::http::Method::Get,
+                          path: &quot;/import/url/&lt;feed_url&gt;&quot;,
+                          handler: rocket_route_fn_url,
+                          format: None,
+                          rank: None,}</code></pre><div class='docblock'><p>Rocket code generated static route information structure.</p>
+</div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
