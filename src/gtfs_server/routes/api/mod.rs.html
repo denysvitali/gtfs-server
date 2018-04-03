@@ -95,6 +95,27 @@
 <span id="38">38</span>
 <span id="39">39</span>
 <span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
 </pre><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::{<span class="ident">NaiveTime</span>, <span class="ident">NaiveDate</span>};
@@ -113,6 +134,8 @@
 
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">main</span>() <span class="op">-&gt;</span> <span class="ident">content</span>::<span class="ident">Html</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;GIT_HASH&quot;</span>));
+    <span class="ident">s</span>.<span class="ident">truncate</span>(<span class="number">7</span>);
     <span class="kw">return</span> <span class="ident">content</span>::<span class="ident">Html</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">r#&quot;&lt;!DOCTYPE html&gt;
     &lt;html&gt;
     &lt;head&gt;
@@ -127,13 +150,32 @@
     &lt;body&gt;
         &lt;h1&gt;GTFS Server&lt;/h1&gt;
         &lt;p&gt;
-            Commit: &lt;a href=&quot;https://github.com/denysvitali/gtfs-server/commit/{0}&quot;&gt;{0}&lt;/a&gt; - {1}
+            Commit ({2} - {1}) {0}
         &lt;/p&gt;
+            &lt;table&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;
+                        GitHub
+                    &lt;/td&gt;
+                    &lt;td&gt;
+                        &lt;a href=&quot;https://github.com/denysvitali/gtfs-server/commit/{0}&quot;&gt;{2}&lt;/a&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;
+                        Gogs
+                    &lt;/td&gt;
+                    &lt;td&gt;
+                        &lt;a href=&quot;https://git.ded1.denv.it/shrug/gtfs-server/commit/{0}&quot;&gt;{2}&lt;/a&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/table&gt;
     &lt;/body&gt;
     &lt;/html&gt;
     &quot;#</span>,
-                   <span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;GIT_HASH&quot;</span>),
-                   <span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;BUILD_DATE&quot;</span>)
+        <span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;GIT_HASH&quot;</span>),
+        <span class="macro">env</span><span class="macro">!</span>(<span class="string">&quot;BUILD_DATE&quot;</span>),
+        <span class="ident">s</span>
     ));
 }</pre>
 </section>
