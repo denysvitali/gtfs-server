@@ -85,6 +85,7 @@ fn start_server(rh : RoutesHandler) {
         api::trips::trips,
         api::trips::trips_stopid,
         api::trips::trip,
+        api::trips::trips_by_query,
         api::times::times_trip,
         api::times::times_stop,
         api::times::times_stop_query

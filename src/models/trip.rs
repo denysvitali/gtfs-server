@@ -11,7 +11,8 @@ pub struct Trip {
     trip_id : String,
     pub short_name : String,
     pub direction_id: i32,
-    pub stop_sequence: Vec<StopTrip>,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub stop_sequence: Option<Vec<StopTrip>>,
     #[serde(skip_serializing)]
     feed_id: String
 }
@@ -32,7 +33,7 @@ impl Trip {
             headsign,
             short_name,
             direction_id,
-            stop_sequence: vec!(),
+            stop_sequence: Some(vec!()),
             feed_id: String::new()
         }
     }

@@ -16,6 +16,7 @@ use super::super::Pool;
 use super::super::PostgresConnectionManager;
 
 use postgres::rows::Row;
+use models::api::search::route::RouteSearch;
 
 /// `/routes`  
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
@@ -43,6 +44,54 @@ pub fn routes(rh: State<RoutesHandler>) -> Json<ResultArray<Route>>{
         }
     })
 }
+
+/// `/routes?query`
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[Route](../../../models/route/struct.Route.html)>
+
+/*
+// TODO: Implement Route Search by RouteSearch query
+
+#[get("/routes?<route_search>")]
+pub fn routes_by_query(rh: State<RoutesHandler>, route_search: RouteSearch) -> Json<ResultArray<Route>>{
+
+    let result : Vec<Route> = get_routes_by_query(&route_search, &rh.pool);
+
+    let query = "SELECT * FROM route LIMIT 50";
+    let conn = rh.pool.clone().get().unwrap();
+    let routes = conn.query(
+        query,
+        &[]
+    );
+    let mut routes_result: Vec<Route> = Vec::new();
+
+    for row in routes.expect("Query failed").iter() {
+        let route = parse_route_row(&row, &rh);
+        routes_result.push(route);
+    }
+
+    Json(ResultArray{
+        result: Some(routes_result),
+        meta: Meta {
+            success: true,
+            error: Option::None
+        }
+    })
+}
+
+fn get_routes_by_query(route_search: &RouteSearch, pool: &Pool<PostgresConnectionManager>){
+    let mut query = String::from("SELECT * FROM route LIMIT 50");
+    let mut addition : String;
+    let mut values : Vec<&str> = Vec::new();
+    let mut i = 1;
+
+    if route_search.stops_visited.is_some() {
+        values.push(route_search.stops_visited.as_ref().unwrap());
+        i+= 1;
+        addition = format!(" AND )
+    }
+}
+*/
 
 /// `/routes/<route_uid>`  
 /// Gets the specified [Route](../../../models/route/struct.Route.html) by its UID,
