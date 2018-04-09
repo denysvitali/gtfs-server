@@ -387,11 +387,13 @@ fn get_stop_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager>) -> Ve
     stop_time.pickup_type,
     stop_time.arrival_time, 
     stop_time.departure_time 
-    FROM stop_time 
-    INNER JOIN stop ON stop.id = stop_time.stop_id 
-    WHERE stop_time.trip_id = (SELECT trip.trip_id FROM trip WHERE trip.uid = $1 AND trip.feed_id = stop_time.feed_id) 
+    FROM stop_time, stop
+    WHERE stop.id = stop_time.stop_id
+    AND stop_time.trip_id = (SELECT trip.trip_id FROM trip WHERE trip.uid = $1 AND trip.feed_id = stop.feed_id) 
     AND stop.feed_id = stop_time.feed_id 
     ORDER BY stop_sequence ASC"#;
+
+    println!("Query (trip_uid = {}): {}", trip_uid, query);
     
     let connection = pool.clone().get().unwrap();
     let stop_trips = connection.query(

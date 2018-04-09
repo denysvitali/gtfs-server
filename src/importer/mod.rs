@@ -587,4 +587,8 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
     .expect("Add calendar index");
     conn.execute("CREATE INDEX trip_feed_id_idx ON public.trip (feed_id,trip_id);", &[])
     .expect("Add trip index");
+    conn.execute("CREATE INDEX stop_time_trip_id_idx ON public.stop_time (trip_id,feed_id);", &[])
+    .expect("Add stop_time index 2");
+    conn.execute("CREATE INDEX stop_time_trip_id_feed_idx ON public.stop_time (trip_id,stop_id,feed_id);", &[])
+    .expect("Add stop_time index 3");
 }
