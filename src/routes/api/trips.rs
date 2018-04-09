@@ -389,7 +389,7 @@ fn get_stop_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager>) -> Ve
     stop_time.departure_time 
     FROM stop_time 
     INNER JOIN stop ON stop.id = stop_time.stop_id 
-    WHERE stop_time.trip_id = (SELECT trip.trip_id FROM trip WHERE trip.uid = $1) 
+    WHERE stop_time.trip_id = (SELECT trip.trip_id FROM trip WHERE trip.uid = $1 AND trip.feed_id = stop_time.feed_id) 
     AND stop.feed_id = stop_time.feed_id 
     ORDER BY stop_sequence ASC"#;
     

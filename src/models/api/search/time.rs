@@ -7,7 +7,7 @@ use models::dropoff::DropOff;
 use super::ascdesc::AscDesc;
 
 
-#[derive(FromForm,Serialize,Deserialize)]
+#[derive(FromForm,Serialize,Deserialize,Default)]
 pub struct TimeSearch {
     pub date: Option<String>,
     pub service_uid: Option<String>,
@@ -27,7 +27,10 @@ pub struct TimeSearch {
     pub drop_off_type: Option<String>,
     pub stop_sequence: Option<i32>,
     pub sort_by: Option<String>, // TODO: Switch to TimeSort later (https://github.com/SergioBenitez/Rocket/issues/16)
-    pub sort_order: Option<String> // TODO: Switch to AscDesc, see above
+    pub sort_order: Option<String>, // TODO: Switch to AscDesc, see above
+    pub stop: Option<String>,
+    pub route: Option<String>,
+    pub trip: Option<String>
 }
 
 #[derive(Serialize,Deserialize,FromPrimitive, ToPrimitive)]

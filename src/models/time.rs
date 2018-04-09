@@ -15,6 +15,7 @@ pub struct Time {
     pub stop_sequence: i32,
     pub pickup_type: PickUp,
     pub drop_off_type: DropOff,
+    pub route_id: String,
     pub service_days: Vec<bool>,
     pub service_uid: String,
     pub start_date: NaiveDate,

@@ -556,7 +556,7 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
     )", &[]).expect("Cannot create table \"calendar\"");
 
 
-    // Create Indexes
+    // Create FKs
     conn.execute("ALTER TABLE public.stop_time
         ADD CONSTRAINT stop_time_stop_fk
         FOREIGN KEY (stop_id,feed_id)
@@ -574,4 +574,17 @@ pub fn create_tables(pool : &Pool<PostgresConnectionManager>){
         FOREIGN KEY (service_id,feed_id) \
         REFERENCES public.calendar(service_id,feed_id);", &[])
         .expect("Add stop_time constraints");
+
+
+    // Create Indexes
+    conn.execute("CREATE INDEX stop_time_stop_id_idx ON public.stop_time (stop_id);", &[])
+    .expect("Add stop_time index");
+    conn.execute("CREATE UNIQUE INDEX stop_id_idx ON public.stop (id,feed_id);", &[])
+    .expect("Add stop index");
+    conn.execute("CREATE UNIQUE INDEX route_id_idx ON public.route (id,feed_id);", &[])
+    .expect("Add route index");
+    conn.execute("CREATE UNIQUE INDEX calendar_service_id_idx ON public.calendar (service_id,feed_id);", &[])
+    .expect("Add calendar index");
+    conn.execute("CREATE INDEX trip_feed_id_idx ON public.trip (feed_id,trip_id);", &[])
+    .expect("Add trip index");
 }
