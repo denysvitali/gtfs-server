@@ -246,16 +246,20 @@ pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArr
 pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>>{
     let query =
         "SELECT \
-        uid,\
-        route_id,\
-        service_id,\
-        trip_id,\
-        headsign,\
-        short_name,\
-        direction_id,\
-        feed_id \
-        FROM trip \
-        WHERE uid = $1";
+        trip.uid,\
+        route.uid,\
+        calendar.uid,\
+        trip.trip_id,\
+        trip.headsign,\
+        trip.short_name,\
+        trip.direction_id,\
+        trip.feed_id \
+        FROM trip, route, calendar \
+        WHERE trip.uid = $1 AND \
+        route.feed_id = trip.feed_id AND \
+        calendar.feed_id = trip.feed_id AND \
+        route.id = trip.route_id AND \
+        calendar.service_id = trip.service_id";
 
     let conn = rh.pool.clone().get().unwrap();
     let trips = conn.query(
@@ -288,6 +292,78 @@ pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>>{
 
     let result = Result::<Trip> {
         result: Some(trip),
+        meta: Meta {
+            success: true,
+            error: Option::None
+        }
+    };
+
+    Json(result)
+}
+
+/// `/trips/by-route/<route_uid>`, returns the [Trip](../../../models/trip/struct.Trip.html)s associated
+/// to the specified [Route](../../../models/trip/struct.Route.html) UID, parametrized as `<route_uid>`.
+/// Returns a [Result](../../../models/api/result/struct.Result.html)
+/// <[Trip](../../../models/trip/struct.Trip.html)>
+#[get("/trips/by-route/<route_uid>")]
+pub fn trip_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<ResultArray<Trip>>{
+    let query =
+        "SELECT \
+        trip.uid, \
+        route.uid, \
+        calendar.uid, \
+        trip.trip_id, \
+        trip.headsign, \
+        trip.short_name, \
+        trip.direction_id, \
+        trip.feed_id \
+        FROM trip, route, calendar \
+        WHERE route.uid = $1 AND \
+        trip.route_id = route.id AND \
+        trip.feed_id = route.feed_id AND \
+        calendar.feed_id = trip.feed_id AND \
+        calendar.service_id = trip.service_id
+        LIMIT 50";
+
+    let conn = rh.pool.clone().get().unwrap();
+    let trips = conn.query(
+        query,
+        &[
+            &route_uid
+        ]
+    );
+
+    let trips = &trips.unwrap();
+
+    if trips.len() == 0 {
+        return Json(ResultArray::<Trip> {
+            result: Option::None,
+            meta: Meta {
+                success: false,
+                error: Some(Error {
+                    code: 1,
+                    message: String::from("Trip not found")
+                })
+            }
+        });
+    }
+
+    let mut trips_result : Vec<Trip> = Vec::new();
+
+
+    for trip_row in trips {
+        let sequence : Vec<StopTrip>;
+        let mut trip = parse_trip_row(&trip_row);
+        let trip_uid = trip.uid.clone();
+        sequence = get_stop_trip(String::from(trip_uid), &rh.pool);
+        trip.stop_sequence = Some(sequence);
+
+        trips_result.push(trip);
+    }
+    
+
+    let result = ResultArray::<Trip> {
+        result: Some(trips_result),
         meta: Meta {
             success: true,
             error: Option::None
