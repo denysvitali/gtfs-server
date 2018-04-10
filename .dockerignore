@@ -1,0 +1,5 @@
+*.sql
+*.zip
+*.tar.gz
+target/
+resources/
