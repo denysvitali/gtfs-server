@@ -37,8 +37,6 @@ extern crate serde_derive;
 extern crate num_derive;
 
 fn create_pool() -> Pool<PostgresConnectionManager> {
-    let mut os_str : Option<OsString>;
-    let mut os : &OsString;
     let mut hostname = "172.18.0.2";
     let mut password = String::from("mysecretpassword");
 
