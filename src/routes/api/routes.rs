@@ -18,6 +18,9 @@ use super::super::PostgresConnectionManager;
 use postgres::rows::Row;
 use models::api::search::route::RouteSearch;
 
+use postgres::types::ToSql;
+use std::str::Split;
+
 /// `/routes`  
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[Route](../../../models/route/struct.Route.html)>
@@ -54,23 +57,10 @@ pub fn routes(rh: State<RoutesHandler>) -> Json<ResultArray<Route>>{
 #[get("/routes?<route_search>")]
 pub fn routes_by_query(rh: State<RoutesHandler>, route_search: RouteSearch) -> Json<ResultArray<Route>>{
 
-    let result : Vec<Route> = get_routes_by_query(&route_search, &rh.pool);
-
-    let query = "SELECT * FROM route LIMIT 50";
-    let conn = rh.pool.clone().get().unwrap();
-    let routes = conn.query(
-        query,
-        &[]
-    );
-    let mut routes_result: Vec<Route> = Vec::new();
-
-    for row in routes.expect("Query failed").iter() {
-        let route = parse_route_row(&row, &rh);
-        routes_result.push(route);
-    }
+    let result : Vec<Route> = get_routes_by_query(&rh, &route_search, &rh.pool);
 
     Json(ResultArray{
-        result: Some(routes_result),
+        result: Some(result),
         meta: Meta {
             success: true,
             error: Option::None
@@ -78,17 +68,74 @@ pub fn routes_by_query(rh: State<RoutesHandler>, route_search: RouteSearch) -> J
     })
 }
 
-fn get_routes_by_query(route_search: &RouteSearch, pool: &Pool<PostgresConnectionManager>) -> Vec<Route> {
-    let mut query = String::from("SELECT * FROM route LIMIT 50");
+fn get_routes_by_query(rh: &State<RoutesHandler>, route_search: &RouteSearch, pool: &Pool<PostgresConnectionManager>) -> Vec<Route> {
+    let mut query = String::from("SELECT 
+    route.uid, route.id, route.agency, route.short_name,
+    route.long_name, route.description, route.type, route.feed_id
+     FROM route ");
     let mut addition : String;
-    let mut values : Vec<&str> = Vec::new();
-    let mut i = 1;
+    let mut values : Vec<String> = Vec::new();
+    let mut params: Vec<&ToSql> = Vec::new();
+    let mut i = 0;
     let mut result : Vec<Route> = Vec::new();
 
     if route_search.stops_visited.is_some() {
-        values.push(route_search.stops_visited.as_ref().unwrap());
-        i+= 1;
-        addition = format!(" AND ");
+        println!("Got stops_visited");
+        addition = format!(
+        ", trip, stop_time WHERE route.id = trip.route_id
+        AND route.feed_id = trip.feed_id
+        AND stop_time.feed_id = route.feed_id
+        AND stop_time.trip_id = trip.trip_id
+        AND stop_time.stop_id IN 
+        (
+            SELECT stop.id FROM stop WHERE stop.uid IN (");
+        
+        query.push_str(&addition);
+        
+        let stops : Vec<&str> = route_search.stops_visited.as_ref().unwrap().split(",").collect();
+        let mut first = true;
+        for stop in stops {
+            println!("Stop {} ", stop);
+            i+= 1;
+            if first {
+                first = false;
+            } else {
+                query.push_str(", ");
+            }
+
+            addition = format!("${}", &i);
+            first = false;
+            values.push(String::from(stop));
+            query.push_str(&addition);
+        }
+
+        query.push_str(
+        ")
+        )");
+    }
+
+
+    addition = format!(" GROUP BY (route.uid, route.id, route.agency, route.short_name,
+    route.long_name, route.description, route.type, route.feed_id) LIMIT 50");
+    query.push_str(&addition);
+
+    println!("{}", query);
+    for value in &values {
+        params.push(value);
+    }
+
+    let conn = pool.clone().get().unwrap();
+    let times = conn.query(
+        &query, &params.as_slice()
+    );
+
+    println!("{:?}", params.as_slice());
+
+    let mut result : Vec<Route> = Vec::new();
+
+    for row in times.expect("Query failed").iter() {
+        let route = parse_route_row(&row, &rh);
+        result.push(route);
     }
 
     result

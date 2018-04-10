@@ -76,6 +76,7 @@ fn start_server(rh : RoutesHandler) {
         api::import::times,
         api::agency::agency_by_id,
         api::routes::routes,
+        api::routes::routes_by_query,
         api::routes::route_by_stop_uid,
         api::routes::route_by_id,
         api::stops::stops,
