@@ -4,7 +4,7 @@ node {
     }
 
     stage('Build Image'){
-        def customImage = docker.build("dvitali/gtfs-server:latest", "--pull")
+        def customImage = docker.build("--pull", "dvitali/gtfs-server:latest")
     }
 
     stage('Push Image') {
