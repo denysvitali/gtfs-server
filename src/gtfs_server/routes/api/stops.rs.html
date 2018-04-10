@@ -442,6 +442,9 @@
 <span id="385">385</span>
 <span id="386">386</span>
 <span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/stops` related routes</span>
 
@@ -465,6 +468,8 @@
 <span class="kw">use</span> <span class="ident">rocket</span>::<span class="ident">response</span>::<span class="ident">content</span>;
 
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">coordinate</span>::<span class="ident">Coordinate</span>;
+
+<span class="kw">static</span> <span class="ident">GMAPS_API_KEY</span> : <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;AIzaSyAvtzzsAPAlOrK8JbGfXfHMt18MbqCqrj4&quot;</span>;
 
 <span class="doccomment">/// `/stops`  </span>
 <span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)&lt;[Stop](../../../models/stop/struct.Stop.html)&gt;</span>
@@ -825,10 +830,11 @@
 
     
     <span class="macro">format</span><span class="macro">!</span>(<span class="string">r#&quot;
-    &lt;img src=&quot;https://maps.googleapis.com/maps/api/staticmap?center={0},{1}&amp;zoom=16&amp;scale=1&amp;size=600x300&amp;maptype=roadmap&amp;format=png&amp;visual_refresh=true&amp;markers=size:mid%7Ccolor:0x009fff%7Clabel:A%7C{0},{1}&quot;&gt;
-    &lt;img src=&quot;https://maps.googleapis.com/maps/api/staticmap?center={2},{3}&amp;zoom=16&amp;scale=1&amp;size=600x300&amp;maptype=roadmap&amp;format=png&amp;visual_refresh=true&amp;markers=size:mid%7Ccolor:0x009fff%7Clabel:B%7C{2},{3}&quot;&gt;&quot;#</span>, 
+    &lt;img src=&quot;https://maps.googleapis.com/maps/api/staticmap?center={0},{1}&amp;zoom=16&amp;scale=1&amp;size=600x300&amp;maptype=roadmap&amp;format=png&amp;visual_refresh=true&amp;markers=size:mid%7Ccolor:0x009fff%7Clabel:A%7C{0},{1}&amp;key={4}&quot;&gt;
+    &lt;img src=&quot;https://maps.googleapis.com/maps/api/staticmap?center={2},{3}&amp;zoom=16&amp;scale=1&amp;size=600x300&amp;maptype=roadmap&amp;format=png&amp;visual_refresh=true&amp;markers=size:mid%7Ccolor:0x009fff%7Clabel:B%7C{2},{3}&amp;key={4}&quot;&gt;&quot;#</span>, 
     <span class="ident">p1</span>.<span class="ident">lat</span>, <span class="ident">p1</span>.<span class="ident">lng</span>,
-    <span class="ident">p2</span>.<span class="ident">lat</span>, <span class="ident">p2</span>.<span class="ident">lng</span>)
+    <span class="ident">p2</span>.<span class="ident">lat</span>, <span class="ident">p2</span>.<span class="ident">lng</span>,
+    <span class="ident">GMAPS_API_KEY</span>)
 }</pre>
 </section>
     <section id='search' class="content hidden"></section>
