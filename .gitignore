@@ -5,3 +5,4 @@ resources/gtfs/*
 *.iml
 .idea/
 *.sql
+*.fmt
