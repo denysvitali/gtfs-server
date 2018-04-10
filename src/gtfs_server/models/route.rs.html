@@ -76,7 +76,7 @@
 <span class="doccomment">//! Route related structs and implementations</span>
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">agency</span>::<span class="ident">Agency</span>;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>,<span class="ident">Serialize</span>,<span class="ident">Deserialize</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Route</span> {
     <span class="kw">pub</span> <span class="ident">uid</span>: <span class="ident">String</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing</span>)]</span>
@@ -85,11 +85,12 @@
     <span class="kw">pub</span> <span class="ident">short_name</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">long_name</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">description</span>: <span class="ident">String</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span><span class="op">=</span><span class="string">&quot;type&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;type&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">route_type</span>: <span class="ident">i32</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">feed_id</span>: <span class="ident">String</span>
-}</pre>
+    <span class="kw">pub</span> <span class="ident">feed_id</span>: <span class="ident">String</span>,
+}
+</pre>
 </section>
     <section id='search' class="content hidden"></section>
 

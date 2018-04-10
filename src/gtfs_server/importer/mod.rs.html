@@ -649,20 +649,37 @@
 <span id="592">592</span>
 <span id="593">593</span>
 <span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
 </pre><pre class="rust ">
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">csv</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">crypto</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">chrono</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">regex</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">crypto</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">csv</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">r2d2</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">r2d2_postgres</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">regex</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">reqwest</span>;
 
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde</span>;
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde_json</span>;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">serde</span>::<span class="ident">Deserializer</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">serde</span>::<span class="ident">de</span> <span class="kw">as</span> <span class="ident">serde_de</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">serde</span>::<span class="ident">Deserializer</span>;
 
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">crypto</span>::<span class="ident">digest</span>::<span class="ident">Digest</span>;
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">crypto</span>::<span class="ident">sha2</span>::<span class="ident">Sha256</span>;
@@ -672,30 +689,27 @@
 
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">regex</span>::<span class="ident">Regex</span>;
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
-<span class="kw">use</span> <span class="ident">r2d2_postgres</span>::{<span class="ident">TlsMode</span>, <span class="ident">PostgresConnectionManager</span>};
 <span class="kw">use</span> <span class="ident">r2d2</span>::<span class="ident">Pool</span>;
+<span class="kw">use</span> <span class="ident">r2d2_postgres</span>::{<span class="ident">PostgresConnectionManager</span>, <span class="ident">TlsMode</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">chrono</span>::{<span class="ident">NaiveDate</span>,<span class="ident">NaiveTime</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">chrono</span>::{<span class="ident">NaiveDate</span>, <span class="ident">NaiveTime</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">thread</span>;
 
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">agency</span>::<span class="ident">AgencyCSV</span>;
+<span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">calendar</span>::<span class="ident">CalendarCSV</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">feed</span>::<span class="ident">FeedCSV</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">route</span>::<span class="ident">RouteCSV</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">stop</span>::<span class="ident">StopCSV</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">stoptime</span>::<span class="ident">StopTimeCSV</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">trip</span>::<span class="ident">TripCSV</span>;
-<span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">calendar</span>::<span class="ident">CalendarCSV</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Read</span>;
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">download_feed</span>(<span class="ident">feed_url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>){
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">download_feed</span>(<span class="ident">feed_url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
     <span class="comment">// Download feed from URL</span>
     <span class="comment">// Example:  https://opentransportdata.swiss/en/dataset/timetable-2018-gtfs/permalink</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">resp</span> <span class="op">=</span> <span class="ident">reqwest</span>::<span class="ident">get</span>(<span class="ident">feed_url</span>);
     <span class="comment">//resp.</span>
-
-
-
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_agency</span>(<span class="ident">feed_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
@@ -704,11 +718,12 @@
 
     <span class="kw">for</span> <span class="ident">result</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">deserialize</span>() {
         <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">feed_clone</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>).<span class="ident">to_owned</span>();
+        <span class="kw">let</span> <span class="ident">feed_clone</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>).<span class="ident">to_owned</span>();
         <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
-            <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(<span class="string">&quot;INSERT INTO agency \
-                (uid, id, name, url, timezone, lang, phone, feed_id)\
-                VALUES($1, $2, $3, $4, $5, $6, $7, $8)&quot;</span>
+            <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(
+                <span class="string">&quot;INSERT INTO agency \
+                 (uid, id, name, url, timezone, lang, phone, feed_id)\
+                 VALUES($1, $2, $3, $4, $5, $6, $7, $8)&quot;</span>,
             ).<span class="ident">expect</span>(<span class="string">&quot;Unable to create statement&quot;</span>);
 
             <span class="kw">let</span> <span class="ident">record</span>: <span class="ident">AgencyCSV</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
@@ -716,7 +731,7 @@
             <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">generate_uid</span>(
                 <span class="string">&quot;a&quot;</span>,
                 <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">record</span>.<span class="ident">agency_id</span>, <span class="ident">feed_clone</span>),
-                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">agency_name</span>
+                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">agency_name</span>,
             );
 
             <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">record</span>.<span class="ident">agency_id</span>);
@@ -728,77 +743,74 @@
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">agency_timezone</span>,
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">agency_lang</span>,
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">agency_phone</span>,
-                <span class="kw-2">&amp;</span><span class="ident">feed_clone</span>
+                <span class="kw-2">&amp;</span><span class="ident">feed_clone</span>,
             ]).<span class="ident">expect</span>(<span class="string">&quot;Unable to add agency&quot;</span>);
         });
     }
 }
 
-<span class="kw">fn</span> <span class="ident">generate_uid</span>(<span class="ident">identifier</span> : <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">fields</span> : <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">name</span> : <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
+<span class="kw">fn</span> <span class="ident">generate_uid</span>(<span class="ident">identifier</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">fields</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sha</span> <span class="op">=</span> <span class="ident">Sha256</span>::<span class="ident">new</span>();
     <span class="ident">sha</span>.<span class="ident">input_str</span>(<span class="ident">fields</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stopsha</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">sha</span>.<span class="ident">result_str</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stopsha</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">sha</span>.<span class="ident">result_str</span>();
     <span class="kw-2">&amp;</span><span class="ident">stopsha</span>.<span class="ident">truncate</span>(<span class="number">6</span>);
 
     <span class="kw">let</span> <span class="ident">re</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;[^A-Za-z0-9]&quot;</span>).<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">name_stripped</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;\s&quot;</span>)
-        .<span class="ident">unwrap</span>()
-        .<span class="ident">replace_all</span>(<span class="ident">name</span>, <span class="string">&quot;&quot;</span>);
+    <span class="kw">let</span> <span class="ident">name_stripped</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;\s&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">replace_all</span>(<span class="ident">name</span>, <span class="string">&quot;&quot;</span>);
     <span class="kw">let</span> <span class="ident">name_stripped</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;[(),.-]&quot;</span>)
         .<span class="ident">unwrap</span>()
         .<span class="ident">replace_all</span>(<span class="kw-2">&amp;</span><span class="ident">name_stripped</span>, <span class="string">&quot;&quot;</span>);
-    <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">re</span>
-        .<span class="ident">replace_all</span>(<span class="kw-2">&amp;</span><span class="ident">name_stripped</span>, <span class="string">&quot;-&quot;</span>)
+    <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">re</span>.<span class="ident">replace_all</span>(<span class="kw-2">&amp;</span><span class="ident">name_stripped</span>, <span class="string">&quot;-&quot;</span>)
         .<span class="ident">to_owned</span>()
         .<span class="ident">to_lowercase</span>();
     <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}-{}-{}&quot;</span>, <span class="ident">identifier</span>, <span class="kw-2">&amp;</span><span class="ident">stopsha</span>, <span class="ident">uid</span>);
     <span class="ident">uid</span>
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_stops</span>(<span class="ident">feed_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>){
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_stops</span>(<span class="ident">feed_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File</span>::<span class="ident">open</span>(<span class="ident">path</span>).<span class="ident">expect</span>(<span class="string">&quot;File not found&quot;</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rdr</span> <span class="op">=</span> <span class="ident">csv</span>::<span class="ident">Reader</span>::<span class="ident">from_reader</span>(<span class="ident">f</span>);
     <span class="kw">for</span> <span class="ident">result</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">deserialize</span>() {
         <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">feed_clone</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>).<span class="ident">to_owned</span>();
+        <span class="kw">let</span> <span class="ident">feed_clone</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>).<span class="ident">to_owned</span>();
 
         <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
             <span class="kw">let</span> <span class="ident">record</span>: <span class="ident">StopCSV</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(<span class="string">&quot;INSERT INTO stop\
-                (uid, id, name, position, type, parent_stop, feed_id)\
-                VALUES ($1, $2, $3, ST_GeographyFromText($4), $5, $6, $7)\
-                ON CONFLICT DO NOTHING&quot;</span>
+            <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(
+                <span class="string">&quot;INSERT INTO stop\
+                 (uid, id, name, position, type, parent_stop, feed_id)\
+                 VALUES ($1, $2, $3, ST_GeographyFromText($4), $5, $6, $7)\
+                 ON CONFLICT DO NOTHING&quot;</span>,
             ).<span class="ident">expect</span>(<span class="string">&quot;Unable to create statement&quot;</span>);
 
             <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">generate_uid</span>(
                 <span class="string">&quot;s&quot;</span>,
                 <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}{}&quot;</span>, <span class="ident">feed_clone</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">stop_name</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">stop_id</span>),
-                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">stop_name</span>
+                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">stop_name</span>,
             );
 
             <span class="ident">stmt</span>.<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[
                 <span class="kw-2">&amp;</span><span class="ident">uid</span>,
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">stop_id</span>,
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">stop_name</span>,
-                <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;SRID=4326;POINT({} {})&quot;</span>,
-                    <span class="ident">record</span>.<span class="ident">stop_lon</span>, <span class="ident">record</span>.<span class="ident">stop_lat</span>),
+                <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;SRID=4326;POINT({} {})&quot;</span>, <span class="ident">record</span>.<span class="ident">stop_lon</span>, <span class="ident">record</span>.<span class="ident">stop_lat</span>),
                 <span class="kw-2">&amp;</span>(<span class="kw">match</span> <span class="ident">record</span>.<span class="ident">location_type</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
                     <span class="prelude-val">Ok</span>(<span class="ident">val</span>) <span class="op">=&gt;</span> <span class="ident">val</span>,
-                    <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=&gt;</span> <span class="number">0</span>
+                    <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=&gt;</span> <span class="number">0</span>,
                 }),
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">parent_station</span>,
-                <span class="kw-2">&amp;</span><span class="ident">feed_clone</span>
+                <span class="kw-2">&amp;</span><span class="ident">feed_clone</span>,
             ]).<span class="ident">expect</span>(<span class="string">&quot;Cannot add stop&quot;</span>);
         });
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_routes</span>(<span class="ident">feed_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>){
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_routes</span>(<span class="ident">feed_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File</span>::<span class="ident">open</span>(<span class="ident">path</span>).<span class="ident">expect</span>(<span class="string">&quot;File not found&quot;</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rdr</span> <span class="op">=</span> <span class="ident">csv</span>::<span class="ident">Reader</span>::<span class="ident">from_reader</span>(<span class="ident">f</span>);
     <span class="kw">for</span> <span class="ident">result</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">deserialize</span>() {
         <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">feed_clone</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>).<span class="ident">to_owned</span>();
+        <span class="kw">let</span> <span class="ident">feed_clone</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>).<span class="ident">to_owned</span>();
 
         <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
             <span class="kw">let</span> <span class="ident">record</span>: <span class="ident">RouteCSV</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
@@ -806,50 +818,47 @@
                 <span class="string">&quot;INSERT INTO route (uid, id, agency, short_name, long_name, description, type, feed_id)\
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)&quot;</span>
             ).<span class="ident">expect</span>(<span class="string">&quot;Unable to create statement&quot;</span>);
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Route ID {}, {}, {} ({})&quot;</span>,
-                <span class="ident">record</span>.<span class="ident">route_id</span>,
-                <span class="ident">record</span>.<span class="ident">route_short_name</span>,
-                <span class="ident">record</span>.<span class="ident">route_long_name</span>,
-                <span class="ident">record</span>.<span class="ident">route_type</span>
+            <span class="macro">println</span><span class="macro">!</span>(
+                <span class="string">&quot;Route ID {}, {}, {} ({})&quot;</span>,
+                <span class="ident">record</span>.<span class="ident">route_id</span>, <span class="ident">record</span>.<span class="ident">route_short_name</span>, <span class="ident">record</span>.<span class="ident">route_long_name</span>, <span class="ident">record</span>.<span class="ident">route_type</span>
             );
 
             <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">generate_uid</span>(
                 <span class="string">&quot;r&quot;</span>,
                 <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">record</span>.<span class="ident">route_id</span>, <span class="ident">feed_clone</span>),
-                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">route_short_name</span>
+                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">route_short_name</span>,
             );
 
             <span class="ident">stmt</span>.<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[
                 <span class="kw-2">&amp;</span><span class="ident">uid</span>,
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">route_id</span>,
-                <span class="kw-2">&amp;</span>(
-                    <span class="kw">match</span> <span class="ident">record</span>.<span class="ident">agency_id</span>.<span class="ident">is_empty</span>() {
-                        <span class="bool-val">true</span> <span class="op">=&gt;</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
-                        <span class="bool-val">false</span> <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">record</span>.<span class="ident">agency_id</span>)
-                    }
-                ),
+                <span class="kw-2">&amp;</span>(<span class="kw">match</span> <span class="ident">record</span>.<span class="ident">agency_id</span>.<span class="ident">is_empty</span>() {
+                    <span class="bool-val">true</span> <span class="op">=&gt;</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+                    <span class="bool-val">false</span> <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">record</span>.<span class="ident">agency_id</span>),
+                }),
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">route_short_name</span>,
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">route_long_name</span>,
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">route_desc</span>,
                 <span class="kw-2">&amp;</span>(<span class="kw">match</span> <span class="ident">record</span>.<span class="ident">route_type</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> {<span class="ident">v</span>},
-                    <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=&gt;</span> {<span class="number">0</span>}   
+                    <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="ident">v</span>,
+                    <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=&gt;</span> <span class="number">0</span>,
                 }),
-                <span class="kw-2">&amp;</span><span class="ident">feed_clone</span>
+                <span class="kw-2">&amp;</span><span class="ident">feed_clone</span>,
             ]).<span class="ident">expect</span>(<span class="string">&quot;Unable to insert route&quot;</span>);
         });
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_trips</span>(<span class="ident">feed_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>){
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_trips</span>(<span class="ident">feed_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File</span>::<span class="ident">open</span>(<span class="ident">path</span>).<span class="ident">expect</span>(<span class="string">&quot;File not found&quot;</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rdr</span> <span class="op">=</span> <span class="ident">csv</span>::<span class="ident">Reader</span>::<span class="ident">from_reader</span>(<span class="ident">f</span>);
     <span class="kw">for</span> <span class="ident">result</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">deserialize</span>() {
         <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">feed_clone</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>).<span class="ident">to_owned</span>();
+        <span class="kw">let</span> <span class="ident">feed_clone</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>).<span class="ident">to_owned</span>();
 
         <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
-            <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(<span class="string">&quot;INSERT INTO trip (\
+            <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(
+                <span class="string">&quot;INSERT INTO trip (\
                     uid,
                     route_id,
                     service_id,
@@ -859,14 +868,17 @@
                     direction_id,
                     feed_id
                 )\
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)&quot;</span>
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)&quot;</span>,
             ).<span class="ident">expect</span>(<span class="string">&quot;Unable to create statement&quot;</span>);
             <span class="kw">let</span> <span class="ident">record</span>: <span class="ident">TripCSV</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
 
             <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">generate_uid</span>(
                 <span class="string">&quot;t&quot;</span>,
-                <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}{}&quot;</span>, <span class="ident">feed_clone</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">trip_short_name</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">trip_id</span>),
-                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">trip_headsign</span>
+                <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(
+                    <span class="string">&quot;{}{}{}&quot;</span>,
+                    <span class="ident">feed_clone</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">trip_short_name</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">trip_id</span>
+                ),
+                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">trip_headsign</span>,
             );
 
             <span class="ident">stmt</span>.<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[
@@ -877,23 +889,24 @@
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">trip_headsign</span>,
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">trip_short_name</span>,
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">direction_id</span>,
-                <span class="kw-2">&amp;</span><span class="ident">feed_clone</span>
+                <span class="kw-2">&amp;</span><span class="ident">feed_clone</span>,
             ]).<span class="ident">expect</span>(<span class="string">&quot;Unable to parse trip&quot;</span>);
         });
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_stop_times</span>(<span class="ident">feed_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>){
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_stop_times</span>(<span class="ident">feed_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File</span>::<span class="ident">open</span>(<span class="ident">path</span>).<span class="ident">expect</span>(<span class="string">&quot;File not found&quot;</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">BufReader</span>::<span class="ident">new</span>(<span class="ident">f</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rdr</span> <span class="op">=</span> <span class="ident">csv</span>::<span class="ident">Reader</span>::<span class="ident">from_reader</span>(<span class="ident">reader</span>);
     <span class="kw">for</span> <span class="ident">result</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">byte_records</span>() {
         <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">feed_clone</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>).<span class="ident">to_owned</span>();
-        
+        <span class="kw">let</span> <span class="ident">feed_clone</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>).<span class="ident">to_owned</span>();
+
         <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
-            <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(<span class="string">&quot;INSERT INTO stop_time (\
+            <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(
+                <span class="string">&quot;INSERT INTO stop_time (\
                     trip_id,
                     arrival_time,
                     departure_time,
@@ -903,7 +916,7 @@
                     drop_off_type,
                     feed_id
                 )\
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING&quot;</span>
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING&quot;</span>,
             ).<span class="ident">expect</span>(<span class="string">&quot;Unable to create statement&quot;</span>);
 
             <span class="kw">let</span> <span class="ident">re</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;^(\d{2}):(\d{2}):(\d{2})$&quot;</span>).<span class="ident">unwrap</span>();
@@ -916,46 +929,45 @@
 
             <span class="kw">if</span> <span class="op">!</span><span class="ident">re</span>.<span class="ident">is_match</span>(<span class="ident">dt</span>) {
                 <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Invalid departure time!&quot;</span>);
-            }      
+            }
 
-            <span class="kw">let</span>  (<span class="kw-2">mut</span> <span class="ident">h_arr</span>, <span class="kw-2">mut</span> <span class="ident">m_arr</span>, <span class="kw-2">mut</span> <span class="ident">s_arr</span>) <span class="op">=</span> (<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>);
-            <span class="kw">let</span>  (<span class="kw-2">mut</span> <span class="ident">h_dep</span>, <span class="kw-2">mut</span> <span class="ident">m_dep</span>, <span class="kw-2">mut</span> <span class="ident">s_dep</span>) <span class="op">=</span> (<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>);  
+            <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">h_arr</span>, <span class="kw-2">mut</span> <span class="ident">m_arr</span>, <span class="kw-2">mut</span> <span class="ident">s_arr</span>) <span class="op">=</span> (<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);
+            <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">h_dep</span>, <span class="kw-2">mut</span> <span class="ident">m_dep</span>, <span class="kw-2">mut</span> <span class="ident">s_dep</span>) <span class="op">=</span> (<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);
 
-            <span class="kw">for</span> <span class="ident">cap</span> <span class="kw">in</span> <span class="ident">re</span>.<span class="ident">captures_iter</span>(<span class="ident">at</span>){
+            <span class="kw">for</span> <span class="ident">cap</span> <span class="kw">in</span> <span class="ident">re</span>.<span class="ident">captures_iter</span>(<span class="ident">at</span>) {
                 <span class="ident">h_arr</span> <span class="op">=</span> <span class="ident">u32</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cap</span>[<span class="number">1</span>]).<span class="ident">unwrap</span>() <span class="op">%</span> <span class="number">24</span>;
                 <span class="ident">m_arr</span> <span class="op">=</span> <span class="ident">u32</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cap</span>[<span class="number">2</span>]).<span class="ident">unwrap</span>();
                 <span class="ident">s_arr</span> <span class="op">=</span> <span class="ident">u32</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cap</span>[<span class="number">3</span>]).<span class="ident">unwrap</span>();
             }
 
-            <span class="kw">for</span> <span class="ident">cap</span> <span class="kw">in</span> <span class="ident">re</span>.<span class="ident">captures_iter</span>(<span class="ident">dt</span>){
+            <span class="kw">for</span> <span class="ident">cap</span> <span class="kw">in</span> <span class="ident">re</span>.<span class="ident">captures_iter</span>(<span class="ident">dt</span>) {
                 <span class="ident">h_dep</span> <span class="op">=</span> <span class="ident">u32</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cap</span>[<span class="number">1</span>]).<span class="ident">unwrap</span>() <span class="op">%</span> <span class="number">24</span>;
                 <span class="ident">m_dep</span> <span class="op">=</span> <span class="ident">u32</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cap</span>[<span class="number">2</span>]).<span class="ident">unwrap</span>();
                 <span class="ident">s_dep</span> <span class="op">=</span> <span class="ident">u32</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">cap</span>[<span class="number">3</span>]).<span class="ident">unwrap</span>();
             }
 
+            <span class="kw">let</span> <span class="ident">arr_time</span> <span class="op">=</span> <span class="ident">NaiveTime</span>::<span class="ident">from_hms</span>(<span class="ident">h_arr</span>, <span class="ident">m_arr</span>, <span class="ident">s_arr</span>);
 
-            <span class="kw">let</span> <span class="ident">arr_time</span> <span class="op">=</span> <span class="ident">NaiveTime</span>::<span class="ident">from_hms</span>(
-                <span class="ident">h_arr</span>,
-                <span class="ident">m_arr</span>,
-                <span class="ident">s_arr</span>
-            );
-
-            <span class="kw">let</span> <span class="ident">dep_time</span> <span class="op">=</span> <span class="ident">NaiveTime</span>::<span class="ident">from_hms</span>(
-                <span class="ident">h_dep</span>,
-                <span class="ident">m_dep</span>,
-                <span class="ident">s_dep</span>
-            );
-
+            <span class="kw">let</span> <span class="ident">dep_time</span> <span class="op">=</span> <span class="ident">NaiveTime</span>::<span class="ident">from_hms</span>(<span class="ident">h_dep</span>, <span class="ident">m_dep</span>, <span class="ident">s_dep</span>);
 
             <span class="ident">stmt</span>.<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[
                 <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="number">0</span>].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>(),
                 <span class="kw-2">&amp;</span><span class="ident">arr_time</span>,
                 <span class="kw-2">&amp;</span><span class="ident">dep_time</span>,
                 <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="number">3</span>].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>(),
-                <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="number">4</span>].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="number">5</span>].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="number">6</span>].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(),
-                <span class="kw-2">&amp;</span><span class="ident">feed_clone</span>
+                <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="number">4</span>].<span class="ident">to_vec</span>())
+                    .<span class="ident">unwrap</span>()
+                    .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>()
+                    .<span class="ident">unwrap</span>(),
+                <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="number">5</span>].<span class="ident">to_vec</span>())
+                    .<span class="ident">unwrap</span>()
+                    .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>()
+                    .<span class="ident">unwrap</span>(),
+                <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="number">6</span>].<span class="ident">to_vec</span>())
+                    .<span class="ident">unwrap</span>()
+                    .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>()
+                    .<span class="ident">unwrap</span>(),
+                <span class="kw-2">&amp;</span><span class="ident">feed_clone</span>,
             ]).<span class="ident">expect</span>(<span class="string">&quot;Unable to insert stop time&quot;</span>);
         });
     }
@@ -965,20 +977,19 @@
     <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File</span>::<span class="ident">open</span>(<span class="ident">path</span>).<span class="ident">expect</span>(<span class="string">&quot;File not found&quot;</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rdr</span> <span class="op">=</span> <span class="ident">csv</span>::<span class="ident">Reader</span>::<span class="ident">from_reader</span>(<span class="ident">f</span>);
 
-
     <span class="kw">for</span> <span class="ident">result</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">deserialize</span>() {
         <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(<span class="string">&quot;INSERT INTO feed \
-                (id, publisher_name, publisher_url, lang,\
-                start_date, end_date, version) \
-                VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING&quot;</span>
+        <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(
+            <span class="string">&quot;INSERT INTO feed \
+             (id, publisher_name, publisher_url, lang,\
+             start_date, end_date, version) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING&quot;</span>,
         ).<span class="ident">expect</span>(<span class="string">&quot;Unable to create statement&quot;</span>);
         <span class="kw">let</span> <span class="ident">record</span>: <span class="ident">FeedCSV</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
-        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Parsing Feed from {}&quot;</span>,
-                <span class="ident">record</span>.<span class="ident">feed_publisher_name</span>
-        );
+        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Parsing Feed from {}&quot;</span>, <span class="ident">record</span>.<span class="ident">feed_publisher_name</span>);
 
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}{}{}{}{}&quot;</span>,
+        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(
+            <span class="string">&quot;{}{}{}{}{}{}&quot;</span>,
             <span class="ident">record</span>.<span class="ident">feed_publisher_name</span>,
             <span class="ident">record</span>.<span class="ident">feed_publisher_url</span>,
             <span class="ident">record</span>.<span class="ident">feed_start_date</span>,
@@ -987,22 +998,13 @@
             <span class="ident">record</span>.<span class="ident">feed_version</span>
         );
 
-
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sha</span> <span class="op">=</span> <span class="ident">Sha256</span>::<span class="ident">new</span>();
         <span class="ident">sha</span>.<span class="ident">input_str</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>);
-        <span class="kw">let</span> <span class="ident">feed_id</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">sha</span>.<span class="ident">result_str</span>();
+        <span class="kw">let</span> <span class="ident">feed_id</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">sha</span>.<span class="ident">result_str</span>();
 
-        <span class="kw">let</span> <span class="ident">start_date</span> <span class="op">=</span>
-            <span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(
-                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">feed_start_date</span>,
-                <span class="string">&quot;%Y%m%d&quot;</span>
-            ).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">start_date</span> <span class="op">=</span> <span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(<span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">feed_start_date</span>, <span class="string">&quot;%Y%m%d&quot;</span>).<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">end_date</span> <span class="op">=</span>
-            <span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(
-                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">feed_end_date</span>,
-                <span class="string">&quot;%Y%m%d&quot;</span>
-            ).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">end_date</span> <span class="op">=</span> <span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(<span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">feed_end_date</span>, <span class="string">&quot;%Y%m%d&quot;</span>).<span class="ident">unwrap</span>();
 
         <span class="ident">stmt</span>.<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[
             <span class="kw-2">&amp;</span><span class="ident">feed_id</span>,
@@ -1011,7 +1013,7 @@
             <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">feed_lang</span>,
             <span class="kw-2">&amp;</span><span class="ident">start_date</span>,
             <span class="kw-2">&amp;</span><span class="ident">end_date</span>,
-            <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">feed_version</span>
+            <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">feed_version</span>,
         ]).<span class="ident">expect</span>(<span class="string">&quot;Unable to add feed&quot;</span>);
 
         <span class="kw">return</span> <span class="ident">feed_id</span>;
@@ -1026,41 +1028,37 @@
 
     <span class="kw">for</span> <span class="ident">result</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">deserialize</span>() {
         <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(<span class="string">&quot;INSERT INTO calendar \
-                (uid, service_id, monday, tuesday, wednesday, thursday,\
-                 friday, saturday, sunday, start_date, end_date, feed_id) \
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) ON CONFLICT DO NOTHING&quot;</span>
+        <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(
+            <span class="string">&quot;INSERT INTO calendar \
+             (uid, service_id, monday, tuesday, wednesday, thursday,\
+             friday, saturday, sunday, start_date, end_date, feed_id) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) ON CONFLICT DO NOTHING&quot;</span>,
         ).<span class="ident">expect</span>(<span class="string">&quot;Unable to create statement&quot;</span>);
         <span class="kw">let</span> <span class="ident">record</span>: <span class="ident">CalendarCSV</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">generate_uid</span>(<span class="string">&quot;se&quot;</span>,
-                               <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">service_id</span>, <span class="kw-2">&amp;</span><span class="ident">feed_id</span>),
-                               <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">service_id</span>);
-
-        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{} - M:{} T:{} W:{} T:{} F:{} S:{} S:{} SD:{} ED:{}&quot;</span>,
-                <span class="ident">record</span>.<span class="ident">service_id</span>,
-                <span class="ident">record</span>.<span class="ident">monday</span>,
-                <span class="ident">record</span>.<span class="ident">tuesday</span>,
-                <span class="ident">record</span>.<span class="ident">wednesday</span>,
-                <span class="ident">record</span>.<span class="ident">thursday</span>,
-                <span class="ident">record</span>.<span class="ident">friday</span>,
-                <span class="ident">record</span>.<span class="ident">saturday</span>,
-                <span class="ident">record</span>.<span class="ident">sunday</span>,
-                <span class="ident">record</span>.<span class="ident">start_date</span>,
-                <span class="ident">record</span>.<span class="ident">end_date</span>
+        <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">generate_uid</span>(
+            <span class="string">&quot;se&quot;</span>,
+            <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">service_id</span>, <span class="kw-2">&amp;</span><span class="ident">feed_id</span>),
+            <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">service_id</span>,
         );
 
-        <span class="kw">let</span> <span class="ident">start_date</span> <span class="op">=</span>
-            <span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(
-                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">start_date</span>,
-                <span class="string">&quot;%Y%m%d&quot;</span>
-            ).<span class="ident">unwrap</span>();
+        <span class="macro">println</span><span class="macro">!</span>(
+            <span class="string">&quot;{} - M:{} T:{} W:{} T:{} F:{} S:{} S:{} SD:{} ED:{}&quot;</span>,
+            <span class="ident">record</span>.<span class="ident">service_id</span>,
+            <span class="ident">record</span>.<span class="ident">monday</span>,
+            <span class="ident">record</span>.<span class="ident">tuesday</span>,
+            <span class="ident">record</span>.<span class="ident">wednesday</span>,
+            <span class="ident">record</span>.<span class="ident">thursday</span>,
+            <span class="ident">record</span>.<span class="ident">friday</span>,
+            <span class="ident">record</span>.<span class="ident">saturday</span>,
+            <span class="ident">record</span>.<span class="ident">sunday</span>,
+            <span class="ident">record</span>.<span class="ident">start_date</span>,
+            <span class="ident">record</span>.<span class="ident">end_date</span>
+        );
 
-        <span class="kw">let</span> <span class="ident">end_date</span> <span class="op">=</span>
-            <span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(
-                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">end_date</span>,
-                <span class="string">&quot;%Y%m%d&quot;</span>
-            ).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">start_date</span> <span class="op">=</span> <span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(<span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">start_date</span>, <span class="string">&quot;%Y%m%d&quot;</span>).<span class="ident">unwrap</span>();
+
+        <span class="kw">let</span> <span class="ident">end_date</span> <span class="op">=</span> <span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(<span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">end_date</span>, <span class="string">&quot;%Y%m%d&quot;</span>).<span class="ident">unwrap</span>();
 
         <span class="ident">stmt</span>.<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[
             <span class="kw-2">&amp;</span><span class="ident">uid</span>,
@@ -1074,15 +1072,15 @@
             <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">sunday</span>,
             <span class="kw-2">&amp;</span><span class="ident">start_date</span>,
             <span class="kw-2">&amp;</span><span class="ident">end_date</span>,
-            <span class="kw-2">&amp;</span><span class="ident">feed_id</span>
+            <span class="kw-2">&amp;</span><span class="ident">feed_id</span>,
         ]).<span class="ident">expect</span>(<span class="string">&quot;Unable to insert calendar entry&quot;</span>);
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">create_tables</span>(<span class="ident">pool</span> : <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>){
-
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">create_tables</span>(<span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE TABLE IF NOT EXISTS feed
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE TABLE IF NOT EXISTS feed
     (\
         id VARCHAR(64) PRIMARY KEY NOT NULL,\
         publisher_name VARCHAR(255),\
@@ -1091,9 +1089,12 @@
         start_date DATE NOT NULL,
         end_date DATE NOT NULL,
         version VARCHAR(255)
-    )&quot;</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;feed\&quot;&quot;</span>);
+    )&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;feed\&quot;&quot;</span>);
 
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE TABLE IF NOT EXISTS agency\
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE TABLE IF NOT EXISTS agency\
     (\
         uid VARCHAR(255) NOT NULL,\
         id VARCHAR(255) NOT NULL,\
@@ -1104,10 +1105,12 @@
         phone VARCHAR(255),\
         feed_id VARCHAR(64) NOT NULL,
         PRIMARY KEY (id, feed_id)
-    )&quot;</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;agency\&quot;&quot;</span>);
+    )&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;agency\&quot;&quot;</span>);
 
-
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE TABLE IF NOT EXISTS stop\
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE TABLE IF NOT EXISTS stop\
     (\
         uid VARCHAR(255) NOT NULL, \
         id VARCHAR(255) NOT NULL,\
@@ -1118,7 +1121,9 @@
         feed_id VARCHAR(64) NOT NULL,
         PRIMARY KEY (uid),
         UNIQUE(id, feed_id)
-    )&quot;</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;stop\&quot;&quot;</span>);
+    )&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;stop\&quot;&quot;</span>);
 
     <span class="comment">/*
         ALTER TABLE public.stop_time
@@ -1127,7 +1132,8 @@
         REFERENCES public.stop(id,feed_id);
     */</span>
 
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE TABLE IF NOT EXISTS route\
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE TABLE IF NOT EXISTS route\
     (\
         uid VARCHAR(255) NOT NULL,
         id VARCHAR(255) NOT NULL,\
@@ -1138,7 +1144,9 @@
         type INTEGER,
         feed_id VARCHAR(64) NOT NULL,\
         PRIMARY KEY (id, feed_id)\
-    )&quot;</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;route\&quot;&quot;</span>);
+    )&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;route\&quot;&quot;</span>);
 
     <span class="comment">/*
         ALTER TABLE public.route
@@ -1147,7 +1155,8 @@
         REFERENCES public.agency(id,feed_id);
      */</span>
 
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE TABLE IF NOT EXISTS trip\
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE TABLE IF NOT EXISTS trip\
     (\
         uid VARCHAR(255) NOT NULL,
         route_id VARCHAR(255) NOT NULL,\
@@ -1158,15 +1167,14 @@
         direction_id INTEGER,
         feed_id VARCHAR(64) NOT NULL,\
         PRIMARY KEY (uid)\
-    )&quot;</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;trip\&quot;&quot;</span>);
-
-
+    )&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;trip\&quot;&quot;</span>);
 
     <span class="comment">// ALTER TABLE public.trip ADD CONSTRAINT trip_calendar_fk FOREIGN KEY (service_id,feed_id) REFERENCES public.calendar(service_id,feed_id) ;</span>
 
-
-
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE TABLE IF NOT EXISTS stop_time\
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE TABLE IF NOT EXISTS stop_time\
     (\
         trip_id VARCHAR(255) NOT NULL,\
         arrival_time TIME NOT NULL,\
@@ -1177,9 +1185,12 @@
         drop_off_type INTEGER,
         feed_id VARCHAR(64) NOT NULL,\
         PRIMARY KEY (trip_id, stop_id, stop_sequence, feed_id)\
-    )&quot;</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;stop_time\&quot;&quot;</span>);
+    )&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;stop_time\&quot;&quot;</span>);
 
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE TABLE IF NOT EXISTS transfer\
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE TABLE IF NOT EXISTS transfer\
     (\
         from_sid VARCHAR(255) NOT NULL,\
         to_sid VARCHAR(255) NOT NULL,\
@@ -1187,9 +1198,12 @@
         min_transfer_time INTEGER,
         feed_id VARCHAR(64) NOT NULL,\
         PRIMARY KEY (from_sid, to_sid, feed_id)\
-    )&quot;</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;transfers\&quot;&quot;</span>);
+    )&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;transfers\&quot;&quot;</span>);
 
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE TABLE IF NOT EXISTS calendar\
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE TABLE IF NOT EXISTS calendar\
     (\
         uid VARCHAR(255) NOT NULL,
         service_id VARCHAR(255) NOT NULL,\
@@ -1205,45 +1219,66 @@
         feed_id VARCHAR(64) NOT NULL,
         PRIMARY KEY (uid),
         UNIQUE (service_id, feed_id)\
-    )&quot;</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;calendar\&quot;&quot;</span>);
-
+    )&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Cannot create table \&quot;calendar\&quot;&quot;</span>);
 
     <span class="comment">// Create FKs</span>
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ALTER TABLE public.stop_time
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;ALTER TABLE public.stop_time
         ADD CONSTRAINT stop_time_stop_fk
         FOREIGN KEY (stop_id,feed_id)
-        REFERENCES public.stop(id,feed_id);&quot;</span>, <span class="kw-2">&amp;</span>[])
-        .<span class="ident">expect</span>(<span class="string">&quot;Add stop_time constraints&quot;</span>);
+        REFERENCES public.stop(id,feed_id);&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Add stop_time constraints&quot;</span>);
 
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ALTER TABLE public.route
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;ALTER TABLE public.route
         ADD CONSTRAINT route_agency_fk
         FOREIGN KEY (agency,feed_id)
-        REFERENCES public.agency(id,feed_id);&quot;</span>, <span class="kw-2">&amp;</span>[])
-        .<span class="ident">expect</span>(<span class="string">&quot;Add stop_time constraints&quot;</span>);
+        REFERENCES public.agency(id,feed_id);&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Add stop_time constraints&quot;</span>);
 
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ALTER TABLE public.trip \
-        ADD CONSTRAINT trip_calendar_fk \
-        FOREIGN KEY (service_id,feed_id) \
-        REFERENCES public.calendar(service_id,feed_id);&quot;</span>, <span class="kw-2">&amp;</span>[])
-        .<span class="ident">expect</span>(<span class="string">&quot;Add stop_time constraints&quot;</span>);
-
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;ALTER TABLE public.trip \
+         ADD CONSTRAINT trip_calendar_fk \
+         FOREIGN KEY (service_id,feed_id) \
+         REFERENCES public.calendar(service_id,feed_id);&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Add stop_time constraints&quot;</span>);
 
     <span class="comment">// Create Indexes</span>
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE INDEX stop_time_stop_id_idx ON public.stop_time (stop_id);&quot;</span>, <span class="kw-2">&amp;</span>[])
-    .<span class="ident">expect</span>(<span class="string">&quot;Add stop_time index&quot;</span>);
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE UNIQUE INDEX stop_id_idx ON public.stop (id,feed_id);&quot;</span>, <span class="kw-2">&amp;</span>[])
-    .<span class="ident">expect</span>(<span class="string">&quot;Add stop index&quot;</span>);
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE UNIQUE INDEX route_id_idx ON public.route (id,feed_id);&quot;</span>, <span class="kw-2">&amp;</span>[])
-    .<span class="ident">expect</span>(<span class="string">&quot;Add route index&quot;</span>);
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE UNIQUE INDEX calendar_service_id_idx ON public.calendar (service_id,feed_id);&quot;</span>, <span class="kw-2">&amp;</span>[])
-    .<span class="ident">expect</span>(<span class="string">&quot;Add calendar index&quot;</span>);
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE INDEX trip_feed_id_idx ON public.trip (feed_id,trip_id);&quot;</span>, <span class="kw-2">&amp;</span>[])
-    .<span class="ident">expect</span>(<span class="string">&quot;Add trip index&quot;</span>);
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE INDEX stop_time_trip_id_idx ON public.stop_time (trip_id,feed_id);&quot;</span>, <span class="kw-2">&amp;</span>[])
-    .<span class="ident">expect</span>(<span class="string">&quot;Add stop_time index 2&quot;</span>);
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE INDEX stop_time_trip_id_feed_idx ON public.stop_time (trip_id,stop_id,feed_id);&quot;</span>, <span class="kw-2">&amp;</span>[])
-    .<span class="ident">expect</span>(<span class="string">&quot;Add stop_time index 3&quot;</span>);
-}</pre>
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE INDEX stop_time_stop_id_idx ON public.stop_time (stop_id);&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Add stop_time index&quot;</span>);
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE UNIQUE INDEX stop_id_idx ON public.stop (id,feed_id);&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Add stop index&quot;</span>);
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE UNIQUE INDEX route_id_idx ON public.route (id,feed_id);&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Add route index&quot;</span>);
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE UNIQUE INDEX calendar_service_id_idx ON public.calendar (service_id,feed_id);&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Add calendar index&quot;</span>);
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE INDEX trip_feed_id_idx ON public.trip (feed_id,trip_id);&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Add trip index&quot;</span>);
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE INDEX stop_time_trip_id_idx ON public.stop_time (trip_id,feed_id);&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Add stop_time index 2&quot;</span>);
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;CREATE INDEX stop_time_trip_id_feed_idx ON public.stop_time (trip_id,stop_id,feed_id);&quot;</span>,
+        <span class="kw-2">&amp;</span>[],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Add stop_time index 3&quot;</span>);
+}
+</pre>
 </section>
     <section id='search' class="content hidden"></section>
 

@@ -82,7 +82,7 @@
     <span class="ident">RegularlyScheduled</span> <span class="op">=</span> <span class="number">0</span>,
     <span class="ident">NoPickupAvailable</span> <span class="op">=</span> <span class="number">1</span>,
     <span class="ident">MustArrangeWithAgency</span> <span class="op">=</span> <span class="number">2</span>,
-    <span class="ident">MustCoordinateWithDriver</span> <span class="op">=</span> <span class="number">3</span>
+    <span class="ident">MustCoordinateWithDriver</span> <span class="op">=</span> <span class="number">3</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">PickUp</span> {
@@ -92,7 +92,7 @@
             <span class="string">&quot;NoPickupAvailable&quot;</span> <span class="op">=&gt;</span> <span class="ident">PickUp</span>::<span class="ident">NoPickupAvailable</span>,
             <span class="string">&quot;MustArrangeWithAgency&quot;</span> <span class="op">=&gt;</span> <span class="ident">PickUp</span>::<span class="ident">MustArrangeWithAgency</span>,
             <span class="string">&quot;MustCoordinateWithDriver&quot;</span> <span class="op">=&gt;</span> <span class="ident">PickUp</span>::<span class="ident">MustCoordinateWithDriver</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">PickUp</span>::<span class="ident">RegularlyScheduled</span>
+            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">PickUp</span>::<span class="ident">RegularlyScheduled</span>,
         }
     }
 }

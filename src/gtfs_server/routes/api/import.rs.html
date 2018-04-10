@@ -154,9 +154,9 @@
 </pre><pre class="rust ">
 <span class="doccomment">//! `/import` related routes</span>
 
-<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">RoutesHandler</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">Pool</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">PostgresConnectionManager</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">RoutesHandler</span>;
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">Json</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">State</span>;
@@ -167,7 +167,7 @@
 
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/import/url/&lt;feed_url&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">url</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">feed_url</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">SuccessResult</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">pool</span> : <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
+    <span class="kw">let</span> <span class="ident">pool</span>: <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
     <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
         <span class="ident">importer</span>::<span class="ident">create_tables</span>(<span class="kw-2">&amp;</span><span class="ident">pool</span>);
         <span class="ident">importer</span>::<span class="ident">download_feed</span>(<span class="kw-2">&amp;</span><span class="ident">feed_url</span>, <span class="kw-2">&amp;</span><span class="ident">pool</span>);
@@ -179,7 +179,7 @@
 
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/import/agency/&lt;feed_id&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">agency</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">feed_id</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">SuccessResult</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">pool</span> : <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
+    <span class="kw">let</span> <span class="ident">pool</span>: <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
     <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
         <span class="ident">importer</span>::<span class="ident">create_tables</span>(<span class="kw-2">&amp;</span><span class="ident">pool</span>);
         <span class="ident">importer</span>::<span class="ident">parse_agency</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="string">&quot;./resources/gtfs/sbb/agency.txt&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">pool</span>);
@@ -191,7 +191,7 @@
 
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/import/stops/&lt;feed_id&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">feed_id</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">SuccessResult</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">pool</span> : <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
+    <span class="kw">let</span> <span class="ident">pool</span>: <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
     <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
         <span class="ident">importer</span>::<span class="ident">create_tables</span>(<span class="kw-2">&amp;</span><span class="ident">pool</span>);
         <span class="ident">importer</span>::<span class="ident">parse_stops</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="string">&quot;./resources/gtfs/sbb/stops.txt&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">pool</span>);
@@ -203,7 +203,7 @@
 
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/import/times/&lt;feed_id&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">times</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">feed_id</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">SuccessResult</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">pool</span> : <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
+    <span class="kw">let</span> <span class="ident">pool</span>: <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
     <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
         <span class="ident">importer</span>::<span class="ident">create_tables</span>(<span class="kw-2">&amp;</span><span class="ident">pool</span>);
         <span class="ident">importer</span>::<span class="ident">parse_stop_times</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="string">&quot;./resources/gtfs/sbb/stop_times.txt&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">pool</span>);
@@ -215,7 +215,7 @@
 
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/import/routes/&lt;feed_id&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">routes</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">feed_id</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">SuccessResult</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">pool</span> : <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
+    <span class="kw">let</span> <span class="ident">pool</span>: <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
     <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
         <span class="ident">importer</span>::<span class="ident">create_tables</span>(<span class="kw-2">&amp;</span><span class="ident">pool</span>);
         <span class="ident">importer</span>::<span class="ident">parse_routes</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="string">&quot;./resources/gtfs/sbb/routes.txt&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">pool</span>);
@@ -227,7 +227,7 @@
 
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/import/trips/&lt;feed_id&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">trips</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">feed_id</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">SuccessResult</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">pool</span> : <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
+    <span class="kw">let</span> <span class="ident">pool</span>: <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
     <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
         <span class="ident">importer</span>::<span class="ident">create_tables</span>(<span class="kw-2">&amp;</span><span class="ident">pool</span>);
         <span class="ident">importer</span>::<span class="ident">parse_trips</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="string">&quot;./resources/gtfs/sbb/trips.txt&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">pool</span>);
@@ -239,7 +239,7 @@
 
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/import/calendar/&lt;feed_id&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">calendar</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">feed_id</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">SuccessResult</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">pool</span> : <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
+    <span class="kw">let</span> <span class="ident">pool</span>: <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>();
     <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
         <span class="ident">importer</span>::<span class="ident">create_tables</span>(<span class="kw-2">&amp;</span><span class="ident">pool</span>);
         <span class="ident">importer</span>::<span class="ident">parse_calendar</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="string">&quot;./resources/gtfs/sbb/calendar.txt&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">pool</span>);
@@ -247,7 +247,8 @@
     });
     <span class="kw">let</span> <span class="ident">sr</span> <span class="op">=</span> <span class="ident">SuccessResult</span> { <span class="ident">success</span>: <span class="bool-val">true</span> };
     <span class="ident">Json</span>(<span class="ident">sr</span>)
-}</pre>
+}
+</pre>
 </section>
     <section id='search' class="content hidden"></section>
 

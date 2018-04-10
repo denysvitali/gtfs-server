@@ -71,7 +71,7 @@
 <span id="14">14</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! Agency related structs and implementations</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>,<span class="ident">Serialize</span>,<span class="ident">Deserialize</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Agency</span> {
     <span class="kw">pub</span> <span class="ident">uid</span>: <span class="ident">String</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing</span>)]</span>
@@ -82,8 +82,9 @@
     <span class="kw">pub</span> <span class="ident">lang</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">phone</span>: <span class="ident">String</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">feed_id</span>: <span class="ident">String</span>
-}</pre>
+    <span class="kw">pub</span> <span class="ident">feed_id</span>: <span class="ident">String</span>,
+}
+</pre>
 </section>
     <section id='search' class="content hidden"></section>
 

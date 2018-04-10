@@ -290,26 +290,29 @@
 <span id="233">233</span>
 <span id="234">234</span>
 <span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/routes` related routes</span>
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">meta</span>::<span class="ident">Meta</span>;
 
-<span class="kw">use</span> <span class="ident">models</span>::<span class="ident">route</span>::<span class="ident">Route</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">resultarray</span>::<span class="ident">ResultArray</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
+<span class="kw">use</span> <span class="ident">models</span>::<span class="ident">route</span>::<span class="ident">Route</span>;
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">agency</span>;
 
-<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">RoutesHandler</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">Json</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">State</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">Pool</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">PostgresConnectionManager</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">RoutesHandler</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">State</span>;
 
-<span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">rows</span>::<span class="ident">Row</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">api</span>::<span class="ident">search</span>::<span class="ident">route</span>::<span class="ident">RouteSearch</span>;
+<span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">rows</span>::<span class="ident">Row</span>;
 
 <span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">types</span>::<span class="ident">ToSql</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">Split</span>;
@@ -318,13 +321,10 @@
 <span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
 <span class="doccomment">/// &lt;[Route](../../../models/route/struct.Route.html)&gt;</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/routes&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">routes</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;&gt;</span>{
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">routes</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;&gt;</span> {
     <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">&quot;SELECT * FROM route LIMIT 50&quot;</span>;
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(
-        <span class="ident">query</span>,
-        <span class="kw-2">&amp;</span>[]
-    );
+    <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[]);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">routes_result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">routes</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>).<span class="ident">iter</span>() {
@@ -332,12 +332,12 @@
         <span class="ident">routes_result</span>.<span class="ident">push</span>(<span class="ident">route</span>);
     }
 
-    <span class="ident">Json</span>(<span class="ident">ResultArray</span>{
+    <span class="ident">Json</span>(<span class="ident">ResultArray</span> {
         <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">routes_result</span>),
         <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
-            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
-        }
+            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+        },
     })
 }
 
@@ -348,48 +348,62 @@
 <span class="comment">// TODO: Implement Route Search by RouteSearch query</span>
 
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/routes?&lt;route_search&gt;&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">routes_by_query</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">route_search</span>: <span class="ident">RouteSearch</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;&gt;</span>{
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">routes_by_query</span>(
+    <span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>,
+    <span class="ident">route_search</span>: <span class="ident">RouteSearch</span>,
+) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">let</span> <span class="ident">result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">get_routes_by_query</span>(<span class="kw-2">&amp;</span><span class="ident">rh</span>, <span class="kw-2">&amp;</span><span class="ident">route_search</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
 
-    <span class="kw">let</span> <span class="ident">result</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">get_routes_by_query</span>(<span class="kw-2">&amp;</span><span class="ident">rh</span>, <span class="kw-2">&amp;</span><span class="ident">route_search</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
-
-    <span class="ident">Json</span>(<span class="ident">ResultArray</span>{
+    <span class="ident">Json</span>(<span class="ident">ResultArray</span> {
         <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">result</span>),
         <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
-            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
-        }
+            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+        },
     })
 }
 
-<span class="kw">fn</span> <span class="ident">get_routes_by_query</span>(<span class="ident">rh</span>: <span class="kw-2">&amp;</span><span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">route_search</span>: <span class="kw-2">&amp;</span><span class="ident">RouteSearch</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">query</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;SELECT 
+<span class="kw">fn</span> <span class="ident">get_routes_by_query</span>(
+    <span class="ident">rh</span>: <span class="kw-2">&amp;</span><span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>,
+    <span class="ident">route_search</span>: <span class="kw-2">&amp;</span><span class="ident">RouteSearch</span>,
+    <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>,
+) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">query</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(
+        <span class="string">&quot;SELECT 
     route.uid, route.id, route.agency, route.short_name,
     route.long_name, route.description, route.type, route.feed_id
-     FROM route &quot;</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">addition</span> : <span class="ident">String</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">values</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+     FROM route &quot;</span>,
+    );
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">addition</span>: <span class="ident">String</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">values</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ToSql</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">if</span> <span class="ident">route_search</span>.<span class="ident">stops_visited</span>.<span class="ident">is_some</span>() {
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Got stops_visited&quot;</span>);
         <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(
-        <span class="string">&quot;, trip, stop_time WHERE route.id = trip.route_id
+            <span class="string">&quot;, trip, stop_time WHERE route.id = trip.route_id
         AND route.feed_id = trip.feed_id
         AND stop_time.feed_id = route.feed_id
         AND stop_time.trip_id = trip.trip_id
         AND stop_time.stop_id IN 
         (
-            SELECT stop.id FROM stop WHERE stop.uid IN (&quot;</span>);
-        
+            SELECT stop.id FROM stop WHERE stop.uid IN (&quot;</span>
+        );
+
         <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
-        
-        <span class="kw">let</span> <span class="ident">stops</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">route_search</span>.<span class="ident">stops_visited</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">split</span>(<span class="string">&quot;,&quot;</span>).<span class="ident">collect</span>();
+
+        <span class="kw">let</span> <span class="ident">stops</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">route_search</span>
+            .<span class="ident">stops_visited</span>
+            .<span class="ident">as_ref</span>()
+            .<span class="ident">unwrap</span>()
+            .<span class="ident">split</span>(<span class="string">&quot;,&quot;</span>)
+            .<span class="ident">collect</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">first</span> <span class="op">=</span> <span class="bool-val">true</span>;
         <span class="kw">for</span> <span class="ident">stop</span> <span class="kw">in</span> <span class="ident">stops</span> {
             <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Stop {} &quot;</span>, <span class="ident">stop</span>);
-            <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
+            <span class="ident">i</span> <span class="op">+=</span> <span class="number">1</span>;
             <span class="kw">if</span> <span class="ident">first</span> {
                 <span class="ident">first</span> <span class="op">=</span> <span class="bool-val">false</span>;
             } <span class="kw">else</span> {
@@ -403,13 +417,15 @@
         }
 
         <span class="ident">query</span>.<span class="ident">push_str</span>(
-        <span class="string">&quot;)
-        )&quot;</span>);
+            <span class="string">&quot;)
+        )&quot;</span>,
+        );
     }
 
-
-    <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; GROUP BY (route.uid, route.id, route.agency, route.short_name,
-    route.long_name, route.description, route.type, route.feed_id) LIMIT 50&quot;</span>);
+    <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(
+        <span class="string">&quot; GROUP BY (route.uid, route.id, route.agency, route.short_name,
+    route.long_name, route.description, route.type, route.feed_id) LIMIT 50&quot;</span>
+    );
     <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
 
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">query</span>);
@@ -418,13 +434,11 @@
     }
 
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">times</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(
-        <span class="kw-2">&amp;</span><span class="ident">query</span>, <span class="kw-2">&amp;</span><span class="ident">params</span>.<span class="ident">as_slice</span>()
-    );
+    <span class="kw">let</span> <span class="ident">times</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="kw-2">&amp;</span><span class="ident">query</span>, <span class="kw-2">&amp;</span><span class="ident">params</span>.<span class="ident">as_slice</span>());
 
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">params</span>.<span class="ident">as_slice</span>());
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">times</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>).<span class="ident">iter</span>() {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">parse_route_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>);
@@ -440,37 +454,34 @@
 <span class="doccomment">/// Returns a [Result](../../../models/api/result/struct.Result.html)</span>
 <span class="doccomment">/// &lt;[Route](../../../models/route/struct.Route.html)&gt;</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/routes/&lt;route_uid&gt;&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">route_by_id</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">route_uid</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;&gt;</span>{
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">route_by_id</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">route_uid</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;&gt;</span> {
     <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">&quot;SELECT * FROM route WHERE uid = $1 LIMIT 1&quot;</span>;
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(
-        <span class="ident">query</span>,
-        <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">route_uid</span>]
-    );
+    <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">route_uid</span>]);
 
     <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="ident">routes</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>);
 
     <span class="kw">if</span> <span class="ident">routes</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="number">1</span> {
-        <span class="kw">return</span> <span class="ident">Json</span>(<span class="prelude-ty">Result</span>{
+        <span class="kw">return</span> <span class="ident">Json</span>(<span class="prelude-ty">Result</span> {
             <span class="ident">result</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
             <span class="ident">meta</span>: <span class="ident">Meta</span> {
                 <span class="ident">success</span>: <span class="bool-val">false</span>,
-                <span class="ident">error</span>: <span class="prelude-val">Some</span>(<span class="ident">Error</span>{
+                <span class="ident">error</span>: <span class="prelude-val">Some</span>(<span class="ident">Error</span> {
                     <span class="ident">code</span>: <span class="number">4</span>,
-                    <span class="ident">message</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;Unable to find this route&quot;</span>)
-                })
-            }
-        })
+                    <span class="ident">message</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;Unable to find this route&quot;</span>),
+                }),
+            },
+        });
     }
 
     <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">parse_route_row</span>(<span class="kw-2">&amp;</span><span class="ident">routes</span>.<span class="ident">get</span>(<span class="number">0</span>), <span class="kw-2">&amp;</span><span class="ident">rh</span>);
 
-    <span class="ident">Json</span>(<span class="prelude-ty">Result</span>{
+    <span class="ident">Json</span>(<span class="prelude-ty">Result</span> {
         <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">route</span>),
         <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
-            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
-        }
+            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+        },
     })
 }
 
@@ -480,7 +491,7 @@
 <span class="doccomment">/// Returns a [Result](../../../models/api/result/struct.Result.html)</span>
 <span class="doccomment">/// &lt;[Route](../../../models/route/struct.Route.html)&gt;</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/routes/by-stop/&lt;stop_uid&gt;&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">route_by_stop_uid</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">stop_uid</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;&gt;</span>{
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">route_by_stop_uid</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">stop_uid</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;&gt;</span> {
     <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">&quot;SELECT route.uid, route.id, route.agency, route.short_name, route.long_name, route.description, route.\&quot;type\&quot;, route.feed_id FROM route, (SELECT trip.route_id as rid, trip.feed_id as fid
     FROM trip, (SELECT trip_id as tid, feed_id as fid FROM stop_time WHERE stop_time.stop_id = (SELECT stop.id FROM stop WHERE stop.uid = $1 )) as sq1
     WHERE sq1.tid = trip.trip_id 
@@ -490,31 +501,26 @@
     sq2.fid = route.feed_id&quot;</span>;
 
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(
-        <span class="ident">query</span>,
-        <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">stop_uid</span>]
-    );
+    <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">stop_uid</span>]);
 
     <span class="kw">let</span> <span class="ident">routes</span> <span class="op">=</span> <span class="ident">routes</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">results</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">results</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">routes</span>.<span class="ident">iter</span>() {
-        <span class="ident">results</span>.<span class="ident">push</span>(
-            <span class="ident">parse_route_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>)
-        )
+        <span class="ident">results</span>.<span class="ident">push</span>(<span class="ident">parse_route_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>))
     }
 
-    <span class="ident">Json</span>(<span class="ident">ResultArray</span>{
+    <span class="ident">Json</span>(<span class="ident">ResultArray</span> {
         <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">results</span>),
         <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
-            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
-        }
+            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+        },
     })
 }
 
 <span class="kw">fn</span> <span class="ident">parse_route_row</span>(<span class="ident">row</span>: <span class="kw-2">&amp;</span><span class="ident">Row</span>, <span class="ident">rh</span>: <span class="kw-2">&amp;</span><span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Route</span> {
-    <span class="kw">let</span> <span class="ident">feed_id</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">7</span>);
+    <span class="kw">let</span> <span class="ident">feed_id</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">7</span>);
     <span class="ident">Route</span> {
         <span class="ident">uid</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>),
         <span class="ident">id</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">1</span>),
@@ -523,9 +529,10 @@
         <span class="ident">long_name</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">4</span>),
         <span class="ident">description</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">5</span>),
         <span class="ident">route_type</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">6</span>),
-        <span class="ident">feed_id</span>
+        <span class="ident">feed_id</span>,
     }
-}</pre>
+}
+</pre>
 </section>
     <section id='search' class="content hidden"></section>
 

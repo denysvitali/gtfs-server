@@ -75,13 +75,14 @@
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">serde</span>;
 
-<span class="kw">use</span> <span class="self">self</span>::<span class="ident">serde</span>::<span class="ident">ser</span>::{<span class="ident">Serialize</span>, <span class="ident">Serializer</span>, <span class="ident">SerializeStruct</span>};
+<span class="kw">use</span> <span class="self">self</span>::<span class="ident">serde</span>::<span class="ident">ser</span>::{<span class="ident">Serialize</span>, <span class="ident">SerializeStruct</span>, <span class="ident">Serializer</span>};
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>,<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StopDistance</span> {
     <span class="kw">pub</span> <span class="ident">stop</span>: <span class="ident">Stop</span>,
-    <span class="kw">pub</span> <span class="ident">distance</span>: <span class="ident">f64</span>
-}</pre>
+    <span class="kw">pub</span> <span class="ident">distance</span>: <span class="ident">f64</span>,
+}
+</pre>
 </section>
     <section id='search' class="content hidden"></section>
 

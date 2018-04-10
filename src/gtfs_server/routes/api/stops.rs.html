@@ -353,37 +353,22 @@
 <span id="296">296</span>
 <span id="297">297</span>
 <span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/stops` related routes</span>
 
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">meta</span>::<span class="ident">Meta</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">resultarray</span>::<span class="ident">ResultArray</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">stopdistance</span>::<span class="ident">StopDistance</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">meta</span>::<span class="ident">Meta</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
 
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">stop</span>::<span class="ident">Stop</span>;
 
-<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">RoutesHandler</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">Json</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">State</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">Pool</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">PostgresConnectionManager</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">RoutesHandler</span>;
+<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">State</span>;
 <span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">rows</span>::<span class="ident">Row</span>;
 
 <span class="doccomment">/// `/stops`  </span>
@@ -419,13 +404,12 @@
 **/</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/stops&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;&gt;</span> {
-
     <span class="kw">let</span> <span class="ident">sr</span> <span class="op">=</span> <span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> {
         <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">get_stops</span>(<span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>)),
-        <span class="ident">meta</span>: <span class="ident">Meta</span>{
+        <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
-            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
-        }
+            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+        },
     };
     <span class="ident">Json</span>(<span class="ident">sr</span>)
 }
@@ -435,7 +419,6 @@
 <span class="doccomment">/// Returns a [Result](../../../models/api/result/struct.Result.html)&lt;[Stop](../../../models/stop/struct.Stop.html)&gt;</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/stops/&lt;stop_id&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops_by_id</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">stop_id</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;&gt;</span> {
-
     <span class="kw">let</span> <span class="ident">stop</span> <span class="op">=</span> <span class="ident">get_stop_by_id</span>(<span class="ident">stop_id</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
     <span class="kw">if</span> <span class="ident">stop</span>.<span class="ident">is_none</span>() {
         <span class="kw">return</span> <span class="ident">Json</span>(<span class="prelude-ty">Result</span>::<span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> {
@@ -444,18 +427,18 @@
                 <span class="ident">success</span>: <span class="bool-val">false</span>,
                 <span class="ident">error</span>: <span class="prelude-val">Some</span>(<span class="ident">Error</span> {
                     <span class="ident">code</span>: <span class="number">2</span>,
-                    <span class="ident">message</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;Invalid stop id&quot;</span>)
-                })
-            }
+                    <span class="ident">message</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;Invalid stop id&quot;</span>),
+                }),
+            },
         });
     }
 
     <span class="kw">let</span> <span class="ident">sr</span> <span class="op">=</span> <span class="prelude-ty">Result</span>::<span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> {
         <span class="ident">result</span>: <span class="ident">stop</span>,
-        <span class="ident">meta</span>: <span class="ident">Meta</span>{
+        <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
-            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
-        }
+            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+        },
     };
     <span class="ident">Json</span>(<span class="ident">sr</span>)
 }
@@ -464,13 +447,12 @@
 <span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)&lt;[Stop](../../../models/stop/struct.Stop.html)&gt;</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/stops/by-trip/&lt;trip_id&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops_by_trip</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">trip_id</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;&gt;</span> {
-
     <span class="kw">let</span> <span class="ident">sr</span> <span class="op">=</span> <span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> {
         <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">get_stops_by_trip</span>(<span class="ident">trip_id</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>)),
-        <span class="ident">meta</span>: <span class="ident">Meta</span>{
+        <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
-            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
-        }
+            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+        },
     };
     <span class="ident">Json</span>(<span class="ident">sr</span>)
 }
@@ -481,14 +463,17 @@
 <span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
 <span class="doccomment">/// &lt;[StopDistance](../../../models/api/stopdistance/struct.StopDistance.html)&gt;</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/stops/near/&lt;lat&gt;/&lt;lng&gt;&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops_near_default</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">lat</span>: <span class="ident">f32</span>, <span class="ident">lng</span>: <span class="ident">f32</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">StopDistance</span><span class="op">&gt;&gt;</span> {
-
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops_near_default</span>(
+    <span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>,
+    <span class="ident">lat</span>: <span class="ident">f32</span>,
+    <span class="ident">lng</span>: <span class="ident">f32</span>,
+) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">StopDistance</span><span class="op">&gt;&gt;</span> {
     <span class="kw">let</span> <span class="ident">sr</span> <span class="op">=</span> <span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">StopDistance</span><span class="op">&gt;</span> {
         <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">get_stops_near</span>(<span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>, <span class="ident">lat</span>, <span class="ident">lng</span>, <span class="number">100.0</span>)),
-        <span class="ident">meta</span>: <span class="ident">Meta</span>{
+        <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
-            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
-        }
+            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+        },
     };
     <span class="ident">Json</span>(<span class="ident">sr</span>)
 }
@@ -500,21 +485,25 @@
 <span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
 <span class="doccomment">/// &lt;[StopDistance](../../../models/api/stopdistance/struct.StopDistance.html)&gt;</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/stops/near/&lt;lat&gt;/&lt;lng&gt;/&lt;meters&gt;&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops_near</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">lat</span>: <span class="ident">f32</span>, <span class="ident">lng</span>: <span class="ident">f32</span>, <span class="ident">meters</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">StopDistance</span><span class="op">&gt;&gt;</span> {
-
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops_near</span>(
+    <span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>,
+    <span class="ident">lat</span>: <span class="ident">f32</span>,
+    <span class="ident">lng</span>: <span class="ident">f32</span>,
+    <span class="ident">meters</span>: <span class="ident">f64</span>,
+) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">StopDistance</span><span class="op">&gt;&gt;</span> {
     <span class="kw">let</span> <span class="ident">sr</span> <span class="op">=</span> <span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">StopDistance</span><span class="op">&gt;</span> {
         <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">get_stops_near</span>(<span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>, <span class="ident">lat</span>, <span class="ident">lng</span>, <span class="ident">meters</span>)),
-        <span class="ident">meta</span>: <span class="ident">Meta</span>{
+        <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
-            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
-        }
+            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+        },
     };
     <span class="ident">Json</span>(<span class="ident">sr</span>)
 }
 
 <span class="kw">fn</span> <span class="ident">parse_stop_row</span>(<span class="ident">row</span>: <span class="kw-2">&amp;</span><span class="ident">Row</span>) <span class="op">-&gt;</span> <span class="ident">Stop</span> {
-    <span class="kw">let</span> <span class="ident">lat</span> : <span class="ident">f64</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">6</span>);
-    <span class="kw">let</span> <span class="ident">lng</span> : <span class="ident">f64</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">7</span>);
+    <span class="kw">let</span> <span class="ident">lat</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">6</span>);
+    <span class="kw">let</span> <span class="ident">lng</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">7</span>);
 
     <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>);
     <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">1</span>);
@@ -523,9 +512,7 @@
     <span class="kw">let</span> <span class="ident">parent_station</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">4</span>);
     <span class="kw">let</span> <span class="ident">feed_id</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">5</span>);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stop</span> <span class="op">=</span> <span class="ident">Stop</span>::<span class="ident">new</span>(
-        <span class="ident">uid</span>, <span class="ident">name</span>, <span class="ident">lat</span>, <span class="ident">lng</span>, <span class="ident">location_type</span>, <span class="ident">parent_station</span>
-    );
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stop</span> <span class="op">=</span> <span class="ident">Stop</span>::<span class="ident">new</span>(<span class="ident">uid</span>, <span class="ident">name</span>, <span class="ident">lat</span>, <span class="ident">lng</span>, <span class="ident">location_type</span>, <span class="ident">parent_station</span>);
 
     <span class="kw-2">&amp;</span><span class="ident">stop</span>.<span class="ident">set_id</span>(<span class="ident">id</span>);
     <span class="kw-2">&amp;</span><span class="ident">stop</span>.<span class="ident">set_feed_id</span>(<span class="ident">feed_id</span>);
@@ -547,9 +534,7 @@
         LIMIT 1&quot;</span>;
 
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">stops</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(
-        <span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">stop_id</span>]
-    );
+    <span class="kw">let</span> <span class="ident">stops</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">stop_id</span>]);
 
     <span class="kw">let</span> <span class="ident">stops</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">stops</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>);
 
@@ -574,11 +559,9 @@
         LIMIT 50&quot;</span>;
 
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">stops</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(
-        <span class="ident">query</span>, <span class="kw-2">&amp;</span>[]
-    );
+    <span class="kw">let</span> <span class="ident">stops</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[]);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stops_result</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stops_result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">stops</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>).<span class="ident">iter</span>() {
         <span class="kw">let</span> <span class="ident">stop</span> <span class="op">=</span> <span class="ident">parse_stop_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>);
@@ -588,10 +571,12 @@
     <span class="ident">stops_result</span>
 }
 
-<span class="kw">fn</span> <span class="ident">get_stops_near</span>(<span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>,
-                  <span class="ident">lat</span>: <span class="ident">f32</span>,
-                  <span class="ident">lng</span>: <span class="ident">f32</span>,
-                  <span class="ident">meters</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopDistance</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">get_stops_near</span>(
+    <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>,
+    <span class="ident">lat</span>: <span class="ident">f32</span>,
+    <span class="ident">lng</span>: <span class="ident">f32</span>,
+    <span class="ident">meters</span>: <span class="ident">f64</span>,
+) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopDistance</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">&quot;SELECT * FROM (SELECT
         uid,
         id,
@@ -610,24 +595,15 @@
 
     <span class="comment">//println!(format!(&quot;{}&quot;, query));</span>
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">stops</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(
-        <span class="ident">query</span>,
-        <span class="kw-2">&amp;</span>[
-            <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;POINT({:.5} {:.5})&quot;</span>, <span class="ident">lng</span>, <span class="ident">lat</span>),
-            <span class="kw-2">&amp;</span><span class="ident">meters</span>
-        ]
-    );
+    <span class="kw">let</span> <span class="ident">stops</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;POINT({:.5} {:.5})&quot;</span>, <span class="ident">lng</span>, <span class="ident">lat</span>), <span class="kw-2">&amp;</span><span class="ident">meters</span>]);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stops_result</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopDistance</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stops_result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopDistance</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">stops</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>).<span class="ident">iter</span>() {
         <span class="kw">let</span> <span class="ident">stop</span> <span class="op">=</span> <span class="ident">parse_stop_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>);
         <span class="kw">let</span> <span class="ident">distance</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">8</span>);
 
-        <span class="kw">let</span> <span class="ident">sd</span> <span class="op">=</span> <span class="ident">StopDistance</span> {
-            <span class="ident">stop</span>,
-            <span class="ident">distance</span>
-        };
+        <span class="kw">let</span> <span class="ident">sd</span> <span class="op">=</span> <span class="ident">StopDistance</span> { <span class="ident">stop</span>, <span class="ident">distance</span> };
 
         <span class="ident">stops_result</span>.<span class="ident">push</span>(<span class="ident">sd</span>);
     }
@@ -636,7 +612,6 @@
 }
 
 <span class="kw">fn</span> <span class="ident">get_stops_by_trip</span>(<span class="ident">trip_id</span>: <span class="ident">String</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> {
-
     <span class="comment">/*
         	stop_time.stop_sequence, \
             stop_time.arrival_time, \
@@ -665,11 +640,9 @@
     ORDER BY stop_time.stop_sequence ASC;&quot;</span>;
 
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">stops</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(
-        <span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">trip_id</span>]
-    );
+    <span class="kw">let</span> <span class="ident">stops</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">trip_id</span>]);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stops_result</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stops_result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">stops</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>).<span class="ident">iter</span>() {
         <span class="kw">let</span> <span class="ident">stop</span> <span class="op">=</span> <span class="ident">parse_stop_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>);
@@ -678,10 +651,8 @@
     }
 
     <span class="ident">stops_result</span>
-
-
-
-}</pre>
+}
+</pre>
 </section>
     <section id='search' class="content hidden"></section>
 
