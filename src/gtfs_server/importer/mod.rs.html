@@ -664,8 +664,6 @@
 <span id="607">607</span>
 <span id="608">608</span>
 <span id="609">609</span>
-<span id="610">610</span>
-<span id="611">611</span>
 </pre><pre class="rust ">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">chrono</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">crypto</span>;
@@ -690,7 +688,7 @@
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">regex</span>::<span class="ident">Regex</span>;
 
 <span class="kw">use</span> <span class="ident">r2d2</span>::<span class="ident">Pool</span>;
-<span class="kw">use</span> <span class="ident">r2d2_postgres</span>::{<span class="ident">PostgresConnectionManager</span>, <span class="ident">TlsMode</span>};
+<span class="kw">use</span> <span class="ident">r2d2_postgres</span>::{<span class="ident">PostgresConnectionManager</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">chrono</span>::{<span class="ident">NaiveDate</span>, <span class="ident">NaiveTime</span>};
@@ -701,14 +699,12 @@
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">feed</span>::<span class="ident">FeedCSV</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">route</span>::<span class="ident">RouteCSV</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">stop</span>::<span class="ident">StopCSV</span>;
-<span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">stoptime</span>::<span class="ident">StopTimeCSV</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">trip</span>::<span class="ident">TripCSV</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Read</span>;
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">download_feed</span>(<span class="ident">feed_url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
     <span class="comment">// Download feed from URL</span>
     <span class="comment">// Example:  https://opentransportdata.swiss/en/dataset/timetable-2018-gtfs/permalink</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">resp</span> <span class="op">=</span> <span class="ident">reqwest</span>::<span class="ident">get</span>(<span class="ident">feed_url</span>);
+    <span class="kw">let</span> <span class="ident">resp</span> <span class="op">=</span> <span class="ident">reqwest</span>::<span class="ident">get</span>(<span class="ident">feed_url</span>);
     <span class="comment">//resp.</span>
 }
 
@@ -897,7 +893,7 @@
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_stop_times</span>(<span class="ident">feed_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">File</span>::<span class="ident">open</span>(<span class="ident">path</span>).<span class="ident">expect</span>(<span class="string">&quot;File not found&quot;</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">BufReader</span>::<span class="ident">new</span>(<span class="ident">f</span>);
+    <span class="kw">let</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">BufReader</span>::<span class="ident">new</span>(<span class="ident">f</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rdr</span> <span class="op">=</span> <span class="ident">csv</span>::<span class="ident">Reader</span>::<span class="ident">from_reader</span>(<span class="ident">reader</span>);
     <span class="kw">for</span> <span class="ident">result</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">byte_records</span>() {
         <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();

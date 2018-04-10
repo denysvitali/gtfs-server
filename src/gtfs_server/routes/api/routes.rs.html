@@ -291,8 +291,6 @@
 <span id="234">234</span>
 <span id="235">235</span>
 <span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/routes` related routes</span>
 
@@ -315,7 +313,6 @@
 <span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">rows</span>::<span class="ident">Row</span>;
 
 <span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">types</span>::<span class="ident">ToSql</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">str</span>::<span class="ident">Split</span>;
 
 <span class="doccomment">/// `/routes`  </span>
 <span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
@@ -370,27 +367,26 @@
 ) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">query</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(
         <span class="string">&quot;SELECT 
-    route.uid, route.id, route.agency, route.short_name,
-    route.long_name, route.description, route.type, route.feed_id
-     FROM route &quot;</span>,
+        route.uid, route.id, route.agency, route.short_name,
+        route.long_name, route.description, route.type, route.feed_id
+        FROM route &quot;</span>,
     );
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">addition</span>: <span class="ident">String</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">values</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ToSql</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">if</span> <span class="ident">route_search</span>.<span class="ident">stops_visited</span>.<span class="ident">is_some</span>() {
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Got stops_visited&quot;</span>);
         <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(
             <span class="string">&quot;, trip, stop_time WHERE route.id = trip.route_id
-        AND route.feed_id = trip.feed_id
-        AND stop_time.feed_id = route.feed_id
-        AND stop_time.trip_id = trip.trip_id
-        AND stop_time.stop_id IN 
-        (
-            SELECT stop.id FROM stop WHERE stop.uid IN (&quot;</span>
-        );
+            AND route.feed_id = trip.feed_id
+            AND stop_time.feed_id = route.feed_id
+            AND stop_time.trip_id = trip.trip_id
+            AND stop_time.stop_id IN 
+            (
+                SELECT stop.id FROM stop WHERE stop.uid IN (&quot;</span>
+            );
 
         <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
 

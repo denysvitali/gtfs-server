@@ -214,29 +214,17 @@
 <span id="157">157</span>
 <span id="158">158</span>
 <span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/agency` related routes</span>
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">meta</span>::<span class="ident">Meta</span>;
 
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">agency</span>::<span class="ident">Agency</span>;
-<span class="kw">use</span> <span class="ident">models</span>::<span class="ident">route</span>::<span class="ident">Route</span>;
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">resultarray</span>::<span class="ident">ResultArray</span>;
-
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">agency</span>;
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">Json</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">Pool</span>;
-<span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">PostgresConnectionManager</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">RoutesHandler</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="ident">State</span>;
 
@@ -341,7 +329,7 @@
     <span class="kw">let</span> <span class="ident">agencies</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">agency_id</span>, <span class="kw-2">&amp;</span><span class="ident">feed_id</span>]);
 
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">agencies</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>);
-    <span class="kw">if</span> (<span class="ident">result</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="number">1</span>) {
+    <span class="kw">if</span> <span class="ident">result</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="number">1</span> {
         <span class="kw">return</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
     }
 
@@ -367,7 +355,7 @@
     <span class="kw">let</span> <span class="ident">agencies</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">agency_id</span>, <span class="kw-2">&amp;</span><span class="ident">feed_id</span>]);
 
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">agencies</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>);
-    <span class="kw">if</span> (<span class="ident">result</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="number">1</span>) {
+    <span class="kw">if</span>  <span class="ident">result</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="number">1</span> {
         <span class="kw">return</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
     }
 

@@ -77,7 +77,7 @@
 <span class="doccomment">//! for a list of enabled routes.</span>
 
 <span class="kw">use</span> <span class="ident">r2d2</span>::<span class="ident">Pool</span>;
-<span class="kw">use</span> <span class="ident">r2d2_postgres</span>::{<span class="ident">PostgresConnectionManager</span>, <span class="ident">TlsMode</span>};
+<span class="kw">use</span> <span class="ident">r2d2_postgres</span>::<span class="ident">PostgresConnectionManager</span>;
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RoutesHandler</span> {
     <span class="kw">pub</span> <span class="ident">pool</span>: <span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>,
