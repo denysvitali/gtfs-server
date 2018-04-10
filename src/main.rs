@@ -23,11 +23,9 @@ pub mod routes;
 use r2d2::Pool;
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 
-use models::stop::Stop;
 use routes::api;
 use routes::RoutesHandler;
 use std::env;
-use std::ffi::OsString;
 
 use chrono::{NaiveDate, NaiveTime};
 
@@ -112,7 +110,7 @@ fn main() {
 
     //stops_near(&pool, 46.00598, 8.952449, 200.0);
 
-    let rocket = start_server(rh);
+    start_server(rh);
     //parse_stops(&feed_id, "./resources/gtfs/sbb/stops.txt", &conn);
     //parse_routes(&feed_id, "./resources/gtfs/sbb/routes.txt", &conn);
     //parse_trips(&feed_id, "./resources/gtfs/sbb/trips.txt", &conn);

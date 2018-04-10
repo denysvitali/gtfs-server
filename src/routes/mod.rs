@@ -3,7 +3,7 @@
 //! for a list of enabled routes.
 
 use r2d2::Pool;
-use r2d2_postgres::{PostgresConnectionManager, TlsMode};
+use r2d2_postgres::PostgresConnectionManager;
 
 pub struct RoutesHandler {
     pub pool: Pool<PostgresConnectionManager>,

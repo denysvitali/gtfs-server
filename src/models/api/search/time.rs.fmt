@@ -29,7 +29,7 @@ pub struct TimeSearch {
 
 #[derive(Serialize, Deserialize, FromPrimitive, ToPrimitive)]
 pub enum TimeSort {
-    ArrivalTime,
+    ArrivaTime,
     DepartureTime,
     StopSequence,
 }
@@ -37,9 +37,9 @@ pub enum TimeSort {
 impl TimeSort {
     pub fn as_str(&self) -> &str {
         match self {
-            &TimeSort::ArrivalTime => "arrival_time",
-            &TimeSort::DepartureTime => "departure_time",
-            &TimeSort::StopSequence => "stop_sequence",
+            &TimeSort::ArrivaTime => "arrival_time",
+            &TimeSort::departure_time => "departure_time",
+            &TimeSort::stop_sequence => "stop_sequence",
         }
     }
 }

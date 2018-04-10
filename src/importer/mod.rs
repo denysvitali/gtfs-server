@@ -21,7 +21,7 @@ use std::str::FromStr;
 use self::regex::Regex;
 
 use r2d2::Pool;
-use r2d2_postgres::{PostgresConnectionManager, TlsMode};
+use r2d2_postgres::{PostgresConnectionManager};
 use std::fs::File;
 
 pub use self::chrono::{NaiveDate, NaiveTime};
@@ -32,14 +32,12 @@ use models::csv::calendar::CalendarCSV;
 use models::csv::feed::FeedCSV;
 use models::csv::route::RouteCSV;
 use models::csv::stop::StopCSV;
-use models::csv::stoptime::StopTimeCSV;
 use models::csv::trip::TripCSV;
-use std::io::Read;
 
 pub fn download_feed(feed_url: &str, pool: &Pool<PostgresConnectionManager>) {
     // Download feed from URL
     // Example:  https://opentransportdata.swiss/en/dataset/timetable-2018-gtfs/permalink
-    let mut resp = reqwest::get(feed_url);
+    let resp = reqwest::get(feed_url);
     //resp.
 }
 
@@ -228,7 +226,7 @@ pub fn parse_trips(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionMana
 
 pub fn parse_stop_times(feed_id: &str, path: &str, pool: &Pool<PostgresConnectionManager>) {
     let f = File::open(path).expect("File not found");
-    let mut reader = BufReader::new(f);
+    let reader = BufReader::new(f);
     let mut rdr = csv::Reader::from_reader(reader);
     for result in rdr.byte_records() {
         let record = result.unwrap();

@@ -83,7 +83,7 @@ pub fn trips(rh: State<RoutesHandler>) -> Json<ResultArray<Trip>> {
 
 #[get("/trips?<query>")]
 pub fn trips_by_query(rh: State<RoutesHandler>, query: TripSearch) -> Json<ResultArray<Trip>> {
-    let mut trips_result: Vec<Trip> = get_trips_by_query(&query, &rh.pool);
+    let trips_result: Vec<Trip> = get_trips_by_query(&query, &rh.pool);
 
     let rr = ResultArray::<Trip> {
         result: Some(trips_result),
@@ -168,16 +168,15 @@ fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -
     let trips = conn.query(&query, &params);
 
     for row in trips.expect("Query failed").iter() {
-        let sequence: Vec<StopTrip>;
+        //let sequence: Vec<StopTrip>;
         let mut route = parse_trip_row(&row);
-        let route_uid = route.uid.clone();
+        //let route_uid = route.uid.clone();
         //sequence = get_stop_trip(route_uid, pool);
         //route.stop_sequence = sequence;
         route.stop_sequence = Option::None; // stop_sequence is removed from the result
         trips_result.push(route);
     }
 
-    let results: Vec<Trip> = Vec::new();
     trips_result
 }
 
@@ -424,7 +423,7 @@ fn parse_stop_trip_row(row: &Row) -> StopTrip {
     let arrival_time: NaiveTime = row.get(9);
     let departure_time: NaiveTime = row.get(10);
 
-    let mut st = StopTrip {
+    let st = StopTrip {
         stop,
         arrival_time,
         departure_time,

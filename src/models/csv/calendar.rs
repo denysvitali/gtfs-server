@@ -1,4 +1,4 @@
-use importer::serde::{de, Deserialize, Deserializer};
+use importer::serde::{Deserialize, Deserializer};
 use importer::serde_de;
 use std::str::FromStr;
 

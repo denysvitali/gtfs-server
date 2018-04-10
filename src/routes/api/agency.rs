@@ -3,17 +3,11 @@
 use super::model_api::meta::Meta;
 
 use models::agency::Agency;
-use models::route::Route;
 
 use super::model_api::error::Error;
 use super::model_api::result::Result;
-use super::model_api::resultarray::ResultArray;
-
-use super::agency;
 
 use super::super::Json;
-use super::super::Pool;
-use super::super::PostgresConnectionManager;
 use super::super::RoutesHandler;
 use super::super::State;
 
@@ -118,7 +112,7 @@ fn get_agency(
     let agencies = conn.query(query, &[&agency_id, &feed_id]);
 
     let result = agencies.expect("Query failed");
-    if (result.len() != 1) {
+    if result.len() != 1 {
         return Option::None;
     }
 
@@ -144,7 +138,7 @@ pub fn get_agency_id(
     let agencies = conn.query(query, &[&agency_id, &feed_id]);
 
     let result = agencies.expect("Query failed");
-    if (result.len() != 1) {
+    if  result.len() != 1 {
         return Option::None;
     }
 

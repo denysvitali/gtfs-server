@@ -19,7 +19,6 @@ use models::api::search::route::RouteSearch;
 use postgres::rows::Row;
 
 use postgres::types::ToSql;
-use std::str::Split;
 
 /// `/routes`  
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
@@ -74,27 +73,26 @@ fn get_routes_by_query(
 ) -> Vec<Route> {
     let mut query = String::from(
         "SELECT 
-    route.uid, route.id, route.agency, route.short_name,
-    route.long_name, route.description, route.type, route.feed_id
-     FROM route ",
+        route.uid, route.id, route.agency, route.short_name,
+        route.long_name, route.description, route.type, route.feed_id
+        FROM route ",
     );
     let mut addition: String;
     let mut values: Vec<String> = Vec::new();
     let mut params: Vec<&ToSql> = Vec::new();
     let mut i = 0;
-    let mut result: Vec<Route> = Vec::new();
 
     if route_search.stops_visited.is_some() {
         println!("Got stops_visited");
         addition = format!(
             ", trip, stop_time WHERE route.id = trip.route_id
-        AND route.feed_id = trip.feed_id
-        AND stop_time.feed_id = route.feed_id
-        AND stop_time.trip_id = trip.trip_id
-        AND stop_time.stop_id IN 
-        (
-            SELECT stop.id FROM stop WHERE stop.uid IN ("
-        );
+            AND route.feed_id = trip.feed_id
+            AND stop_time.feed_id = route.feed_id
+            AND stop_time.trip_id = trip.trip_id
+            AND stop_time.stop_id IN 
+            (
+                SELECT stop.id FROM stop WHERE stop.uid IN ("
+            );
 
         query.push_str(&addition);
 
