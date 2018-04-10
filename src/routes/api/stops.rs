@@ -21,6 +21,8 @@ use rocket::response::content;
 
 use models::coordinate::Coordinate;
 
+static GMAPS_API_KEY : &'static str = "AIzaSyAvtzzsAPAlOrK8JbGfXfHMt18MbqCqrj4";
+
 /// `/stops`  
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)<[Stop](../../../models/stop/struct.Stop.html)>
 ///  
@@ -380,8 +382,9 @@ fn get_stops_by_coordinates(c1: Coordinate, c2: Coordinate, r1: f64, r2: f64) ->
 
     
     format!(r#"
-    <img src="https://maps.googleapis.com/maps/api/staticmap?center={0},{1}&zoom=16&scale=1&size=600x300&maptype=roadmap&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0x009fff%7Clabel:A%7C{0},{1}">
-    <img src="https://maps.googleapis.com/maps/api/staticmap?center={2},{3}&zoom=16&scale=1&size=600x300&maptype=roadmap&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0x009fff%7Clabel:B%7C{2},{3}">"#, 
+    <img src="https://maps.googleapis.com/maps/api/staticmap?center={0},{1}&zoom=16&scale=1&size=600x300&maptype=roadmap&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0x009fff%7Clabel:A%7C{0},{1}&key={4}">
+    <img src="https://maps.googleapis.com/maps/api/staticmap?center={2},{3}&zoom=16&scale=1&size=600x300&maptype=roadmap&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0x009fff%7Clabel:B%7C{2},{3}&key={4}">"#, 
     p1.lat, p1.lng,
-    p2.lat, p2.lng)
+    p2.lat, p2.lng,
+    GMAPS_API_KEY)
 }
