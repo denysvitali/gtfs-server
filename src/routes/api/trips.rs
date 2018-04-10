@@ -21,6 +21,7 @@ use super::super::PostgresConnectionManager;
 
 use chrono::NaiveTime;
 use postgres::rows::Row;
+use postgres::types::ToSql;
 
 use num_traits as num;
 use models::api::search::trip::TripSearch;
@@ -117,8 +118,9 @@ fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -
         AND r.feed_id = t.feed_id ");
 
     let mut trips_result : Vec<Trip> = Vec::new();
-    let mut values : Vec<&str> = Vec::new();
-    let mut i = 1;
+    let mut values : Vec<String> = Vec::new();
+    let mut params : Vec<&ToSql> = Vec::new();
+    let mut i = 0;
     let mut addition: String;
 
     if ts.stops_visited.is_some() {
@@ -127,13 +129,14 @@ fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -
         let split_stops : Vec<&str> = ts.stops_visited.as_ref()
             .unwrap().split(",").collect();
         let mut first = true;
-        for str in split_stops {
+        for stop in split_stops {
             if first {
                first = !first;
             } else {
                 addition = format!(" INTERSECT ");
                 query.push_str(&addition);
             }
+            i += 1;
             addition = format!(
                 "SELECT
                 trip.uid as tuid
@@ -145,12 +148,17 @@ fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -
                         AND
                         stop_time.feed_id = stop.feed_id
                         AND
-                        stop.uid = '{}'", str);
+                        stop.uid = ${}", &i);
             query.push_str(&addition);
-            println!("Stop {} ", str);
+            values.push(String::from(stop));
+            println!("Stop {} ", stop);
         }
         addition = format!(" )");
         query.push_str(&addition);
+    }
+
+    for value in &values {
+        params.push(value);
     }
 
     addition = format!(" LIMIT 50"); // TODO: Pagination
@@ -161,7 +169,7 @@ fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -
     let conn = pool.clone().get().unwrap();
     let trips = conn.query(
         &query,
-        &[]
+        &params
     );
 
     for row in trips.expect("Query failed").iter() {
