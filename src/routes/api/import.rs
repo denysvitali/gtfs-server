@@ -1,8 +1,8 @@
 //! `/import` related routes
 
-use super::super::RoutesHandler;
 use super::super::Pool;
 use super::super::PostgresConnectionManager;
+use super::super::RoutesHandler;
 
 use super::super::Json;
 use super::super::State;
@@ -13,7 +13,7 @@ use std::thread;
 
 #[get("/import/url/<feed_url>")]
 pub fn url(rh: State<RoutesHandler>, feed_url: String) -> Json<SuccessResult> {
-    let pool : Pool<PostgresConnectionManager> = rh.pool.clone();
+    let pool: Pool<PostgresConnectionManager> = rh.pool.clone();
     thread::spawn(move || {
         importer::create_tables(&pool);
         importer::download_feed(&feed_url, &pool);
@@ -25,7 +25,7 @@ pub fn url(rh: State<RoutesHandler>, feed_url: String) -> Json<SuccessResult> {
 
 #[get("/import/agency/<feed_id>")]
 pub fn agency(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
-    let pool : Pool<PostgresConnectionManager> = rh.pool.clone();
+    let pool: Pool<PostgresConnectionManager> = rh.pool.clone();
     thread::spawn(move || {
         importer::create_tables(&pool);
         importer::parse_agency(&feed_id, "./resources/gtfs/sbb/agency.txt", &pool);
@@ -37,7 +37,7 @@ pub fn agency(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> 
 
 #[get("/import/stops/<feed_id>")]
 pub fn stops(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
-    let pool : Pool<PostgresConnectionManager> = rh.pool.clone();
+    let pool: Pool<PostgresConnectionManager> = rh.pool.clone();
     thread::spawn(move || {
         importer::create_tables(&pool);
         importer::parse_stops(&feed_id, "./resources/gtfs/sbb/stops.txt", &pool);
@@ -49,7 +49,7 @@ pub fn stops(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
 
 #[get("/import/times/<feed_id>")]
 pub fn times(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
-    let pool : Pool<PostgresConnectionManager> = rh.pool.clone();
+    let pool: Pool<PostgresConnectionManager> = rh.pool.clone();
     thread::spawn(move || {
         importer::create_tables(&pool);
         importer::parse_stop_times(&feed_id, "./resources/gtfs/sbb/stop_times.txt", &pool);
@@ -61,7 +61,7 @@ pub fn times(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
 
 #[get("/import/routes/<feed_id>")]
 pub fn routes(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
-    let pool : Pool<PostgresConnectionManager> = rh.pool.clone();
+    let pool: Pool<PostgresConnectionManager> = rh.pool.clone();
     thread::spawn(move || {
         importer::create_tables(&pool);
         importer::parse_routes(&feed_id, "./resources/gtfs/sbb/routes.txt", &pool);
@@ -73,7 +73,7 @@ pub fn routes(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> 
 
 #[get("/import/trips/<feed_id>")]
 pub fn trips(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
-    let pool : Pool<PostgresConnectionManager> = rh.pool.clone();
+    let pool: Pool<PostgresConnectionManager> = rh.pool.clone();
     thread::spawn(move || {
         importer::create_tables(&pool);
         importer::parse_trips(&feed_id, "./resources/gtfs/sbb/trips.txt", &pool);
@@ -85,7 +85,7 @@ pub fn trips(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
 
 #[get("/import/calendar/<feed_id>")]
 pub fn calendar(rh: State<RoutesHandler>, feed_id: String) -> Json<SuccessResult> {
-    let pool : Pool<PostgresConnectionManager> = rh.pool.clone();
+    let pool: Pool<PostgresConnectionManager> = rh.pool.clone();
     thread::spawn(move || {
         importer::create_tables(&pool);
         importer::parse_calendar(&feed_id, "./resources/gtfs/sbb/calendar.txt", &pool);

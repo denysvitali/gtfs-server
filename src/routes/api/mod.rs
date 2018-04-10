@@ -1,23 +1,24 @@
+use super::super::{NaiveDate, NaiveTime};
 use super::model_api;
-use super::super::{NaiveTime, NaiveDate};
 
-use rocket::response::content;
 use rocket::http::ContentType;
+use rocket::response::content;
 
 pub mod agency;
 pub mod import;
 pub mod routes;
 pub mod stops;
-pub mod trips;
 pub mod times;
+pub mod trips;
 
 use rocket;
 
 #[get("/")]
 pub fn main() -> content::Html<String> {
-    let mut s : String = String::from(env!("GIT_HASH"));
+    let mut s: String = String::from(env!("GIT_HASH"));
     s.truncate(7);
-    return content::Html(format!(r#"<!DOCTYPE html>
+    return content::Html(format!(
+        r#"<!DOCTYPE html>
     <html>
     <head>
         <title>GTFS API</title>

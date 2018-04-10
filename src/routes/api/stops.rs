@@ -1,18 +1,18 @@
 //! `/stops` related routes
 
+use super::model_api::error::Error;
+use super::model_api::meta::Meta;
 use super::model_api::result::Result;
 use super::model_api::resultarray::ResultArray;
 use super::model_api::stopdistance::StopDistance;
-use super::model_api::meta::Meta;
-use super::model_api::error::Error;
 
 use models::stop::Stop;
 
-use super::super::RoutesHandler;
 use super::super::Json;
-use super::super::State;
 use super::super::Pool;
 use super::super::PostgresConnectionManager;
+use super::super::RoutesHandler;
+use super::super::State;
 use postgres::rows::Row;
 
 /// `/stops`  
@@ -48,13 +48,12 @@ use postgres::rows::Row;
 **/
 #[get("/stops")]
 pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
-
     let sr = ResultArray::<Stop> {
         result: Some(get_stops(&rh.pool)),
-        meta: Meta{
+        meta: Meta {
             success: true,
-            error: Option::None
-        }
+            error: Option::None,
+        },
     };
     Json(sr)
 }
@@ -64,7 +63,6 @@ pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
 /// Returns a [Result](../../../models/api/result/struct.Result.html)<[Stop](../../../models/stop/struct.Stop.html)>
 #[get("/stops/<stop_id>")]
 pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Stop>> {
-
     let stop = get_stop_by_id(stop_id, &rh.pool);
     if stop.is_none() {
         return Json(Result::<Stop> {
@@ -73,18 +71,18 @@ pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Sto
                 success: false,
                 error: Some(Error {
                     code: 2,
-                    message: String::from("Invalid stop id")
-                })
-            }
+                    message: String::from("Invalid stop id"),
+                }),
+            },
         });
     }
 
     let sr = Result::<Stop> {
         result: stop,
-        meta: Meta{
+        meta: Meta {
             success: true,
-            error: Option::None
-        }
+            error: Option::None,
+        },
     };
     Json(sr)
 }
@@ -93,13 +91,12 @@ pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Sto
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)<[Stop](../../../models/stop/struct.Stop.html)>
 #[get("/stops/by-trip/<trip_id>")]
 pub fn stops_by_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultArray<Stop>> {
-
     let sr = ResultArray::<Stop> {
         result: Some(get_stops_by_trip(trip_id, &rh.pool)),
-        meta: Meta{
+        meta: Meta {
             success: true,
-            error: Option::None
-        }
+            error: Option::None,
+        },
     };
     Json(sr)
 }
@@ -110,14 +107,17 @@ pub fn stops_by_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultAr
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[StopDistance](../../../models/api/stopdistance/struct.StopDistance.html)>
 #[get("/stops/near/<lat>/<lng>")]
-pub fn stops_near_default(rh: State<RoutesHandler>, lat: f32, lng: f32) -> Json<ResultArray<StopDistance>> {
-
+pub fn stops_near_default(
+    rh: State<RoutesHandler>,
+    lat: f32,
+    lng: f32,
+) -> Json<ResultArray<StopDistance>> {
     let sr = ResultArray::<StopDistance> {
         result: Some(get_stops_near(&rh.pool, lat, lng, 100.0)),
-        meta: Meta{
+        meta: Meta {
             success: true,
-            error: Option::None
-        }
+            error: Option::None,
+        },
     };
     Json(sr)
 }
@@ -129,21 +129,25 @@ pub fn stops_near_default(rh: State<RoutesHandler>, lat: f32, lng: f32) -> Json<
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[StopDistance](../../../models/api/stopdistance/struct.StopDistance.html)>
 #[get("/stops/near/<lat>/<lng>/<meters>")]
-pub fn stops_near(rh: State<RoutesHandler>, lat: f32, lng: f32, meters: f64) -> Json<ResultArray<StopDistance>> {
-
+pub fn stops_near(
+    rh: State<RoutesHandler>,
+    lat: f32,
+    lng: f32,
+    meters: f64,
+) -> Json<ResultArray<StopDistance>> {
     let sr = ResultArray::<StopDistance> {
         result: Some(get_stops_near(&rh.pool, lat, lng, meters)),
-        meta: Meta{
+        meta: Meta {
             success: true,
-            error: Option::None
-        }
+            error: Option::None,
+        },
     };
     Json(sr)
 }
 
 fn parse_stop_row(row: &Row) -> Stop {
-    let lat : f64 = row.get(6);
-    let lng : f64 = row.get(7);
+    let lat: f64 = row.get(6);
+    let lng: f64 = row.get(7);
 
     let uid = row.get(0);
     let id = row.get(1);
@@ -152,9 +156,7 @@ fn parse_stop_row(row: &Row) -> Stop {
     let parent_station: Option<String> = row.get(4);
     let feed_id = row.get(5);
 
-    let mut stop = Stop::new(
-        uid, name, lat, lng, location_type, parent_station
-    );
+    let mut stop = Stop::new(uid, name, lat, lng, location_type, parent_station);
 
     &stop.set_id(id);
     &stop.set_feed_id(feed_id);
@@ -176,9 +178,7 @@ fn get_stop_by_id(stop_id: String, pool: &Pool<PostgresConnectionManager>) -> Op
         LIMIT 1";
 
     let conn = pool.clone().get().unwrap();
-    let stops = conn.query(
-        query, &[&stop_id]
-    );
+    let stops = conn.query(query, &[&stop_id]);
 
     let stops = &stops.expect("Query failed");
 
@@ -203,11 +203,9 @@ fn get_stops(pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
         LIMIT 50";
 
     let conn = pool.clone().get().unwrap();
-    let stops = conn.query(
-        query, &[]
-    );
+    let stops = conn.query(query, &[]);
 
-    let mut stops_result : Vec<Stop> = Vec::new();
+    let mut stops_result: Vec<Stop> = Vec::new();
 
     for row in stops.expect("Query failed").iter() {
         let stop = parse_stop_row(&row);
@@ -217,10 +215,12 @@ fn get_stops(pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
     stops_result
 }
 
-fn get_stops_near(pool: &Pool<PostgresConnectionManager>,
-                  lat: f32,
-                  lng: f32,
-                  meters: f64) -> Vec<StopDistance> {
+fn get_stops_near(
+    pool: &Pool<PostgresConnectionManager>,
+    lat: f32,
+    lng: f32,
+    meters: f64,
+) -> Vec<StopDistance> {
     let query = "SELECT * FROM (SELECT
         uid,
         id,
@@ -239,24 +239,15 @@ fn get_stops_near(pool: &Pool<PostgresConnectionManager>,
 
     //println!(format!("{}", query));
     let conn = pool.clone().get().unwrap();
-    let stops = conn.query(
-        query,
-        &[
-            &format!("POINT({:.5} {:.5})", lng, lat),
-            &meters
-        ]
-    );
+    let stops = conn.query(query, &[&format!("POINT({:.5} {:.5})", lng, lat), &meters]);
 
-    let mut stops_result : Vec<StopDistance> = Vec::new();
+    let mut stops_result: Vec<StopDistance> = Vec::new();
 
     for row in stops.expect("Query failed").iter() {
         let stop = parse_stop_row(&row);
         let distance = row.get(8);
 
-        let sd = StopDistance {
-            stop,
-            distance
-        };
+        let sd = StopDistance { stop, distance };
 
         stops_result.push(sd);
     }
@@ -265,7 +256,6 @@ fn get_stops_near(pool: &Pool<PostgresConnectionManager>,
 }
 
 fn get_stops_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
-
     /*
         	stop_time.stop_sequence, \
             stop_time.arrival_time, \
@@ -294,11 +284,9 @@ fn get_stops_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) ->
     ORDER BY stop_time.stop_sequence ASC;";
 
     let conn = pool.clone().get().unwrap();
-    let stops = conn.query(
-        query, &[&trip_id]
-    );
+    let stops = conn.query(query, &[&trip_id]);
 
-    let mut stops_result : Vec<Stop> = Vec::new();
+    let mut stops_result: Vec<Stop> = Vec::new();
 
     for row in stops.expect("Query failed").iter() {
         let stop = parse_stop_row(&row);
@@ -307,7 +295,4 @@ fn get_stops_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) ->
     }
 
     stops_result
-
-
-
 }

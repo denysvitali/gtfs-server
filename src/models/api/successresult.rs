@@ -1,6 +1,6 @@
 //! SuccessResult related structs and implementations
 
-#[derive(Debug,Serialize)]
+#[derive(Debug, Serialize)]
 pub struct SuccessResult {
-    pub success: bool
+    pub success: bool,
 }

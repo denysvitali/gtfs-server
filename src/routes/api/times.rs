@@ -1,46 +1,46 @@
 //! `/times` related routes
 
 use super::model_api::meta::Meta;
+use models::dropoff::DropOff;
+use models::pickup::PickUp;
 use models::time::Time;
 use models::trip::Trip;
-use models::pickup::PickUp;
-use models::dropoff::DropOff;
 
 use super::model_api::result::Result;
 use super::model_api::resultarray::ResultArray;
 
-use super::super::RoutesHandler;
 use super::super::Json;
-use super::super::State;
 use super::super::Pool;
 use super::super::PostgresConnectionManager;
+use super::super::RoutesHandler;
+use super::super::State;
 
 use postgres::rows::Row;
 
 use num_traits as num;
 use num_traits::FromPrimitive;
 
-use super::NaiveTime;
 use super::NaiveDate;
+use super::NaiveTime;
 
 use postgres::types::ToSql;
 
+use super::model_api::search::ascdesc::AscDesc;
 use super::model_api::search::time::TimeSearch;
 use super::model_api::search::time::TimeSort;
-use super::model_api::search::ascdesc::AscDesc;
 
 #[get("/times?<time_search>")]
-pub fn times_query(rh: State<RoutesHandler>, time_search: TimeSearch) -> Json<ResultArray<Time>>{
+pub fn times_query(rh: State<RoutesHandler>, time_search: TimeSearch) -> Json<ResultArray<Time>> {
     let result = get_times_by_query(&time_search, &rh.pool);
 
-    let meta = Meta{
+    let meta = Meta {
         success: true,
         error: None,
     };
 
-    Json(ResultArray::<Time>{
+    Json(ResultArray::<Time> {
         result: Some(result),
-        meta
+        meta,
     })
 }
 
@@ -50,17 +50,17 @@ pub fn times_query(rh: State<RoutesHandler>, time_search: TimeSearch) -> Json<Re
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[Time](../../../models/time/struct.Time.html)>
 #[get("/times/by-trip/<trip_uid>")]
-pub fn times_by_trip(rh: State<RoutesHandler>, trip_uid: String) -> Json<ResultArray<Time>>{
+pub fn times_by_trip(rh: State<RoutesHandler>, trip_uid: String) -> Json<ResultArray<Time>> {
     let result = get_times_by_trip(trip_uid, &rh.pool);
 
-    let meta = Meta{
+    let meta = Meta {
         success: true,
         error: None,
     };
 
-    Json(ResultArray::<Time>{
+    Json(ResultArray::<Time> {
         result: Some(result),
-        meta
+        meta,
     })
 }
 
@@ -181,18 +181,22 @@ pub fn times_by_trip(rh: State<RoutesHandler>, trip_uid: String) -> Json<ResultA
 **/
 /// 
 #[get("/times/by-stop/<stop_id>?<time_search>")]
-pub fn times_stop_query(rh: State<RoutesHandler>, stop_id: String, mut time_search: TimeSearch) -> Json<ResultArray<Time>>{
+pub fn times_stop_query(
+    rh: State<RoutesHandler>,
+    stop_id: String,
+    mut time_search: TimeSearch,
+) -> Json<ResultArray<Time>> {
     time_search.stop = Some(stop_id);
     let result = get_times_by_query(&time_search, &rh.pool);
 
-    let meta = Meta{
+    let meta = Meta {
         success: true,
         error: None,
     };
 
-    Json(ResultArray::<Time>{
+    Json(ResultArray::<Time> {
         result: Some(result),
-        meta
+        meta,
     })
 }
 
@@ -202,23 +206,26 @@ pub fn times_stop_query(rh: State<RoutesHandler>, stop_id: String, mut time_sear
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[Time](../../../models/time/struct.Time.html)>
 #[get("/times/by-stop/<stop_id>")]
-pub fn times_stop(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray<Time>>{
+pub fn times_stop(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray<Time>> {
     let result = get_times_by_stop_id(stop_id, &rh.pool);
 
-    let meta = Meta{
+    let meta = Meta {
         success: true,
         error: None,
     };
 
-    Json(ResultArray::<Time>{
+    Json(ResultArray::<Time> {
         result: Some(result),
-        meta
+        meta,
     })
 }
 
-fn get_times_by_query<'a>(time_search: &TimeSearch, pool: &Pool<PostgresConnectionManager>) -> Vec<Time>{
-
-    let mut query = String::from("SELECT t.uid,
+fn get_times_by_query<'a>(
+    time_search: &TimeSearch,
+    pool: &Pool<PostgresConnectionManager>,
+) -> Vec<Time> {
+    let mut query = String::from(
+        "SELECT t.uid,
         arrival_time,
         departure_time,
         stop.uid,
@@ -247,7 +254,8 @@ fn get_times_by_query<'a>(time_search: &TimeSearch, pool: &Pool<PostgresConnecti
         t.feed_id = stop.feed_id AND 
         c.feed_id = t.feed_id AND
         r.feed_id = c.feed_id AND
-        r.id = t.route_id");
+        r.id = t.route_id",
+    );
 
     /*
         (SELECT * FROM stop_time
@@ -261,21 +269,21 @@ fn get_times_by_query<'a>(time_search: &TimeSearch, pool: &Pool<PostgresConnecti
         ) as a
     */
 
-    let mut dates : Vec<NaiveDate> = Vec::new();
-    let mut times : Vec<NaiveTime> = Vec::new();
-    let mut i32_values : Vec<i32> = Vec::new();
-    let mut values : Vec<&bool> = Vec::new();
-    let mut string_values : Vec<&String> = Vec::new();
+    let mut dates: Vec<NaiveDate> = Vec::new();
+    let mut times: Vec<NaiveTime> = Vec::new();
+    let mut i32_values: Vec<i32> = Vec::new();
+    let mut values: Vec<&bool> = Vec::new();
+    let mut string_values: Vec<&String> = Vec::new();
     let mut params: Vec<&ToSql> = Vec::new();
     let mut i = 0;
 
-    let mut addition : String;
+    let mut addition: String;
 
     string_values = Vec::new();
 
     if time_search.stop.is_some() {
         string_values.push(time_search.stop.as_ref().unwrap());
-        i+= 1;
+        i += 1;
         addition = format!(" AND a.stop_id = (SELECT stop.id FROM stop WHERE stop.uid = ${} AND stop.feed_id = a.feed_id LIMIT 1) ", &i);
         query.push_str(&addition);
     }
@@ -286,53 +294,51 @@ fn get_times_by_query<'a>(time_search: &TimeSearch, pool: &Pool<PostgresConnecti
 
     string_values = Vec::new();
 
-    
-
     if time_search.monday.is_some() {
         values.push(time_search.monday.as_ref().unwrap());
-        i+= 1;
+        i += 1;
         addition = format!(" AND monday = ${}", &i);
         query.push_str(&addition);
     }
 
     if time_search.tuesday.is_some() {
         values.push(time_search.tuesday.as_ref().unwrap());
-        i+= 1;
+        i += 1;
         addition = format!(" AND tuesday = ${}", &i);
         query.push_str(&addition);
     }
 
     if time_search.wednesday.is_some() {
         values.push(time_search.wednesday.as_ref().unwrap());
-        i+= 1;
+        i += 1;
         addition = format!(" AND wednesday = ${}", &i);
         query.push_str(&addition);
     }
 
     if time_search.thursday.is_some() {
         values.push(time_search.thursday.as_ref().unwrap());
-        i+= 1;
+        i += 1;
         addition = format!(" AND thursday = ${}", &i);
         query.push_str(&addition);
     }
 
     if time_search.friday.is_some() {
         values.push(time_search.friday.as_ref().unwrap());
-        i+= 1;
+        i += 1;
         addition = format!(" AND friday = ${}", &i);
         query.push_str(&addition);
     }
 
     if time_search.saturday.is_some() {
         values.push(time_search.saturday.as_ref().unwrap());
-        i+= 1;
+        i += 1;
         addition = format!(" AND saturday = ${}", &i);
         query.push_str(&addition);
     }
 
     if time_search.sunday.is_some() {
         values.push(time_search.sunday.as_ref().unwrap());
-        i+= 1;
+        i += 1;
         addition = format!(" AND sunday = ${}", &i);
         query.push_str(&addition);
     }
@@ -342,12 +348,8 @@ fn get_times_by_query<'a>(time_search: &TimeSearch, pool: &Pool<PostgresConnecti
     }
 
     if time_search.date.is_some() {
-        string_values.push(
-            time_search.date
-                .as_ref()
-                .unwrap()
-        );
-        i+= 1;
+        string_values.push(time_search.date.as_ref().unwrap());
+        i += 1;
         addition = format!(" AND start_date <= ${0} AND end_date >= ${0}", &i);
         query.push_str(&addition);
     }
@@ -364,29 +366,25 @@ fn get_times_by_query<'a>(time_search: &TimeSearch, pool: &Pool<PostgresConnecti
 
     if time_search.stop_sequence.is_some() {
         i32_values.push(time_search.stop_sequence.unwrap());
-        i+= 1;
+        i += 1;
         addition = format!(" AND stop_sequence = ${}", &i);
         query.push_str(&addition);
     }
 
     if time_search.drop_off_type.is_some() {
-        let drop_off : DropOff = DropOff::from_string(time_search.drop_off_type.as_ref().unwrap());
+        let drop_off: DropOff = DropOff::from_string(time_search.drop_off_type.as_ref().unwrap());
 
-        i32_values.push(
-            num::ToPrimitive::to_i32(&drop_off).unwrap()
-        );
-        i+= 1;
+        i32_values.push(num::ToPrimitive::to_i32(&drop_off).unwrap());
+        i += 1;
         addition = format!(" AND a.drop_off_type = ${}", &i);
         query.push_str(&addition);
     }
 
     if time_search.pickup_type.is_some() {
-        let pickup : PickUp = PickUp::from_string(time_search.pickup_type.as_ref().unwrap());
+        let pickup: PickUp = PickUp::from_string(time_search.pickup_type.as_ref().unwrap());
 
-        i32_values.push(
-            num::ToPrimitive::to_i32(&pickup).unwrap()
-        );
-        i+= 1;
+        i32_values.push(num::ToPrimitive::to_i32(&pickup).unwrap());
+        i += 1;
         addition = format!(" AND a.pickup_type = ${}", &i);
         query.push_str(&addition);
     }
@@ -395,30 +393,20 @@ fn get_times_by_query<'a>(time_search: &TimeSearch, pool: &Pool<PostgresConnecti
         params.push(val);
     }
 
-
     string_values = Vec::new();
 
     if time_search.at_a.is_some() {
+        string_values.push(time_search.at_a.as_ref().unwrap());
 
-        string_values.push(
-            time_search.at_a
-                .as_ref()
-                .unwrap()
-        );
-
-        i+= 1;
+        i += 1;
         addition = format!(" AND arrival_time >= ${}", &i);
         query.push_str(&addition);
     }
 
     if time_search.at_b.is_some() {
-        string_values.push(
-            time_search.at_b
-                .as_ref()
-                .unwrap()
-        );
+        string_values.push(time_search.at_b.as_ref().unwrap());
 
-        i+= 1;
+        i += 1;
         addition = format!(" AND arrival_time <= ${}", &i);
         query.push_str(&addition);
     }
@@ -430,29 +418,21 @@ fn get_times_by_query<'a>(time_search: &TimeSearch, pool: &Pool<PostgresConnecti
     for val in &times {
         params.push(val);
     }
-    
+
     string_values = Vec::new();
-    
+
     if time_search.trip_id.is_some() {
-        string_values.push(
-            time_search.trip_id
-                .as_ref()
-                .unwrap()
-        );
-        
-        i+= 1;
+        string_values.push(time_search.trip_id.as_ref().unwrap());
+
+        i += 1;
         addition = format!(" AND t.uid = ${}", &i);
         query.push_str(&addition);
     }
 
     if time_search.route.is_some() {
-        string_values.push(
-            time_search.route
-                .as_ref()
-                .unwrap()
-        );
-        
-        i+= 1;
+        string_values.push(time_search.route.as_ref().unwrap());
+
+        i += 1;
         addition = format!(" AND r.uid = ${}", &i);
         query.push_str(&addition);
     }
@@ -468,17 +448,17 @@ fn get_times_by_query<'a>(time_search: &TimeSearch, pool: &Pool<PostgresConnecti
             sort = match res.to_lowercase().as_str() {
                 "asc" => AscDesc::ASC,
                 "desc" => AscDesc::DESC,
-                _ => AscDesc::ASC
+                _ => AscDesc::ASC,
             };
         }
-        
+
         let sort_by = match time_search.sort_by.as_ref().unwrap().as_str() {
             "arrival_time" => TimeSort::arrival_time,
             "departure_time" => TimeSort::departure_time,
             "stop_sequence" => TimeSort::stop_sequence,
-            &_ => TimeSort::arrival_time
+            &_ => TimeSort::arrival_time,
         };
-        
+
         addition = format!(" ORDER BY {} {}", sort_by.as_str(), sort.as_str());
         query.push_str(&addition);
     }
@@ -506,13 +486,11 @@ fn get_times_by_query<'a>(time_search: &TimeSearch, pool: &Pool<PostgresConnecti
         ORDER BY stop_sequence) as a INNER JOIN stop ON (a.stop_id=stop.id) WHERE a.feed_id = stop.feed_id";*/
 
     let conn = pool.clone().get().unwrap();
-    let times = conn.query(
-        &query, &params.as_slice()
-    );
+    let times = conn.query(&query, &params.as_slice());
 
     println!("{:?}", params.as_slice());
 
-    let mut times_result : Vec<Time> = Vec::new();
+    let mut times_result: Vec<Time> = Vec::new();
 
     for row in times.expect("Query failed").iter() {
         let time = parse_time_row(&row);
@@ -522,27 +500,26 @@ fn get_times_by_query<'a>(time_search: &TimeSearch, pool: &Pool<PostgresConnecti
     times_result
 }
 
-pub fn get_times_by_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Time>{
-    let mut ts : TimeSearch = Default::default();
+pub fn get_times_by_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Time> {
+    let mut ts: TimeSearch = Default::default();
     ts.trip = Some(trip_uid);
     get_times_by_query(&ts, pool)
 }
 
-fn get_times_by_stop_id(stop_uid: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Time>{
-    let mut ts : TimeSearch = Default::default();
+fn get_times_by_stop_id(stop_uid: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Time> {
+    let mut ts: TimeSearch = Default::default();
     ts.stop = Some(stop_uid);
     get_times_by_query(&ts, pool)
 }
 
 fn parse_time_row(row: &Row) -> Time {
+    let pickup_int: i32 = row.get(5);
+    let dropoff_int: i32 = row.get(6);
 
-    let pickup_int : i32 = row.get(5);
-    let dropoff_int : i32 = row.get(6);
+    let arrival: NaiveTime = row.get(1);
+    let departure: NaiveTime = row.get(2);
 
-    let arrival : NaiveTime = row.get(1);
-    let departure : NaiveTime = row.get(2);
-
-    let start_date : NaiveDate = row.get(16);
+    let start_date: NaiveDate = row.get(16);
     let end_date: NaiveDate = row.get(17);
 
     let mut time = Time {
@@ -554,12 +531,19 @@ fn parse_time_row(row: &Row) -> Time {
         pickup_type: num::FromPrimitive::from_i32(pickup_int).unwrap(),
         drop_off_type: num::FromPrimitive::from_i32(dropoff_int).unwrap(),
         route_id: row.get(7),
-        service_days: vec![row.get(9), row.get(10), row.get(11), row.get(12),
-                           row.get(13), row.get(14), row.get(15)],
+        service_days: vec![
+            row.get(9),
+            row.get(10),
+            row.get(11),
+            row.get(12),
+            row.get(13),
+            row.get(14),
+            row.get(15),
+        ],
         service_uid: row.get(8),
         start_date,
         end_date,
-        feed_id: row.get(18)
+        feed_id: row.get(18),
     };
 
     time

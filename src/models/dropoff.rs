@@ -5,7 +5,7 @@ pub enum DropOff {
     RegularlyScheduled = 0,
     NotAvailable = 1,
     MustArrangeWithAgency = 2,
-    MustCoordinateWithDriver = 3
+    MustCoordinateWithDriver = 3,
 }
 
 impl DropOff {
@@ -15,7 +15,7 @@ impl DropOff {
             "NotAvailable" => DropOff::NotAvailable,
             "MustArrangeWithAgency" => DropOff::MustArrangeWithAgency,
             "MustCoordinateWithDriver" => DropOff::MustCoordinateWithDriver,
-            _ => DropOff::RegularlyScheduled
+            _ => DropOff::RegularlyScheduled,
         }
     }
 }

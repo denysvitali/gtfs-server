@@ -2,8 +2,8 @@
 
 use super::meta::Meta;
 
-#[derive(Debug,Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Result<T> {
     pub result: Option<T>,
-    pub meta: Meta
+    pub meta: Meta,
 }

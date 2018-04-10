@@ -4,7 +4,7 @@ pub enum PickUp {
     RegularlyScheduled = 0,
     NoPickupAvailable = 1,
     MustArrangeWithAgency = 2,
-    MustCoordinateWithDriver = 3
+    MustCoordinateWithDriver = 3,
 }
 
 impl PickUp {
@@ -14,7 +14,7 @@ impl PickUp {
             "NoPickupAvailable" => PickUp::NoPickupAvailable,
             "MustArrangeWithAgency" => PickUp::MustArrangeWithAgency,
             "MustCoordinateWithDriver" => PickUp::MustCoordinateWithDriver,
-            _ => PickUp::RegularlyScheduled
+            _ => PickUp::RegularlyScheduled,
         }
     }
 }

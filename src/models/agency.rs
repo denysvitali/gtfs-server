@@ -1,5 +1,5 @@
 //! Agency related structs and implementations
-#[derive(Debug,Serialize,Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Agency {
     pub uid: String,
     #[serde(skip_serializing)]
@@ -10,5 +10,5 @@ pub struct Agency {
     pub lang: String,
     pub phone: String,
     #[serde(skip_serializing)]
-    pub feed_id: String
+    pub feed_id: String,
 }

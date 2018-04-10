@@ -7,12 +7,12 @@
 
 extern crate rocket;
 
+extern crate chrono;
+extern crate num_traits;
 extern crate postgres;
 extern crate r2d2;
 extern crate r2d2_postgres;
 extern crate rocket_contrib;
-extern crate num_traits;
-extern crate chrono;
 
 mod test;
 
@@ -20,16 +20,16 @@ mod importer;
 pub mod models;
 pub mod routes;
 
-use r2d2_postgres::{TlsMode, PostgresConnectionManager};
 use r2d2::Pool;
+use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 
 use models::stop::Stop;
-use routes::RoutesHandler;
 use routes::api;
+use routes::RoutesHandler;
 use std::env;
 use std::ffi::OsString;
 
-use chrono::{NaiveTime, NaiveDate};
+use chrono::{NaiveDate, NaiveTime};
 
 #[macro_use]
 extern crate serde_derive;
@@ -40,58 +40,61 @@ fn create_pool() -> Pool<PostgresConnectionManager> {
     let mut hostname = "172.18.0.2";
     let mut password = String::from("mysecretpassword");
 
-    if env::var_os("IN_DOCKER").is_some() && 
-        env::var_os("IN_DOCKER").unwrap().to_str().unwrap() == "true" {
+    if env::var_os("IN_DOCKER").is_some()
+        && env::var_os("IN_DOCKER").unwrap().to_str().unwrap() == "true"
+    {
         hostname = "postgres";
         password = String::from(
-            env::var_os("POSTGRES_PASSWORD").unwrap().to_str().unwrap().clone());
+            env::var_os("POSTGRES_PASSWORD")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .clone(),
+        );
     }
 
+    let connection_string = format!("postgres://postgres:{}@{}:5432", password, hostname);
 
-    let connection_string = format!("postgres://postgres:{}@{}:5432",
-        password,
-        hostname
-    );
-
-    let manager = PostgresConnectionManager::new(
-        connection_string,
-        TlsMode::None
-    ).unwrap();
+    let manager = PostgresConnectionManager::new(connection_string, TlsMode::None).unwrap();
     let pool = Pool::new(manager).unwrap();
     pool
 }
 
-fn start_server(rh : RoutesHandler) {
+fn start_server(rh: RoutesHandler) {
     rocket::ignite()
         .manage(rh)
-        .mount("/api", routes![
-        api::main,
-        api::import::agency,
-        api::import::stops,
-        api::import::trips,
-        api::import::calendar,
-        api::import::routes,
-        api::import::times,
-        api::agency::agency_by_id,
-        api::routes::routes,
-        api::routes::routes_by_query,
-        api::routes::route_by_stop_uid,
-        api::routes::route_by_id,
-        api::stops::stops,
-        api::stops::stops_by_id,
-        api::stops::stops_near_default,
-        api::stops::stops_near,
-        api::stops::stops_by_trip,
-        api::trips::trips,
-        api::trips::trips_stopid,
-        api::trips::trip,
-        api::trips::trip_by_route,
-        api::trips::trips_by_query,
-        api::times::times_query,
-        api::times::times_by_trip,
-        api::times::times_stop,
-        api::times::times_stop_query
-    ]).launch();
+        .mount(
+            "/api",
+            routes![
+                api::main,
+                api::import::agency,
+                api::import::stops,
+                api::import::trips,
+                api::import::calendar,
+                api::import::routes,
+                api::import::times,
+                api::agency::agency_by_id,
+                api::routes::routes,
+                api::routes::routes_by_query,
+                api::routes::route_by_stop_uid,
+                api::routes::route_by_id,
+                api::stops::stops,
+                api::stops::stops_by_id,
+                api::stops::stops_near_default,
+                api::stops::stops_near,
+                api::stops::stops_by_trip,
+                api::trips::trips,
+                api::trips::trips_stopid,
+                api::trips::trip,
+                api::trips::trip_by_route,
+                api::trips::trips_by_query,
+                api::times::times_query,
+                api::times::times_by_trip,
+                api::times::times_stop,
+                api::times::times_stop_query
+            ],
+        )
+        .launch();
 }
 
 fn main() {

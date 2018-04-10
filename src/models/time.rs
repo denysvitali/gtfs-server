@@ -1,14 +1,14 @@
 //! Time related structs and implementations
 
-use super::pickup::PickUp;
 use super::dropoff::DropOff;
+use super::pickup::PickUp;
 
-use importer::NaiveTime;
 use importer::NaiveDate;
+use importer::NaiveTime;
 
 #[derive(Debug, Serialize)]
 pub struct Time {
-    pub trip_id : String,
+    pub trip_id: String,
     pub arrival_time: String,
     pub departure_time: String,
     pub stop_id: String,
@@ -21,5 +21,5 @@ pub struct Time {
     pub start_date: NaiveDate,
     pub end_date: NaiveDate,
     #[serde(skip_serializing)]
-    pub feed_id: String
+    pub feed_id: String,
 }
