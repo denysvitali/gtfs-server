@@ -102,6 +102,7 @@
 <span id="45">45</span>
 <span id="46">46</span>
 <span id="47">47</span>
+<span id="48">48</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! Trip related structs and implementations</span>
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">stop</span>::<span class="ident">StopTrip</span>;
@@ -116,7 +117,8 @@
     <span class="ident">trip_id</span> : <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">short_name</span> : <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">direction_id</span>: <span class="ident">i32</span>,
-    <span class="kw">pub</span> <span class="ident">stop_sequence</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;</span>,
+    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span><span class="op">=</span><span class="string">&quot;Option::is_none&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="ident">stop_sequence</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing</span>)]</span>
     <span class="ident">feed_id</span>: <span class="ident">String</span>
 }
@@ -137,7 +139,7 @@
             <span class="ident">headsign</span>,
             <span class="ident">short_name</span>,
             <span class="ident">direction_id</span>,
-            <span class="ident">stop_sequence</span>: <span class="macro">vec</span><span class="macro">!</span>(),
+            <span class="ident">stop_sequence</span>: <span class="prelude-val">Some</span>(<span class="macro">vec</span><span class="macro">!</span>()),
             <span class="ident">feed_id</span>: <span class="ident">String</span>::<span class="ident">new</span>()
         }
     }

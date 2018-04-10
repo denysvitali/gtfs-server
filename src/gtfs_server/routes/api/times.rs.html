@@ -621,69 +621,6 @@
 <span id="564">564</span>
 <span id="565">565</span>
 <span id="566">566</span>
-<span id="567">567</span>
-<span id="568">568</span>
-<span id="569">569</span>
-<span id="570">570</span>
-<span id="571">571</span>
-<span id="572">572</span>
-<span id="573">573</span>
-<span id="574">574</span>
-<span id="575">575</span>
-<span id="576">576</span>
-<span id="577">577</span>
-<span id="578">578</span>
-<span id="579">579</span>
-<span id="580">580</span>
-<span id="581">581</span>
-<span id="582">582</span>
-<span id="583">583</span>
-<span id="584">584</span>
-<span id="585">585</span>
-<span id="586">586</span>
-<span id="587">587</span>
-<span id="588">588</span>
-<span id="589">589</span>
-<span id="590">590</span>
-<span id="591">591</span>
-<span id="592">592</span>
-<span id="593">593</span>
-<span id="594">594</span>
-<span id="595">595</span>
-<span id="596">596</span>
-<span id="597">597</span>
-<span id="598">598</span>
-<span id="599">599</span>
-<span id="600">600</span>
-<span id="601">601</span>
-<span id="602">602</span>
-<span id="603">603</span>
-<span id="604">604</span>
-<span id="605">605</span>
-<span id="606">606</span>
-<span id="607">607</span>
-<span id="608">608</span>
-<span id="609">609</span>
-<span id="610">610</span>
-<span id="611">611</span>
-<span id="612">612</span>
-<span id="613">613</span>
-<span id="614">614</span>
-<span id="615">615</span>
-<span id="616">616</span>
-<span id="617">617</span>
-<span id="618">618</span>
-<span id="619">619</span>
-<span id="620">620</span>
-<span id="621">621</span>
-<span id="622">622</span>
-<span id="623">623</span>
-<span id="624">624</span>
-<span id="625">625</span>
-<span id="626">626</span>
-<span id="627">627</span>
-<span id="628">628</span>
-<span id="629">629</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/times` related routes</span>
 
@@ -716,14 +653,9 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">search</span>::<span class="ident">time</span>::<span class="ident">TimeSort</span>;
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">model_api</span>::<span class="ident">search</span>::<span class="ident">ascdesc</span>::<span class="ident">AscDesc</span>;
 
-<span class="doccomment">/// `/times/by-trip/&lt;trip_id&gt;`  </span>
-<span class="doccomment">/// Gets the [Time](../../../models/time/struct.Time.html)s associated</span>
-<span class="doccomment">/// to the specified [Trip](../../../models/trip/struct.Trip.html) UID, parametrized as `&lt;trip_id&gt;`.  </span>
-<span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
-<span class="doccomment">/// &lt;[Time](../../../models/time/struct.Time.html)&gt;</span>
-<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/times/by-trip/&lt;trip_id&gt;&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">times_trip</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">trip_id</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;&gt;</span>{
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">get_times_by_trip</span>(<span class="ident">trip_id</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
+<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/times?&lt;time_search&gt;&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">times_query</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">time_search</span>: <span class="ident">TimeSearch</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;&gt;</span>{
+    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">get_times_by_query</span>(<span class="kw-2">&amp;</span><span class="ident">time_search</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
 
     <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Meta</span>{
         <span class="ident">success</span>: <span class="bool-val">true</span>,
@@ -736,7 +668,27 @@
     })
 }
 
-<span class="doccomment">/// `/times/by-stop/&lt;stop_id&gt;`  </span>
+<span class="doccomment">/// `/times/by-trip/&lt;trip_uid&gt;`  </span>
+<span class="doccomment">/// Gets the [Time](../../../models/time/struct.Time.html)s associated</span>
+<span class="doccomment">/// to the specified [Trip](../../../models/trip/struct.Trip.html) UID, parametrized as `&lt;trip_id&gt;`.  </span>
+<span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
+<span class="doccomment">/// &lt;[Time](../../../models/time/struct.Time.html)&gt;</span>
+<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/times/by-trip/&lt;trip_uid&gt;&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">times_by_trip</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">trip_uid</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;&gt;</span>{
+    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">get_times_by_trip</span>(<span class="ident">trip_uid</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
+
+    <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Meta</span>{
+        <span class="ident">success</span>: <span class="bool-val">true</span>,
+        <span class="ident">error</span>: <span class="prelude-val">None</span>,
+    };
+
+    <span class="ident">Json</span>(<span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
+        <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">result</span>),
+        <span class="ident">meta</span>
+    })
+}
+
+<span class="doccomment">/// `/times/by-stop/&lt;stop_id&gt;?&lt;time_search&gt;`  </span>
 <span class="doccomment">/// Gets the [Time](../../../models/time/struct.Time.html)s associated</span>
 <span class="doccomment">/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `&lt;stop_id&gt;`.  </span>
 <span class="doccomment">/// The results can be filtered with `&lt;time_search&gt;` parameters (check [TimeSearch](../../../models/api/search/time/struct.TimeSearch.html))  </span>
@@ -853,8 +805,9 @@
 **/</span>
 <span class="doccomment">/// </span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/times/by-stop/&lt;stop_id&gt;?&lt;time_search&gt;&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">times_stop_query</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">stop_id</span>: <span class="ident">String</span>, <span class="ident">time_search</span>: <span class="ident">TimeSearch</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;&gt;</span>{
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">get_times_by_stop_id_query</span>(<span class="ident">stop_id</span>, <span class="kw-2">&amp;</span><span class="ident">time_search</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">times_stop_query</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">stop_id</span>: <span class="ident">String</span>, <span class="kw-2">mut</span> <span class="ident">time_search</span>: <span class="ident">TimeSearch</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;&gt;</span>{
+    <span class="ident">time_search</span>.<span class="ident">stop</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">stop_id</span>);
+    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">get_times_by_query</span>(<span class="kw-2">&amp;</span><span class="ident">time_search</span>, <span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>);
 
     <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Meta</span>{
         <span class="ident">success</span>: <span class="bool-val">true</span>,
@@ -867,7 +820,7 @@
     })
 }
 
-<span class="doccomment">/// `/times/by-stop/&lt;stop_id&gt;?&lt;time_search&gt;`  </span>
+<span class="doccomment">/// `/times/by-stop/&lt;stop_id&gt;`  </span>
 <span class="doccomment">/// Gets the [Time](../../../models/time/struct.Time.html)s associated</span>
 <span class="doccomment">/// to the specified [Stop](../../../models/stop/struct.Stop.html) UID, parametrized as `&lt;stop_id&gt;`.  </span>
 <span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
@@ -887,7 +840,7 @@
     })
 }
 
-<span class="kw">fn</span> <span class="ident">get_times_by_stop_id_query</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">trip_id</span>: <span class="ident">String</span>, <span class="ident">time_search</span>: <span class="kw-2">&amp;</span><span class="ident">TimeSearch</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
+<span class="kw">fn</span> <span class="ident">get_times_by_query</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">time_search</span>: <span class="kw-2">&amp;</span><span class="ident">TimeSearch</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">query</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;SELECT t.uid,
         arrival_time,
@@ -896,6 +849,7 @@
         stop_sequence,
         pickup_type,
         drop_off_type,
+        r.uid,
         c.uid,
         c.monday,
         c.tuesday,
@@ -907,7 +861,20 @@
         c.start_date,
         c.end_date,
         a.feed_id
-        FROM (SELECT * FROM stop_time
+        FROM stop_time as a
+        INNER JOIN stop ON (a.stop_id=stop.id)
+        INNER JOIN trip as t ON (a.trip_id = t.trip_id)
+        INNER JOIN route as r ON (t.route_id = r.id)
+        INNER JOIN calendar as c ON (t.service_id = c.service_id)
+        WHERE
+        a.feed_id = stop.feed_id AND 
+        t.feed_id = stop.feed_id AND 
+        c.feed_id = t.feed_id AND
+        r.feed_id = c.feed_id AND
+        r.id = t.route_id&quot;</span>);
+
+    <span class="comment">/*
+        (SELECT * FROM stop_time
         WHERE
         stop_time.stop_id = (
             SELECT stop.id FROM stop WHERE stop.uid=$1
@@ -916,11 +883,7 @@
             SELECT stop.feed_id FROM stop WHERE stop.uid=$1
         )
         ) as a
-        INNER JOIN stop ON (a.stop_id=stop.id)
-        INNER JOIN trip as t ON (a.trip_id = t.trip_id)
-        INNER JOIN calendar as c ON (t.service_id = c.service_id)
-        WHERE a.feed_id = stop.feed_id AND t.feed_id = stop.feed_id AND c.feed_id = t.feed_id 
-        &quot;</span>);
+    */</span>
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dates</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">NaiveDate</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">times</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">NaiveTime</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
@@ -928,11 +891,26 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">values</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">string_values</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ToSql</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="number">1</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> <span class="op">=</span> <span class="number">0</span>;
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">addition</span> : <span class="ident">String</span>;
 
-    <span class="ident">params</span>.<span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="ident">trip_id</span>);
+    <span class="ident">string_values</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+
+    <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">stop</span>.<span class="ident">is_some</span>() {
+        <span class="ident">string_values</span>.<span class="ident">push</span>(<span class="ident">time_search</span>.<span class="ident">stop</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
+        <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
+        <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND a.stop_id = (SELECT stop.id FROM stop WHERE stop.uid = ${} AND stop.feed_id = a.feed_id LIMIT 1) &quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
+        <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
+    }
+
+    <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">val</span> <span class="kw">in</span> <span class="ident">string_values</span>.<span class="ident">iter</span>() {
+        <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">val</span>);
+    }
+
+    <span class="ident">string_values</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+
+    
 
     <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">monday</span>.<span class="ident">is_some</span>() {
         <span class="ident">values</span>.<span class="ident">push</span>(<span class="ident">time_search</span>.<span class="ident">monday</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
@@ -1091,6 +1069,18 @@
         <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
     }
 
+    <span class="kw">if</span> <span class="ident">time_search</span>.<span class="ident">route</span>.<span class="ident">is_some</span>() {
+        <span class="ident">string_values</span>.<span class="ident">push</span>(
+            <span class="ident">time_search</span>.<span class="ident">route</span>
+                .<span class="ident">as_ref</span>()
+                .<span class="ident">unwrap</span>()
+        );
+        
+        <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
+        <span class="ident">addition</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot; AND r.uid = ${}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">i</span>);
+        <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
+    }
+
     <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">val</span> <span class="kw">in</span> <span class="ident">string_values</span>.<span class="ident">iter</span>() {
         <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">val</span>);
     }
@@ -1117,6 +1107,10 @@
         <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">addition</span>);
     }
 
+    <span class="ident">query</span>.<span class="ident">push_str</span>(<span class="string">&quot; LIMIT 50&quot;</span>);
+
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">query</span>);
+
     <span class="comment">/*let query = &quot;SELECT  trip_id,\
         arrival_time,\
         departure_time,\
@@ -1140,7 +1134,6 @@
         <span class="kw-2">&amp;</span><span class="ident">query</span>, <span class="kw-2">&amp;</span><span class="ident">params</span>.<span class="ident">as_slice</span>()
     );
 
-    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">query</span>);
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">params</span>.<span class="ident">as_slice</span>());
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">times_result</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
@@ -1154,135 +1147,15 @@
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_times_by_trip</span>(<span class="ident">trip_uid</span>: <span class="ident">String</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
-    <span class="comment">/*
-        SELECT * FROM stop_time WHERE
-        stop_time.trip_id =
-            (SELECT trip.trip_id FROM trip WHERE trip.uid=&#39;t-b119d6-lamone-cadempinostazione&#39;)
-        AND stop_time.feed_id =
-            (SELECT trip.feed_id FROM trip WHERE trip.uid=&#39;t-b119d6-lamone-cadempinostazione&#39;);
-    */</span>
-
-    <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">&quot;SELECT t.uid,
-        arrival_time,
-        departure_time,
-        stop.uid,
-        stop_sequence,
-        pickup_type,
-        drop_off_type,
-        c.uid,
-        c.monday,
-        c.tuesday,
-        c.wednesday,
-        c.thursday,
-        c.friday,
-        c.saturday,
-        c.sunday,
-        c.start_date,
-        c.end_date,
-        a.feed_id
-        FROM (SELECT * FROM stop_time
-        WHERE
-        stop_time.trip_id = (
-            SELECT trip.trip_id FROM trip WHERE trip.uid=$1
-        ) AND
-        stop_time.feed_id = (
-            SELECT trip.feed_id FROM trip WHERE trip.uid=$1
-        )
-        ) as a
-        INNER JOIN stop ON (a.stop_id=stop.id)
-        INNER JOIN trip as t ON (a.trip_id = t.trip_id)
-        INNER JOIN calendar as c ON (t.service_id = c.service_id)
-        WHERE a.feed_id = stop.feed_id AND t.feed_id = stop.feed_id AND c.feed_id = t.feed_id
-        ORDER BY stop_sequence&quot;</span>;
-
-    <span class="comment">/*let query = &quot;SELECT  trip_id,\
-        arrival_time,\
-        departure_time,\
-        stop.uid,\
-        stop_sequence,\
-        pickup_type,\
-        drop_off_type,\
-        a.feed_id \
-        FROM (SELECT * FROM stop_time \
-        WHERE \
-        stop_time.trip_id = (\
-            SELECT trip.trip_id FROM trip WHERE trip.uid=$1\
-        ) AND \
-        stop_time.feed_id = (\
-            SELECT trip.feed_id FROM trip WHERE trip.uid=$1\
-        ) \
-        ORDER BY stop_sequence) as a INNER JOIN stop ON (a.stop_id=stop.id) WHERE a.feed_id = stop.feed_id&quot;;*/</span>
-
-    <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">times</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(
-        <span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">trip_uid</span>]
-    );
-
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">times_result</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
-
-    <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">times</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>).<span class="ident">iter</span>() {
-        <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> <span class="ident">parse_time_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>);
-        <span class="ident">times_result</span>.<span class="ident">push</span>(<span class="ident">time</span>);
-    }
-
-    <span class="ident">times_result</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ts</span> : <span class="ident">TimeSearch</span> <span class="op">=</span> <span class="ident">Default</span>::<span class="ident">default</span>();
+    <span class="ident">ts</span>.<span class="ident">trip</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">trip_uid</span>);
+    <span class="ident">get_times_by_query</span>(<span class="kw-2">&amp;</span><span class="ident">ts</span>, <span class="ident">pool</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">get_times_by_stop_id</span>(<span class="ident">stop_id</span>: <span class="ident">String</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
-    <span class="comment">/*
-        select stop_time.trip_id as tid FROm stop_time
-        WHERE stop_time.stop_id =
-            (SELECT  stop.id FROm stop where stop.uid = &#39;s-c27ebe-mannolamonda&#39;)
-        AND stop_time.feed_id =
-            (SELECT stop.feed_id FROM stop WHERE stop.uid=&#39;s-c27ebe-mannolamonda&#39;)
-        GROUP BY trip_id ORDER BY trip_id ASC;
-    */</span>
-
-    <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">&quot;SELECT t.uid,
-        arrival_time,
-        departure_time,
-        stop.uid,
-        stop_sequence,
-        pickup_type,
-        drop_off_type,
-        c.uid,
-        c.monday,
-        c.tuesday,
-        c.wednesday,
-        c.thursday,
-        c.friday,
-        c.saturday,
-        c.sunday,
-        c.start_date,
-        c.end_date,
-        a.feed_id
-        FROM (SELECT * FROM stop_time
-        WHERE
-        stop_time.stop_id = (
-            SELECT stop.id FROM stop WHERE stop.uid=$1
-        ) AND
-        stop_time.feed_id = (
-            SELECT stop.feed_id FROM stop WHERE stop.uid=$1
-        )
-        ORDER BY arrival_time DESC) as a
-        INNER JOIN stop ON (a.stop_id=stop.id)
-        INNER JOIN trip as t ON (a.trip_id = t.trip_id)
-        INNER JOIN calendar as c ON (t.service_id = c.service_id)
-        WHERE a.feed_id = stop.feed_id AND t.feed_id = stop.feed_id AND c.feed_id = t.feed_id&quot;</span>;
-
-    <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">times</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(
-        <span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">stop_id</span>]
-    );
-
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">times_result</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
-
-    <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">times</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>).<span class="ident">iter</span>() {
-        <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> <span class="ident">parse_time_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>);
-        <span class="ident">times_result</span>.<span class="ident">push</span>(<span class="ident">time</span>);
-    }
-
-    <span class="ident">times_result</span>
+<span class="kw">fn</span> <span class="ident">get_times_by_stop_id</span>(<span class="ident">stop_uid</span>: <span class="ident">String</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span>{
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ts</span> : <span class="ident">TimeSearch</span> <span class="op">=</span> <span class="ident">Default</span>::<span class="ident">default</span>();
+    <span class="ident">ts</span>.<span class="ident">stop</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">stop_uid</span>);
+    <span class="ident">get_times_by_query</span>(<span class="kw-2">&amp;</span><span class="ident">ts</span>, <span class="ident">pool</span>)
 }
 
 <span class="kw">fn</span> <span class="ident">parse_time_row</span>(<span class="ident">row</span>: <span class="kw-2">&amp;</span><span class="ident">Row</span>) <span class="op">-&gt;</span> <span class="ident">Time</span> {
@@ -1293,8 +1166,8 @@
     <span class="kw">let</span> <span class="ident">arrival</span> : <span class="ident">NaiveTime</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">1</span>);
     <span class="kw">let</span> <span class="ident">departure</span> : <span class="ident">NaiveTime</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">2</span>);
 
-    <span class="kw">let</span> <span class="ident">start_date</span> : <span class="ident">NaiveDate</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">15</span>);
-    <span class="kw">let</span> <span class="ident">end_date</span>: <span class="ident">NaiveDate</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">16</span>);
+    <span class="kw">let</span> <span class="ident">start_date</span> : <span class="ident">NaiveDate</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">16</span>);
+    <span class="kw">let</span> <span class="ident">end_date</span>: <span class="ident">NaiveDate</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">17</span>);
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">time</span> <span class="op">=</span> <span class="ident">Time</span> {
         <span class="ident">trip_id</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>),
@@ -1304,12 +1177,13 @@
         <span class="ident">stop_sequence</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">4</span>),
         <span class="ident">pickup_type</span>: <span class="ident">num</span>::<span class="ident">FromPrimitive</span>::<span class="ident">from_i32</span>(<span class="ident">pickup_int</span>).<span class="ident">unwrap</span>(),
         <span class="ident">drop_off_type</span>: <span class="ident">num</span>::<span class="ident">FromPrimitive</span>::<span class="ident">from_i32</span>(<span class="ident">dropoff_int</span>).<span class="ident">unwrap</span>(),
-        <span class="ident">service_days</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">row</span>.<span class="ident">get</span>(<span class="number">8</span>), <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">9</span>), <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">10</span>), <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">11</span>),
-                           <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">12</span>), <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">13</span>), <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">14</span>)],
-        <span class="ident">service_uid</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">7</span>),
+        <span class="ident">route_id</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">7</span>),
+        <span class="ident">service_days</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">row</span>.<span class="ident">get</span>(<span class="number">9</span>), <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">10</span>), <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">11</span>), <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">12</span>),
+                           <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">13</span>), <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">14</span>), <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">15</span>)],
+        <span class="ident">service_uid</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">8</span>),
         <span class="ident">start_date</span>,
         <span class="ident">end_date</span>,
-        <span class="ident">feed_id</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">17</span>)
+        <span class="ident">feed_id</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">18</span>)
     };
 
     <span class="ident">time</span>

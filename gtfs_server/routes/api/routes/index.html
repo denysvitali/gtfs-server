@@ -59,7 +59,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../../../../src/gtfs_server/routes/api/routes.rs.html#1-99' title='goto source code'>[src]</a></span></h1><div class='docblock'><p><code>/routes</code> related routes</p>
+               </span><a class='srclink' href='../../../../src/gtfs_server/routes/api/routes.rs.html#1-235' title='goto source code'>[src]</a></span></h1><div class='docblock'><p><code>/routes</code> related routes</p>
 </div><h2 id='statics' class='section-header'><a href="#statics">Statics</a></h2>
 <table>
                        <tr class=' module-item'>
@@ -71,8 +71,24 @@
                            </td>
                        </tr>
                        <tr class=' module-item'>
+                           <td><a class="static" href="static.static_rocket_route_info_for_route_by_stop_uid.html"
+                                  title='static gtfs_server::routes::api::routes::static_rocket_route_info_for_route_by_stop_uid'>static_rocket_route_info_for_route_by_stop_uid</a></td>
+                           <td class='docblock-short'>
+                                <p>Rocket code generated static route information structure.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
                            <td><a class="static" href="static.static_rocket_route_info_for_routes.html"
                                   title='static gtfs_server::routes::api::routes::static_rocket_route_info_for_routes'>static_rocket_route_info_for_routes</a></td>
+                           <td class='docblock-short'>
+                                <p>Rocket code generated static route information structure.</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="static" href="static.static_rocket_route_info_for_routes_by_query.html"
+                                  title='static gtfs_server::routes::api::routes::static_rocket_route_info_for_routes_by_query'>static_rocket_route_info_for_routes_by_query</a></td>
                            <td class='docblock-short'>
                                 <p>Rocket code generated static route information structure.</p>
 
@@ -92,10 +108,32 @@ Returns a <a href="../../../models/api/result/struct.Result.html">Result</a>
                            </td>
                        </tr>
                        <tr class=' module-item'>
+                           <td><a class="fn" href="fn.route_by_stop_uid.html"
+                                  title='fn gtfs_server::routes::api::routes::route_by_stop_uid'>route_by_stop_uid</a></td>
+                           <td class='docblock-short'>
+                                <p><code>/routes/by-stop/&lt;stop_uid&gt;</code><br />
+Gets the <a href="../../../models/route/struct.Route.html">Route</a>s that serve a particular <a href="../../../models/route/struct.Stop.html">Stop</a> by its UID,
+parametrized as <code>&lt;stop_uid&gt;</code>.<br />
+Returns a <a href="../../../models/api/result/struct.Result.html">Result</a>
+&lt;<a href="../../../models/route/struct.Route.html">Route</a>&gt;</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
                            <td><a class="fn" href="fn.routes.html"
                                   title='fn gtfs_server::routes::api::routes::routes'>routes</a></td>
                            <td class='docblock-short'>
                                 <p><code>/routes</code><br />
+Returns a <a href="../../../models/api/resultarray/struct.ResultArray.html">ResultArray</a>
+&lt;<a href="../../../models/route/struct.Route.html">Route</a>&gt;</p>
+
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="fn" href="fn.routes_by_query.html"
+                                  title='fn gtfs_server::routes::api::routes::routes_by_query'>routes_by_query</a></td>
+                           <td class='docblock-short'>
+                                <p><code>/routes?query</code>
 Returns a <a href="../../../models/api/resultarray/struct.ResultArray.html">ResultArray</a>
 &lt;<a href="../../../models/route/struct.Route.html">Route</a>&gt;</p>
 

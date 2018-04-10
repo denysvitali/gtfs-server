@@ -34,7 +34,7 @@
     <nav class="sidebar">
         <div class="sidebar-menu">&#9776;</div>
         
-        <p class='location'>Struct Time</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#fields">Fields</a><div class="sidebar-links"><a href="#structfield.trip_id">trip_id</a><a href="#structfield.arrival_time">arrival_time</a><a href="#structfield.departure_time">departure_time</a><a href="#structfield.stop_id">stop_id</a><a href="#structfield.stop_sequence">stop_sequence</a><a href="#structfield.pickup_type">pickup_type</a><a href="#structfield.drop_off_type">drop_off_type</a><a href="#structfield.service_days">service_days</a><a href="#structfield.service_uid">service_uid</a><a href="#structfield.start_date">start_date</a><a href="#structfield.end_date">end_date</a><a href="#structfield.feed_id">feed_id</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Debug">Debug</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='../../index.html'>gtfs_server</a>::<wbr><a href='../index.html'>models</a>::<wbr><a href='index.html'>time</a></p><script>window.sidebarCurrent = {name: 'Time', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+        <p class='location'>Struct Time</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#fields">Fields</a><div class="sidebar-links"><a href="#structfield.trip_id">trip_id</a><a href="#structfield.arrival_time">arrival_time</a><a href="#structfield.departure_time">departure_time</a><a href="#structfield.stop_id">stop_id</a><a href="#structfield.stop_sequence">stop_sequence</a><a href="#structfield.pickup_type">pickup_type</a><a href="#structfield.drop_off_type">drop_off_type</a><a href="#structfield.route_id">route_id</a><a href="#structfield.service_days">service_days</a><a href="#structfield.service_uid">service_uid</a><a href="#structfield.start_date">start_date</a><a href="#structfield.end_date">end_date</a><a href="#structfield.feed_id">feed_id</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Debug">Debug</a></div><a class="sidebar-title" href="#synthetic-implementations">Auto Trait Implementations</a><div class="sidebar-links"><a href="#impl-Send">Send</a><a href="#impl-Sync">Sync</a></div></div><p class='location'><a href='../../index.html'>gtfs_server</a>::<wbr><a href='../index.html'>models</a>::<wbr><a href='index.html'>time</a></p><script>window.sidebarCurrent = {name: 'Time', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
     </nav>
 
     <div class="theme-picker">
@@ -59,7 +59,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../../../src/gtfs_server/models/time.rs.html#10-24' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust struct'>pub struct Time {
+               </span><a class='srclink' href='../../../src/gtfs_server/models/time.rs.html#10-25' title='goto source code'>[src]</a></span></h1><div class="docblock type-decl"><pre class='rust struct'>pub struct Time {
     pub trip_id: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>,
     pub arrival_time: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>,
     pub departure_time: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>,
@@ -67,6 +67,7 @@
     pub stop_sequence: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.i32.html">i32</a>,
     pub pickup_type: <a class="enum" href="../../../gtfs_server/models/pickup/enum.PickUp.html" title="enum gtfs_server::models::pickup::PickUp">PickUp</a>,
     pub drop_off_type: <a class="enum" href="../../../gtfs_server/models/dropoff/enum.DropOff.html" title="enum gtfs_server::models::dropoff::DropOff">DropOff</a>,
+    pub route_id: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>,
     pub service_days: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>&gt;,
     pub service_uid: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>,
     pub start_date: <a class="struct" href="https://docs.rs/chrono/0.4.0/chrono/naive/date/struct.NaiveDate.html" title="struct chrono::naive::date::NaiveDate">NaiveDate</a>,
@@ -101,6 +102,10 @@
                            <a href="#structfield.drop_off_type" class="anchor field"></a>
                            <span id="drop_off_type.v" class='invisible'>
                            <code>drop_off_type: <a class="enum" href="../../../gtfs_server/models/dropoff/enum.DropOff.html" title="enum gtfs_server::models::dropoff::DropOff">DropOff</a></code>
+                           </span></span><span id="structfield.route_id" class="structfield small-section-header">
+                           <a href="#structfield.route_id" class="anchor field"></a>
+                           <span id="route_id.v" class='invisible'>
+                           <code>route_id: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a></code>
                            </span></span><span id="structfield.service_days" class="structfield small-section-header">
                            <a href="#structfield.service_days" class="anchor field"></a>
                            <span id="service_days.v" class='invisible'>
@@ -122,11 +127,10 @@
                            <span id="feed_id.v" class='invisible'>
                            <code>feed_id: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a></code>
                            </span></span>
-            <h2 id='implementations' class='small-section-header'>
-              Trait Implementations<a href='#implementations' class='anchor'></a>
-            </h2>
-            <div id='implementations-list'>
-        <h3 id='impl-Debug' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="struct" href="../../../gtfs_server/models/time/struct.Time.html" title="struct gtfs_server::models::time::Time">Time</a></code><a href='#impl-Debug' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/gtfs_server/models/time.rs.html#9' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.fmt' class="method"><span id='fmt.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/gtfs_server/models/time.rs.html#9' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></p>
+                <h2 id='implementations' class='small-section-header'>
+                  Trait Implementations<a href='#implementations' class='anchor'></a>
+                </h2>
+                <div id='implementations-list'><h3 id='impl-Debug' class='impl'><span class='in-band'><table class='table-display'><tbody><tr><td><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="struct" href="../../../gtfs_server/models/time/struct.Time.html" title="struct gtfs_server::models::time::Time">Time</a></code><a href='#impl-Debug' class='anchor'></a></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/gtfs_server/models/time.rs.html#9' title='goto source code'>[src]</a></span></td></tr></tbody></table></h3><div class='impl-items'><h4 id='method.fmt' class="method"><span id='fmt.v' class='invisible'><table class='table-display'><tbody><tr><td><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span></td><td><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../../src/gtfs_server/models/time.rs.html#9' title='goto source code'>[src]</a></td></tr></tbody></table></span></h4><div class='docblock'><p>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></p>
 </div></div></div>
                 <h2 id='synthetic-implementations' class='small-section-header'>
                   Auto Trait Implementations<a href='#synthetic-implementations' class='anchor'></a>

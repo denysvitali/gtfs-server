@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["ascdesc",""],["time","TimeSearch related structs and implementations"]]});
+initSidebarItems({"mod":[["ascdesc",""],["route",""],["time","TimeSearch related structs and implementations"],["trip",""]]});
