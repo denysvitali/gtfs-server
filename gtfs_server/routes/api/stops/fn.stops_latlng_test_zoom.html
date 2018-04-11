@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `static_rocket_route_info_for_stops_by_trip` static in crate `gtfs_server`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, static_rocket_route_info_for_stops_by_trip">
+    <meta name="description" content="API documentation for the Rust `stops_latlng_test_zoom` fn in crate `gtfs_server`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, stops_latlng_test_zoom">
 
-    <title>gtfs_server::routes::api::stops::static_rocket_route_info_for_stops_by_trip - Rust</title>
+    <title>gtfs_server::routes::api::stops::stops_latlng_test_zoom - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../../../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css"
@@ -21,7 +21,7 @@
     
     
 </head>
-<body class="rustdoc static">
+<body class="rustdoc fn">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -34,7 +34,7 @@
     <nav class="sidebar">
         <div class="sidebar-menu">&#9776;</div>
         
-        <div class="sidebar-elems"><p class='location'><a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>stops</a></p><script>window.sidebarCurrent = {name: 'static_rocket_route_info_for_stops_by_trip', ty: 'static', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+        <div class="sidebar-elems"><p class='location'><a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>stops</a></p><script>window.sidebarCurrent = {name: 'stops_latlng_test_zoom', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
     </nav>
 
     <div class="theme-picker">
@@ -55,12 +55,7 @@
         </form>
     </nav>
 
-    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Static <a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>stops</a>::<wbr><a class="static" href=''>static_rocket_route_info_for_stops_by_trip</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../../src/gtfs_server/routes/api/stops.rs.html#100' title='goto source code'>[src]</a></span></h1><pre class='rust static'>pub static static_rocket_route_info_for_stops_by_trip: <a class="struct" href="https://api.rocket.rs/rocket/codegen/struct.StaticRouteInfo.html" title="struct rocket::codegen::StaticRouteInfo">StaticRouteInfo</a><code> = </code><code>::rocket::StaticRouteInfo{method: ::rocket::http::Method::Get,
-                          path: &quot;/stops/by-trip/&lt;trip_id&gt;&quot;,
-                          handler: rocket_route_fn_stops_by_trip,
-                          format: None,
-                          rank: None,}</code></pre><div class='docblock'><p>Rocket code generated static route information structure.</p>
-</div></section>
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Function <a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>stops</a>::<wbr><a class="fn" href=''>stops_latlng_test_zoom</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../../src/gtfs_server/routes/api/stops.rs.html#171-183' title='goto source code'>[src]</a></span></h1><pre class='rust fn'>pub fn stops_latlng_test_zoom(<br>&nbsp;&nbsp;&nbsp;&nbsp;lat: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;lng: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;lat2: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;lng2: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;rad1: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;rad2: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;zoom: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.i32.html">i32</a><br>) -&gt; <a class="struct" href="https://api.rocket.rs/rocket/response/content/struct.Html.html" title="struct rocket::response::content::Html">Html</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;</pre></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
