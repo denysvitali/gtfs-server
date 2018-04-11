@@ -164,7 +164,22 @@ pub fn stops_latlng_test(
 ) -> content::Html<String> {
     content::Html(get_stops_by_coordinates(Coordinate{
         lat, lng
-    }, Coordinate{lat: lat2, lng: lng2}, rad1, rad2))
+    }, Coordinate{lat: lat2, lng: lng2}, rad1, rad2, 14))
+}
+
+#[get("/stops/test/<lat>/<lng>/<lat2>/<lng2>/<rad1>/<rad2>/<zoom>")]
+pub fn stops_latlng_test_zoom(
+    lat: f64,
+    lng: f64,
+    lat2: f64,
+    lng2: f64,
+    rad1: f64,
+    rad2: f64,
+    zoom: i32
+) -> content::Html<String> {
+    content::Html(get_stops_by_coordinates(Coordinate{
+        lat, lng
+    }, Coordinate{lat: lat2, lng: lng2}, rad1, rad2, zoom))
 }
 
 fn parse_stop_row(row: &Row) -> Stop {
@@ -319,15 +334,19 @@ fn get_stops_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) ->
     stops_result
 }
 
-fn deg2meter_lng(lng: f64) -> f64 {
-    111412.84 * lng.cos() - 93.5 * (3.0 * lng).cos() + 0.118 * (5.0 * lng).cos()
+fn deg2rad(deg: f64) -> f64 {
+    (deg / 360.0) * 2.0 * f64::consts::PI
 }
 
-fn deg2meter_lat(lat: f64) -> f64 {
-    111132.92 - 559.82 * (2.0 *lat).cos() + 1.175 * (4.0 *lat).cos() - 0.0023 * (6.0 *lat).cos()
+fn deg2meter_lng(lat: f64) -> f64 { // X: E - W
+    111412.84 * deg2rad(lat).cos() - 93.5 * deg2rad(3.0 * lat).cos() + 0.118 * deg2rad(5.0 * lat).cos()
 }
 
-fn get_stops_by_coordinates(c1: Coordinate, c2: Coordinate, r1: f64, r2: f64) -> String {
+fn deg2meter_lat(lat: f64) -> f64 { // Y: N - S
+    111132.92 - 559.82 * deg2rad(2.0 *lat).cos() + 1.175 * deg2rad(4.0 *lat).cos() - 0.0023 * deg2rad(6.0 *lat).cos()
+}
+
+fn get_stops_by_coordinates(c1: Coordinate, c2: Coordinate, r1: f64, r2: f64, zoom: i32) -> String {
     let result : Vec<Stop> = Vec::new();
 
     // LAT = North to South (Y)
@@ -346,45 +365,82 @@ fn get_stops_by_coordinates(c1: Coordinate, c2: Coordinate, r1: f64, r2: f64) ->
 
     if c1.lng < c2.lng {
         // Blue
-        p1.lng = c1.lng + r1 * 1.0/deg2meter_lng(c1.lng);
-        p1.lat = c1.lat - r1 * 1.0/deg2meter_lat(c1.lat);
+        p1.lng = c1.lng - r1 * 1.0/deg2meter_lng(c1.lat);
+        p1.lat = c1.lat + r1 * 1.0/deg2meter_lat(c1.lat);
 
-        p2.lng = c2.lng - r2 * 1.0/deg2meter_lng(c2.lng);
-        p2.lat = c2.lat - r2 * 1.0/deg2meter_lat(c2.lat);
+        p2.lng = c2.lng + r2 * 1.0/deg2meter_lng(c2.lat);
+        p2.lat = c2.lat + r2 * 1.0/deg2meter_lat(c2.lat);
+
+        println!("C1");
     } else if c1.lng > c2.lng {
         // Orange
-        p1.lng = c2.lng + r2 * 1.0/deg2meter_lng(c2.lng);
+        p1.lng = c2.lng - r2 * 1.0/deg2meter_lng(c2.lat);
         p1.lat = c2.lat + r2 * 1.0/deg2meter_lat(c2.lat);
 
-        p2.lng = c1.lng - r1 * 1.0/deg2meter_lng(c2.lng);
-        p2.lat = c1.lat - r1 * 1.0/deg2meter_lat(c2.lat);
+        p2.lng = c1.lng + r1 * 1.0/deg2meter_lng(c1.lat);
+        p2.lat = c1.lat - r1 * 1.0/deg2meter_lat(c1.lat);
+        println!("C2");
     }
     else {
         if c1.lng > c2.lng {
             // Orange
-            p1.lng = c2.lng + r2 * 1.0/deg2meter_lng(c2.lng);
+            p1.lng = c2.lng + r2 * 1.0/deg2meter_lng(c2.lat);
             p1.lat = c2.lat + r2 * 1.0/deg2meter_lat(c2.lat);
 
-            p2.lng = c1.lng - r1 * 1.0/deg2meter_lng(c2.lng);
-            p2.lat = c1.lat - r1 * 1.0/deg2meter_lat(c2.lat);
+            p2.lng = c1.lng - r1 * 1.0/deg2meter_lng(c1.lat);
+            p2.lat = c1.lat - r1 * 1.0/deg2meter_lat(c1.lat);
+            println!("C3");
         } else {
             // Blue
-            p1.lng = c1.lng + r1 * 1.0/deg2meter_lng(c1.lng);
+            p1.lng = c1.lng + r1 * 1.0/deg2meter_lng(c1.lat);
             p1.lat = c1.lat - r1 * 1.0/deg2meter_lat(c1.lat);
 
-            p2.lng = c2.lng - r2 * 1.0/deg2meter_lng(c2.lng);
+            p2.lng = c2.lng - r2 * 1.0/deg2meter_lng(c2.lat);
             p2.lat = c2.lat - r2 * 1.0/deg2meter_lat(c2.lat);
+            println!("C4");
         }
     }
+
+    println!("Lat Sec meter at 30°: {}", deg2meter_lat(0.0));
 
     println!("P1: {}, {}", p1.lat, p1.lng);
     println!("P2: {}, {}", p2.lat, p2.lng);
 
     
     format!(r#"
-    <img src="https://maps.googleapis.com/maps/api/staticmap?center={0},{1}&zoom=16&scale=1&size=600x300&maptype=roadmap&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0x009fff%7Clabel:A%7C{0},{1}&key={4}">
-    <img src="https://maps.googleapis.com/maps/api/staticmap?center={2},{3}&zoom=16&scale=1&size=600x300&maptype=roadmap&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0x009fff%7Clabel:B%7C{2},{3}&key={4}">"#, 
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Stop Test</title>
+    </head>
+    <body>
+    <img src="https://maps.googleapis.com/maps/api/staticmap?center={0},{1}&zoom={5}&scale=1&size=600x300&maptype=roadmap&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0x009fff%7Clabel:A%7C{0},{1}&key={4}">
+    <img src="https://maps.googleapis.com/maps/api/staticmap?center={2},{3}&zoom={5}&scale=1&size=600x300&maptype=roadmap&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0x009fff%7Clabel:B%7C{2},{3}&key={4}">"
+    
+    <table>
+        <tr>
+            <th>P</th>
+            <th>Lat</th>
+            <th>Lng</th>
+        </tr>
+
+        <tr>
+            <td>1</td>
+            <td>{0}</td>
+            <td>{1}</td>
+        </tr>
+
+        <tr>
+            <td>2</td>
+            <td>{2}</td>
+            <td>{3}</td>
+        </tr>
+    </table>
+    </body>
+    </html>
+    "#, 
     p1.lat, p1.lng,
     p2.lat, p2.lng,
-    GMAPS_API_KEY)
+    GMAPS_API_KEY,
+    zoom)
 }
