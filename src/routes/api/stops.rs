@@ -111,7 +111,7 @@ pub fn stops_by_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultAr
 
 /// `/stops/near/<lat>/<lng>`  
 /// Gets an array of [StopDistance](../../../models/api/stopdistance/struct.StopDistance.html)s,
-/// within 100.0 meters from <lat>,<lng> - nearest first.  
+/// within 100.0 meters from `<lat>`,`<lng>` - nearest first.  
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[StopDistance](../../../models/api/stopdistance/struct.StopDistance.html)>
 #[get("/stops/near/<lat>/<lng>")]
@@ -132,7 +132,7 @@ pub fn stops_near_default(
 
 /// `/stops/near/<lat>/<lng>/<meters>`  
 /// Gets an array of [StopDistance](../../../models/api/stopdistance/struct.StopDistance.html)s,
-/// within <meters> meters from <lat>,<lng>
+/// within `<meters>` meters from `<lat>`,`<lng>`
 /// nearest first, of Stops near the provided coordinate.  
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[StopDistance](../../../models/api/stopdistance/struct.StopDistance.html)>
