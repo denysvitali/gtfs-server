@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `static_rocket_route_info_for_stops_near` static in crate `gtfs_server`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, static_rocket_route_info_for_stops_near">
+    <meta name="description" content="API documentation for the Rust `stops_in_bbox_radius` fn in crate `gtfs_server`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, stops_in_bbox_radius">
 
-    <title>gtfs_server::routes::api::stops::static_rocket_route_info_for_stops_near - Rust</title>
+    <title>gtfs_server::routes::api::stops::stops_in_bbox_radius - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../../../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css"
@@ -21,7 +21,7 @@
     
     
 </head>
-<body class="rustdoc static">
+<body class="rustdoc fn">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -34,7 +34,7 @@
     <nav class="sidebar">
         <div class="sidebar-menu">&#9776;</div>
         
-        <div class="sidebar-elems"><p class='location'><a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>stops</a></p><script>window.sidebarCurrent = {name: 'static_rocket_route_info_for_stops_near', ty: 'static', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+        <div class="sidebar-elems"><p class='location'><a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>stops</a></p><script>window.sidebarCurrent = {name: 'stops_in_bbox_radius', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
     </nav>
 
     <div class="theme-picker">
@@ -55,11 +55,12 @@
         </form>
     </nav>
 
-    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Static <a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>stops</a>::<wbr><a class="static" href=''>static_rocket_route_info_for_stops_near</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../../src/gtfs_server/routes/api/stops.rs.html#140' title='goto source code'>[src]</a></span></h1><pre class='rust static'>pub static static_rocket_route_info_for_stops_near: <a class="struct" href="https://api.rocket.rs/rocket/codegen/struct.StaticRouteInfo.html" title="struct rocket::codegen::StaticRouteInfo">StaticRouteInfo</a><code> = </code><code>::rocket::StaticRouteInfo{method: ::rocket::http::Method::Get,
-                          path: &quot;/stops/near/&lt;lat&gt;/&lt;lng&gt;/&lt;meters&gt;&quot;,
-                          handler: rocket_route_fn_stops_near,
-                          format: None,
-                          rank: None,}</code></pre><div class='docblock'><p>Rocket code generated static route information structure.</p>
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Function <a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>stops</a>::<wbr><a class="fn" href=''>stops_in_bbox_radius</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../../src/gtfs_server/routes/api/stops.rs.html#200-225' title='goto source code'>[src]</a></span></h1><pre class='rust fn'>pub fn stops_in_bbox_radius(<br>&nbsp;&nbsp;&nbsp;&nbsp;rh: <a class="struct" href="https://api.rocket.rs/rocket/request/state/struct.State.html" title="struct rocket::request::state::State">State</a>&lt;<a class="struct" href="../../../../gtfs_server/routes/struct.RoutesHandler.html" title="struct gtfs_server::routes::RoutesHandler">RoutesHandler</a>&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;p1_lat: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;p1_lng: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;p2_lat: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;p2_lng: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;radius: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a><br>) -&gt; <a class="struct" href="https://api.rocket.rs/rocket_contrib/json/struct.Json.html" title="struct rocket_contrib::json::Json">Json</a>&lt;<a class="struct" href="../../../../gtfs_server/models/api/resultarray/struct.ResultArray.html" title="struct gtfs_server::models::api::resultarray::ResultArray">ResultArray</a>&lt;<a class="struct" href="../../../../gtfs_server/models/stop/struct.Stop.html" title="struct gtfs_server::models::stop::Stop">Stop</a>&gt;&gt;</pre><div class='docblock'><p><code>/stops/in/&lt;p1_lat&gt;/&lt;p1_lng&gt;/&lt;p2_lat&gt;/&lt;p2_lng&gt;/&lt;meters&gt;</code><br />
+Gets an array of <a href="../../../models/api/struct.Stop.html">Stop</a>s,
+inside a bounding box defined by two circles of a radius <code>&lt;meters&gt;</code> meters
+with centers in P1 and P2.</p>
+<p>Returns a <a href="../../../models/api/resultarray/struct.ResultArray.html">ResultArray</a>
+&lt;<a href="../../../models/api/sruct.Stop.html">Stop</a>&gt;</p>
 </div></section>
     <section id='search' class="content hidden"></section>
 
