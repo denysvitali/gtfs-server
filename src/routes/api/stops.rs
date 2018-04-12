@@ -6,6 +6,7 @@ use super::model_api::result::Result;
 use super::model_api::resultarray::ResultArray;
 use super::model_api::stopdistance::StopDistance;
 
+use models::boundingbox::BoundingBox;
 use models::stop::Stop;
 
 use super::super::Json;
@@ -21,7 +22,7 @@ use rocket::response::content;
 
 use models::coordinate::Coordinate;
 
-static GMAPS_API_KEY : &'static str = "AIzaSyAvtzzsAPAlOrK8JbGfXfHMt18MbqCqrj4";
+static GMAPS_API_KEY: &'static str = "AIzaSyAvtzzsAPAlOrK8JbGfXfHMt18MbqCqrj4";
 
 /// `/stops`  
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)<[Stop](../../../models/stop/struct.Stop.html)>
@@ -165,13 +166,56 @@ pub fn stops_in_bbox(
     p1_lat: f64,
     p1_lng: f64,
     p2_lat: f64,
-    p2_lng: f64
+    p2_lng: f64,
 ) -> Json<ResultArray<Stop>> {
+    let bbox = BoundingBox {
+        p1: Coordinate {
+            lat: p1_lat,
+            lng: p1_lng,
+        },
+        p2: Coordinate {
+            lat: p2_lat,
+            lng: p2_lng,
+        },
+    };
+
     let sr = ResultArray::<Stop> {
-        result: Some(get_stops_in_bbox(&rh.pool, 
-                                       Coordinate{lat: p1_lat, lng: p1_lng},
-                                       Coordinate{lat: p2_lat, lng: p2_lat}
-                )),
+        result: Some(get_stops_in_bbox(&rh.pool, bbox)),
+        meta: Meta {
+            success: true,
+            error: Option::None,
+        },
+    };
+    Json(sr)
+}
+
+/// `/stops/in/<p1_lat>/<p1_lng>/<p2_lat>/<p2_lng>/<meters>`  
+/// Gets an array of [Stop](../../../models/api/struct.Stop.html)s,
+/// inside a bounding box defined by two circles of a radius `<meters>` meters
+/// with centers in P1 and P2.
+///
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[Stop](../../../models/api/sruct.Stop.html)>
+#[get("/stops/in/<p1_lat>/<p1_lng>/<p2_lat>/<p2_lng>/<radius>")]
+pub fn stops_in_bbox_radius(
+    rh: State<RoutesHandler>,
+    p1_lat: f64,
+    p1_lng: f64,
+    p2_lat: f64,
+    p2_lng: f64,
+    radius: f64,
+) -> Json<ResultArray<Stop>> {
+    let p1 = Coordinate {
+        lat: p1_lat,
+        lng: p1_lng,
+    };
+    let p2 = Coordinate {
+        lat: p2_lat,
+        lng: p2_lng,
+    };
+    let bbox = get_bbox_from_points(p1, p2, radius, radius);
+    let sr = ResultArray::<Stop> {
+        result: Some(get_stops_in_bbox(&rh.pool, bbox)),
         meta: Meta {
             success: true,
             error: Option::None,
@@ -187,11 +231,18 @@ pub fn stops_latlng_test(
     lat2: f64,
     lng2: f64,
     rad1: f64,
-    rad2: f64
+    rad2: f64,
 ) -> content::Html<String> {
-    content::Html(get_stops_by_coordinates(Coordinate{
-        lat, lng
-    }, Coordinate{lat: lat2, lng: lng2}, rad1, rad2, 14))
+    content::Html(get_stops_by_coordinates(
+        Coordinate { lat, lng },
+        Coordinate {
+            lat: lat2,
+            lng: lng2,
+        },
+        rad1,
+        rad2,
+        14,
+    ))
 }
 
 #[get("/stops/test/<lat>/<lng>/<lat2>/<lng2>/<rad1>/<rad2>/<zoom>")]
@@ -202,11 +253,18 @@ pub fn stops_latlng_test_zoom(
     lng2: f64,
     rad1: f64,
     rad2: f64,
-    zoom: i32
+    zoom: i32,
 ) -> content::Html<String> {
-    content::Html(get_stops_by_coordinates(Coordinate{
-        lat, lng
-    }, Coordinate{lat: lat2, lng: lng2}, rad1, rad2, zoom))
+    content::Html(get_stops_by_coordinates(
+        Coordinate { lat, lng },
+        Coordinate {
+            lat: lat2,
+            lng: lng2,
+        },
+        rad1,
+        rad2,
+        zoom,
+    ))
 }
 
 fn parse_stop_row(row: &Row) -> Stop {
@@ -279,7 +337,6 @@ fn get_stops(pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
     stops_result
 }
 
-
 fn get_stops_near(
     pool: &Pool<PostgresConnectionManager>,
     lat: f32,
@@ -320,11 +377,7 @@ fn get_stops_near(
     stops_result
 }
 
-fn get_stops_in_bbox(
-    pool: &Pool<PostgresConnectionManager>,
-    p1: Coordinate,
-    p2: Coordinate
-) -> Vec<Stop> {
+fn get_stops_in_bbox(pool: &Pool<PostgresConnectionManager>, bbox: BoundingBox) -> Vec<Stop> {
     let query = "SELECT \
         uid,
         id,
@@ -345,8 +398,10 @@ fn get_stops_in_bbox(
             ST_Transform(position::geometry,4326) \
         ) \
         LIMIT 50;";
-
+    let p1 = bbox.p1;
+    let p2 = bbox.p2;
     //println!(format!("{}", query));
+
     let conn = pool.clone().get().unwrap();
     let stops = conn.query(query, &[&p1.lat, &p1.lng, &p2.lat, &p2.lng]);
 
@@ -406,75 +461,28 @@ fn deg2rad(deg: f64) -> f64 {
     (deg / 360.0) * 2.0 * f64::consts::PI
 }
 
-fn deg2meter_lng(lat: f64) -> f64 { // X: E - W
-    111412.84 * deg2rad(lat).cos() - 93.5 * deg2rad(3.0 * lat).cos() + 0.118 * deg2rad(5.0 * lat).cos()
+fn deg2meter_lng(lat: f64) -> f64 {
+    // X: E - W
+    111412.84 * deg2rad(lat).cos() - 93.5 * deg2rad(3.0 * lat).cos()
+        + 0.118 * deg2rad(5.0 * lat).cos()
 }
 
-fn deg2meter_lat(lat: f64) -> f64 { // Y: N - S
-    111132.92 - 559.82 * deg2rad(2.0 *lat).cos() + 1.175 * deg2rad(4.0 *lat).cos() - 0.0023 * deg2rad(6.0 *lat).cos()
+fn deg2meter_lat(lat: f64) -> f64 {
+    // Y: N - S
+    111132.92 - 559.82 * deg2rad(2.0 * lat).cos() + 1.175 * deg2rad(4.0 * lat).cos()
+        - 0.0023 * deg2rad(6.0 * lat).cos()
 }
 
 fn get_stops_by_coordinates(c1: Coordinate, c2: Coordinate, r1: f64, r2: f64, zoom: i32) -> String {
-    let result : Vec<Stop> = Vec::new();
-
-    // LAT = North to South (Y)
-    // LNG = East to West   (X)
-
-
-    let mut p1 : Coordinate = Coordinate {
-        lat: 0.0,
-        lng: 0.0
-    };
-
-    let mut p2 : Coordinate = Coordinate {
-        lat: 0.0,
-        lng: 0.0
-    };
-
-    if c1.lng < c2.lng {
-        // Blue
-        p1.lng = c1.lng - r1 * 1.0/deg2meter_lng(c1.lat);
-        p1.lat = c1.lat + r1 * 1.0/deg2meter_lat(c1.lat);
-
-        p2.lng = c2.lng + r2 * 1.0/deg2meter_lng(c2.lat);
-        p2.lat = c2.lat + r2 * 1.0/deg2meter_lat(c2.lat);
-
-        println!("C1");
-    } else if c1.lng > c2.lng {
-        // Orange
-        p1.lng = c2.lng - r2 * 1.0/deg2meter_lng(c2.lat);
-        p1.lat = c2.lat + r2 * 1.0/deg2meter_lat(c2.lat);
-
-        p2.lng = c1.lng + r1 * 1.0/deg2meter_lng(c1.lat);
-        p2.lat = c1.lat - r1 * 1.0/deg2meter_lat(c1.lat);
-        println!("C2");
-    }
-    else {
-        if c1.lng > c2.lng {
-            // Orange
-            p1.lng = c2.lng + r2 * 1.0/deg2meter_lng(c2.lat);
-            p1.lat = c2.lat + r2 * 1.0/deg2meter_lat(c2.lat);
-
-            p2.lng = c1.lng - r1 * 1.0/deg2meter_lng(c1.lat);
-            p2.lat = c1.lat - r1 * 1.0/deg2meter_lat(c1.lat);
-            println!("C3");
-        } else {
-            // Blue
-            p1.lng = c1.lng + r1 * 1.0/deg2meter_lng(c1.lat);
-            p1.lat = c1.lat - r1 * 1.0/deg2meter_lat(c1.lat);
-
-            p2.lng = c2.lng - r2 * 1.0/deg2meter_lng(c2.lat);
-            p2.lat = c2.lat - r2 * 1.0/deg2meter_lat(c2.lat);
-            println!("C4");
-        }
-    }
+    let result: Vec<Stop> = Vec::new();
 
     println!("Lat Sec meter at 30°: {}", deg2meter_lat(0.0));
+    let bbox = get_bbox_from_points(c1, c2, r1, r2);
+    let p1 = bbox.p1;
+    let p2 = bbox.p2;
 
     println!("P1: {}, {}", p1.lat, p1.lng);
     println!("P2: {}, {}", p2.lat, p2.lng);
-
-    
     format!(r#"
     <!DOCTYPE html>
     <html>
@@ -484,7 +492,6 @@ fn get_stops_by_coordinates(c1: Coordinate, c2: Coordinate, r1: f64, r2: f64, zo
     <body>
     <img src="https://maps.googleapis.com/maps/api/staticmap?center={0},{1}&zoom={5}&scale=1&size=600x300&maptype=roadmap&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0x009fff%7Clabel:A%7C{0},{1}&key={4}">
     <img src="https://maps.googleapis.com/maps/api/staticmap?center={2},{3}&zoom={5}&scale=1&size=600x300&maptype=roadmap&format=png&visual_refresh=true&markers=size:mid%7Ccolor:0x009fff%7Clabel:B%7C{2},{3}&key={4}">"
-    
     <table>
         <tr>
             <th>P</th>
@@ -506,9 +513,57 @@ fn get_stops_by_coordinates(c1: Coordinate, c2: Coordinate, r1: f64, r2: f64, zo
     </table>
     </body>
     </html>
-    "#, 
+    "#,
     p1.lat, p1.lng,
     p2.lat, p2.lng,
     GMAPS_API_KEY,
     zoom)
+}
+
+fn get_bbox_from_points(c1: Coordinate, c2: Coordinate, r1: f64, r2: f64) -> BoundingBox {
+    // LAT = North to South (Y)
+    // LNG = East to West   (X)
+
+    let mut p1: Coordinate = Coordinate { lat: 0.0, lng: 0.0 };
+
+    let mut p2: Coordinate = Coordinate { lat: 0.0, lng: 0.0 };
+
+    if c1.lng < c2.lng {
+        // Blue
+        p1.lng = c1.lng - r1 * 1.0 / deg2meter_lng(c1.lat);
+        p1.lat = c1.lat + r1 * 1.0 / deg2meter_lat(c1.lat);
+
+        p2.lng = c2.lng + r2 * 1.0 / deg2meter_lng(c2.lat);
+        p2.lat = c2.lat + r2 * 1.0 / deg2meter_lat(c2.lat);
+
+        println!("C1");
+    } else if c1.lng > c2.lng {
+        // Orange
+        p1.lng = c2.lng - r2 * 1.0 / deg2meter_lng(c2.lat);
+        p1.lat = c2.lat + r2 * 1.0 / deg2meter_lat(c2.lat);
+
+        p2.lng = c1.lng + r1 * 1.0 / deg2meter_lng(c1.lat);
+        p2.lat = c1.lat - r1 * 1.0 / deg2meter_lat(c1.lat);
+        println!("C2");
+    } else {
+        if c1.lng > c2.lng {
+            // Orange
+            p1.lng = c2.lng + r2 * 1.0 / deg2meter_lng(c2.lat);
+            p1.lat = c2.lat + r2 * 1.0 / deg2meter_lat(c2.lat);
+
+            p2.lng = c1.lng - r1 * 1.0 / deg2meter_lng(c1.lat);
+            p2.lat = c1.lat - r1 * 1.0 / deg2meter_lat(c1.lat);
+            println!("C3");
+        } else {
+            // Blue
+            p1.lng = c1.lng + r1 * 1.0 / deg2meter_lng(c1.lat);
+            p1.lat = c1.lat - r1 * 1.0 / deg2meter_lat(c1.lat);
+
+            p2.lng = c2.lng - r2 * 1.0 / deg2meter_lng(c2.lat);
+            p2.lat = c2.lat - r2 * 1.0 / deg2meter_lat(c2.lat);
+            println!("C4");
+        }
+    }
+
+    BoundingBox { p1, p2 }
 }

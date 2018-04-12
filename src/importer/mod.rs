@@ -21,7 +21,7 @@ use std::str::FromStr;
 use self::regex::Regex;
 
 use r2d2::Pool;
-use r2d2_postgres::{PostgresConnectionManager};
+use r2d2_postgres::PostgresConnectionManager;
 use std::fs::File;
 
 pub use self::chrono::{NaiveDate, NaiveTime};

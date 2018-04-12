@@ -92,7 +92,7 @@ fn get_routes_by_query(
             AND stop_time.stop_id IN 
             (
                 SELECT stop.id FROM stop WHERE stop.uid IN ("
-            );
+        );
 
         query.push_str(&addition);
 

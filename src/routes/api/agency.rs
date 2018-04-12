@@ -138,7 +138,7 @@ pub fn get_agency_id(
     let agencies = conn.query(query, &[&agency_id, &feed_id]);
 
     let result = agencies.expect("Query failed");
-    if  result.len() != 1 {
+    if result.len() != 1 {
         return Option::None;
     }
 

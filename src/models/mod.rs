@@ -7,6 +7,7 @@
 
 pub mod agency;
 pub mod api;
+pub mod boundingbox;
 pub mod coordinate;
 pub mod csv;
 pub mod dropoff;
