@@ -501,6 +501,74 @@
 <span id="444">444</span>
 <span id="445">445</span>
 <span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/stops` related routes</span>
 
@@ -657,6 +725,33 @@
     <span class="ident">Json</span>(<span class="ident">sr</span>)
 }
 
+<span class="doccomment">/// `/stops/in/&lt;p1_lat&gt;/&lt;p1_lng&gt;/&lt;p2_lat&gt;/&lt;p2_lng&gt;`  </span>
+<span class="doccomment">/// Gets an array of [Stops](../../../models/api/struct.Stop.html)s,</span>
+<span class="doccomment">/// inside a bounding box defined by two points (P1 and P2).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
+<span class="doccomment">/// &lt;[Stop](../../../models/api/sruct.Stop.html)&gt;</span>
+<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/stops/in/&lt;p1_lat&gt;/&lt;p1_lng&gt;/&lt;p2_lat&gt;/&lt;p2_lng&gt;&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops_in_bbox</span>(
+    <span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>,
+    <span class="ident">p1_lat</span>: <span class="ident">f64</span>,
+    <span class="ident">p1_lng</span>: <span class="ident">f64</span>,
+    <span class="ident">p2_lat</span>: <span class="ident">f64</span>,
+    <span class="ident">p2_lng</span>: <span class="ident">f64</span>
+) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">let</span> <span class="ident">sr</span> <span class="op">=</span> <span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> {
+        <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">get_stops_in_bbox</span>(<span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>, 
+                                       <span class="ident">Coordinate</span>{<span class="ident">lat</span>: <span class="ident">p1_lat</span>, <span class="ident">lng</span>: <span class="ident">p1_lng</span>},
+                                       <span class="ident">Coordinate</span>{<span class="ident">lat</span>: <span class="ident">p2_lat</span>, <span class="ident">lng</span>: <span class="ident">p2_lat</span>}
+                )),
+        <span class="ident">meta</span>: <span class="ident">Meta</span> {
+            <span class="ident">success</span>: <span class="bool-val">true</span>,
+            <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+        },
+    };
+    <span class="ident">Json</span>(<span class="ident">sr</span>)
+}
+
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/stops/test/&lt;lat&gt;/&lt;lng&gt;/&lt;lat2&gt;/&lt;lng2&gt;/&lt;rad1&gt;/&lt;rad2&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops_latlng_test</span>(
     <span class="ident">lat</span>: <span class="ident">f64</span>,
@@ -756,6 +851,7 @@
     <span class="ident">stops_result</span>
 }
 
+
 <span class="kw">fn</span> <span class="ident">get_stops_near</span>(
     <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>,
     <span class="ident">lat</span>: <span class="ident">f32</span>,
@@ -791,6 +887,46 @@
         <span class="kw">let</span> <span class="ident">sd</span> <span class="op">=</span> <span class="ident">StopDistance</span> { <span class="ident">stop</span>, <span class="ident">distance</span> };
 
         <span class="ident">stops_result</span>.<span class="ident">push</span>(<span class="ident">sd</span>);
+    }
+
+    <span class="ident">stops_result</span>
+}
+
+<span class="kw">fn</span> <span class="ident">get_stops_in_bbox</span>(
+    <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>,
+    <span class="ident">p1</span>: <span class="ident">Coordinate</span>,
+    <span class="ident">p2</span>: <span class="ident">Coordinate</span>
+) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">&quot;SELECT \
+        uid,
+        id,
+        name,
+        type,
+        (SELECT s.uid FROM stop as s WHERE s.id = stop.parent_stop AND s.feed_id = stop.feed_id) as parent_stop,
+        feed_id,
+        ST_Y(position::geometry) as lat,
+        ST_X(position::geometry) as lng
+        FROM stop \
+        WHERE ST_Contains( \
+            ST_MakeEnvelope( \
+                $2, \
+                $1, \
+                $4, \
+                $3, \
+                4326), \
+            ST_Transform(position::geometry,4326) \
+        ) \
+        LIMIT 50;&quot;</span>;
+
+    <span class="comment">//println!(format!(&quot;{}&quot;, query));</span>
+    <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">stops</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">p1</span>.<span class="ident">lat</span>, <span class="kw-2">&amp;</span><span class="ident">p1</span>.<span class="ident">lng</span>, <span class="kw-2">&amp;</span><span class="ident">p2</span>.<span class="ident">lat</span>, <span class="kw-2">&amp;</span><span class="ident">p2</span>.<span class="ident">lng</span>]);
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stops_result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+
+    <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">stops</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>).<span class="ident">iter</span>() {
+        <span class="kw">let</span> <span class="ident">stop</span> <span class="op">=</span> <span class="ident">parse_stop_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>);
+        <span class="ident">stops_result</span>.<span class="ident">push</span>(<span class="ident">stop</span>);
     }
 
     <span class="ident">stops_result</span>
@@ -947,7 +1083,8 @@
     <span class="ident">p2</span>.<span class="ident">lat</span>, <span class="ident">p2</span>.<span class="ident">lng</span>,
     <span class="ident">GMAPS_API_KEY</span>,
     <span class="ident">zoom</span>)
-}</pre>
+}
+</pre>
 </section>
     <section id='search' class="content hidden"></section>
 

@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `stops_latlng_test_zoom` fn in crate `gtfs_server`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, stops_latlng_test_zoom">
+    <meta name="description" content="API documentation for the Rust `stops_in_bbox` fn in crate `gtfs_server`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, stops_in_bbox">
 
-    <title>gtfs_server::routes::api::stops::stops_latlng_test_zoom - Rust</title>
+    <title>gtfs_server::routes::api::stops::stops_in_bbox - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../../../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css"
@@ -34,7 +34,7 @@
     <nav class="sidebar">
         <div class="sidebar-menu">&#9776;</div>
         
-        <div class="sidebar-elems"><p class='location'><a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>stops</a></p><script>window.sidebarCurrent = {name: 'stops_latlng_test_zoom', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+        <div class="sidebar-elems"><p class='location'><a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>stops</a></p><script>window.sidebarCurrent = {name: 'stops_in_bbox', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
     </nav>
 
     <div class="theme-picker">
@@ -55,7 +55,12 @@
         </form>
     </nav>
 
-    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Function <a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>stops</a>::<wbr><a class="fn" href=''>stops_latlng_test_zoom</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../../src/gtfs_server/routes/api/stops.rs.html#198-210' title='goto source code'>[src]</a></span></h1><pre class='rust fn'>pub fn stops_latlng_test_zoom(<br>&nbsp;&nbsp;&nbsp;&nbsp;lat: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;lng: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;lat2: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;lng2: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;rad1: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;rad2: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;zoom: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.i32.html">i32</a><br>) -&gt; <a class="struct" href="https://api.rocket.rs/rocket/response/content/struct.Html.html" title="struct rocket::response::content::Html">Html</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;</pre></section>
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Function <a href='../../../index.html'>gtfs_server</a>::<wbr><a href='../../index.html'>routes</a>::<wbr><a href='../index.html'>api</a>::<wbr><a href='index.html'>stops</a>::<wbr><a class="fn" href=''>stops_in_bbox</a></span><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../../src/gtfs_server/routes/api/stops.rs.html#163-181' title='goto source code'>[src]</a></span></h1><pre class='rust fn'>pub fn stops_in_bbox(<br>&nbsp;&nbsp;&nbsp;&nbsp;rh: <a class="struct" href="https://api.rocket.rs/rocket/request/state/struct.State.html" title="struct rocket::request::state::State">State</a>&lt;<a class="struct" href="../../../../gtfs_server/routes/struct.RoutesHandler.html" title="struct gtfs_server::routes::RoutesHandler">RoutesHandler</a>&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;p1_lat: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;p1_lng: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;p2_lat: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;p2_lng: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a><br>) -&gt; <a class="struct" href="https://api.rocket.rs/rocket_contrib/json/struct.Json.html" title="struct rocket_contrib::json::Json">Json</a>&lt;<a class="struct" href="../../../../gtfs_server/models/api/resultarray/struct.ResultArray.html" title="struct gtfs_server::models::api::resultarray::ResultArray">ResultArray</a>&lt;<a class="struct" href="../../../../gtfs_server/models/stop/struct.Stop.html" title="struct gtfs_server::models::stop::Stop">Stop</a>&gt;&gt;</pre><div class='docblock'><p><code>/stops/in/&lt;p1_lat&gt;/&lt;p1_lng&gt;/&lt;p2_lat&gt;/&lt;p2_lng&gt;</code><br />
+Gets an array of <a href="../../../models/api/struct.Stop.html">Stops</a>s,
+inside a bounding box defined by two points (P1 and P2).</p>
+<p>Returns a <a href="../../../models/api/resultarray/struct.ResultArray.html">ResultArray</a>
+&lt;<a href="../../../models/api/sruct.Stop.html">Stop</a>&gt;</p>
+</div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
