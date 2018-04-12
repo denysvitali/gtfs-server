@@ -154,7 +154,7 @@ pub fn stops_near(
 }
 
 /// `/stops/in/<p1_lat>/<p1_lng>/<p2_lat>/<p2_lng>`  
-/// Gets an array of [Stops](../../../models/api/struct.Stop.html)s,
+/// Gets an array of [Stop](../../../models/api/struct.Stop.html)s,
 /// inside a bounding box defined by two points (P1 and P2).
 ///
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
