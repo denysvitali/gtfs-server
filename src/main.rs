@@ -81,6 +81,7 @@ fn start_server(rh: RoutesHandler) {
                 api::stops::stops_near_default,
                 api::stops::stops_near,
                 api::stops::stops_by_trip,
+                api::stops::stops_in_bbox,
                 api::stops::stops_latlng_test,
                 api::stops::stops_latlng_test_zoom,
                 api::trips::trips,

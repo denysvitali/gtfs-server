@@ -153,6 +153,33 @@ pub fn stops_near(
     Json(sr)
 }
 
+/// `/stops/in/<p1_lat>/<p1_lng>/<p2_lat>/<p2_lng>`  
+/// Gets an array of [Stops](../../../models/api/struct.Stop.html)s,
+/// inside a bounding box defined by two points (P1 and P2).
+///
+/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
+/// <[Stop](../../../models/api/sruct.Stop.html)>
+#[get("/stops/in/<p1_lat>/<p1_lng>/<p2_lat>/<p2_lng>")]
+pub fn stops_in_bbox(
+    rh: State<RoutesHandler>,
+    p1_lat: f64,
+    p1_lng: f64,
+    p2_lat: f64,
+    p2_lng: f64
+) -> Json<ResultArray<Stop>> {
+    let sr = ResultArray::<Stop> {
+        result: Some(get_stops_in_bbox(&rh.pool, 
+                                       Coordinate{lat: p1_lat, lng: p1_lng},
+                                       Coordinate{lat: p2_lat, lng: p2_lat}
+                )),
+        meta: Meta {
+            success: true,
+            error: Option::None,
+        },
+    };
+    Json(sr)
+}
+
 #[get("/stops/test/<lat>/<lng>/<lat2>/<lng2>/<rad1>/<rad2>")]
 pub fn stops_latlng_test(
     lat: f64,
@@ -252,6 +279,7 @@ fn get_stops(pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
     stops_result
 }
 
+
 fn get_stops_near(
     pool: &Pool<PostgresConnectionManager>,
     lat: f32,
@@ -287,6 +315,46 @@ fn get_stops_near(
         let sd = StopDistance { stop, distance };
 
         stops_result.push(sd);
+    }
+
+    stops_result
+}
+
+fn get_stops_in_bbox(
+    pool: &Pool<PostgresConnectionManager>,
+    p1: Coordinate,
+    p2: Coordinate
+) -> Vec<Stop> {
+    let query = "SELECT \
+        uid,
+        id,
+        name,
+        type,
+        (SELECT s.uid FROM stop as s WHERE s.id = stop.parent_stop AND s.feed_id = stop.feed_id) as parent_stop,
+        feed_id,
+        ST_Y(position::geometry) as lat,
+        ST_X(position::geometry) as lng
+        FROM stop \
+        WHERE ST_Contains( \
+            ST_MakeEnvelope( \
+                $2, \
+                $1, \
+                $4, \
+                $3, \
+                4326), \
+            ST_Transform(position::geometry,4326) \
+        ) \
+        LIMIT 50;";
+
+    //println!(format!("{}", query));
+    let conn = pool.clone().get().unwrap();
+    let stops = conn.query(query, &[&p1.lat, &p1.lng, &p2.lat, &p2.lng]);
+
+    let mut stops_result: Vec<Stop> = Vec::new();
+
+    for row in stops.expect("Query failed").iter() {
+        let stop = parse_stop_row(&row);
+        stops_result.push(stop);
     }
 
     stops_result
