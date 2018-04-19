@@ -22,7 +22,9 @@ rocket = "*"
 rocket_codegen = "*"
 num-traits = "0.2"
 num-derive = "0.2"
-reqwest = "0.7"
+reqwest = "0.8.5"
+tempfile = "3"
+zip = "0.3"
 
 
 [dependencies.rocket_contrib]

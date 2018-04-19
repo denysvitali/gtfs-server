@@ -5,5 +5,9 @@ pub struct TripCSV {
     pub trip_id: String,
     pub trip_headsign: String,
     pub trip_short_name: String,
-    pub direction_id: i32,
+    pub direction_id: Option<i32>,
+    pub block_id: Option<i32>,
+    pub shape_id: Option<i32>,
+    pub wheelchair_accessible : Option<i32>,
+    pub bikes_allowed: Option<String>
 }

@@ -5,6 +5,7 @@ use rocket::http::ContentType;
 use rocket::response::content;
 
 pub mod agency;
+pub mod db;
 pub mod import;
 pub mod routes;
 pub mod stops;

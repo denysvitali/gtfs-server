@@ -11,8 +11,37 @@ use super::super::Json;
 use super::super::RoutesHandler;
 use super::super::State;
 
-/// `/agency/<agency_uid>`  
-/// Get the the specified [Agency](../../../models/agency/struct.Agency.html) by its specified UID.  
+/// `/agency`
+/// Get the Agencies.
+/// Returns a [ResultArray](../../../models/api/result/struct.ResultArray.html)<[Agency](../../../models/agency/struct.Agency.html)>
+#[get("/agency")]
+pub fn agency(rh: State<RoutesHandler>) -> Json<ResultArray<Agency>> {
+    let res = get_agencies(&rh);
+
+    if res.is_none() {
+        return Json(ResultArray {
+            result: Option::None,
+            meta: Meta {
+                success: false,
+                error: Some(Error {
+                    code: 3,
+                    message: String::from("This agency doesn't exists"),
+                }),
+            },
+        });
+    }
+
+    Json(ResultArray {
+        result: res,
+        meta: Meta {
+            success: true,
+            error: Option::None,
+        },
+    })
+}
+
+/// `/agency/<agency_uid>`
+/// Get the the specified [Agency](../../../models/agency/struct.Agency.html) by its specified UID.
 /// Returns a [Result](../../../models/api/result/struct.Result.html)<[Agency](../../../models/agency/struct.Agency.html)>
 ///
 /// ### Example
@@ -61,6 +90,7 @@ pub fn agency_by_id(rh: State<RoutesHandler>, agency_uid: String) -> Json<Result
 }
 
 use postgres::rows::Row;
+use models::api::resultarray::ResultArray;
 
 fn get_agency_by_uid(rh: State<RoutesHandler>, agency_uid: String) -> Option<Agency> {
     let query = "SELECT \
@@ -85,6 +115,38 @@ fn get_agency_by_uid(rh: State<RoutesHandler>, agency_uid: String) -> Option<Age
     }
 
     return Some(parse_agency_row(&agency.get(0)));
+}
+
+fn get_agencies(
+    rh: &State<RoutesHandler>
+) -> Option<Vec<Agency>> {
+    let query = "SELECT \
+                 uid, \
+                 id, \
+                 name, \
+                 url, \
+                 timezone, \
+                 lang, \
+                 phone, \
+                 feed_id \
+                 FROM agency \
+                 LIMIT 50";
+
+    let conn = rh.pool.clone().get().unwrap();
+    let agencies = conn.query(query, &[]);
+
+    let result = agencies.expect("Query failed");
+    if result.len() == 0 {
+        return Option::None;
+    }
+
+    let mut ag_result : Vec<Agency> = Vec::new();
+
+    for row in result.iter() {
+        ag_result.push(parse_agency_row(&row));
+    }
+
+    return Some(ag_result);
 }
 
 fn get_agency(
