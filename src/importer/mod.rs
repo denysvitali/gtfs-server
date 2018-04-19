@@ -46,6 +46,7 @@ use self::csv::Reader;
 use std::io::Read;
 use std::collections::BinaryHeap;
 use std::cmp::Ordering;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn download_feed_zip<'a>(feed_url: &str, pool: &Pool<PostgresConnectionManager>) -> Option<ZipArchive<File>> {
     // Download feed from URL
@@ -121,77 +122,86 @@ pub fn parse_feed_zip(zar: &mut ZipArchive<File>, pool: &Pool<PostgresConnection
             }
         }
 
+        if feed_id.len() == 0 {
+            println!("feed_info missing!");
+            let start = SystemTime::now();
+            let uts = start.duration_since(UNIX_EPOCH).unwrap();
+            let mut sha = Sha256::new();
+            sha.input_str(&uts.as_secs().to_string());
+            feed_id = sha.result_str();
+            println!("Using fake feed ID {}", feed_id);
+            //return;
+        }
+
         let mut bh : BinaryHeap<MZipFile> = BinaryHeap::new();
-
-        if feed_id.len() != 0 {
-            for i in 0..zar.len() {
-                let file = zar.by_index(i).expect("Invalid file index");
-                println!("File {} ", file.name());
-                match file.name() {
-                    "agency.txt" => {
-                        bh.push(MZipFile{
-                            name: "agency.txt",
-                            order: 1
-                        })
-                    },
-                    "calendar.txt" => {
-                        bh.push(MZipFile{
-                            name: "calendar.txt",
-                            order: 4
-                        })
-                    },
-                    "routes.txt" => {
-                        bh.push(MZipFile{
-                            name: "routes.txt",
-                            order: 2
-                        })
-                    },
-                    "stops.txt" => {
-                        bh.push(MZipFile{
-                            name: "stops.txt",
-                            order: 2
-                        })
-                    },
-                    "stop_times.txt" => {
-                        bh.push(MZipFile{
-                            name: "stop_times.txt",
-                            order: 5
-                        })
-                    },
-                    "trips.txt" => {
-                        bh.push(MZipFile{
-                            name: "trips.txt",
-                            order: 3
-                        })
-                    },
-                    _ => {}
-                };
-            }
-
-            for i in bh.into_sorted_vec() {
-                println!("{}", i.name);
-                match i.name {
-                    "agency.txt" => {
-                        parse_agency(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                    },
-                    "calendar.txt" => {
-                        parse_calendar(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                    },
-                    "routes.txt" => {
-                        parse_routes(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                    },
-                    "stops.txt" => {
-                        parse_stops(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                    },
-                    "stop_times.txt" => {
-                        parse_stop_times(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                    },
-                    "trips.txt" => {
-                        parse_trips(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                    },
-                    _ => {}
-                };
-            }
+        for i in 0..zar.len() {
+            let file = zar.by_index(i).expect("Invalid file index");
+            println!("File {} ", file.name());
+            match file.name() {
+                "agency.txt" => {
+                    bh.push(MZipFile{
+                        name: "agency.txt",
+                        order: 1
+                    })
+                },
+                "calendar.txt" => {
+                    bh.push(MZipFile{
+                        name: "calendar.txt",
+                        order: 4
+                    })
+                },
+                "routes.txt" => {
+                    bh.push(MZipFile{
+                        name: "routes.txt",
+                        order: 2
+                    })
+                },
+                "stops.txt" => {
+                    bh.push(MZipFile{
+                        name: "stops.txt",
+                        order: 2
+                    })
+                },
+                "stop_times.txt" => {
+                    bh.push(MZipFile{
+                        name: "stop_times.txt",
+                        order: 5
+                    })
+                },
+                "trips.txt" => {
+                    bh.push(MZipFile{
+                        name: "trips.txt",
+                        order: 3
+                    })
+                },
+                _ => {}
+            };
+        }
+        
+        println!("Parsing BH");
+        for i in bh.into_sorted_vec() {
+            println!("{}", i.name);
+            match i.name {
+                "agency.txt" => {
+                    parse_agency(&feed_id, zar.by_name(i.name).unwrap(), &pool)
+                },
+                "calendar.txt" => {
+                    parse_calendar(&feed_id, zar.by_name(i.name).unwrap(), &pool)
+                },
+                "routes.txt" => {
+                    parse_routes(&feed_id, zar.by_name(i.name).unwrap(), &pool)
+                },
+                "stops.txt" => {
+                    parse_stops(&feed_id, zar.by_name(i.name).unwrap(), &pool)
+                },
+                "stop_times.txt" => {
+                    parse_stop_times(&feed_id, zar.by_name(i.name).unwrap(), &pool)
+                },
+                "trips.txt" => {
+                    parse_trips(&feed_id, zar.by_name(i.name).unwrap(), &pool)
+                },
+                _ => {}
+            };
         }
 
         
