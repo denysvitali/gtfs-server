@@ -9,5 +9,5 @@ pub struct TripCSV {
     pub block_id: Option<i32>,
     pub shape_id: Option<i32>,
     pub wheelchair_accessible : Option<i32>,
-    pub bikes_allowed: Option<String>
+    pub bikes_allowed: Option<i32>
 }

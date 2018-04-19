@@ -739,8 +739,8 @@ pub fn update_db_from(ver : u32, pool: &Pool<PostgresConnectionManager>){
         conn.execute("ALTER TABLE trip \
         ADD COLUMN block_id INTEGER, \
         ADD COLUMN shape_id INTEGER, \
-        ADD COLUMN wheelchair_accessible BOOLEAN, \
-        ADD COLUMN bikes_allowed BOOLEAN", &[]).expect("Unable to alter table trip");
+        ADD COLUMN wheelchair_accessible INTEGER, \
+        ADD COLUMN bikes_allowed INTEGER", &[]).expect("Unable to alter table trip");
         update_db_ver(2, &conn);
     }
 }
