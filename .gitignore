@@ -6,3 +6,7 @@ resources/gtfs/*
 .idea/
 *.sql
 *.fmt
+/*.tar.gz
+/*.sql
+/*.zip
+/rancher-docker-compose.yml
