@@ -7,6 +7,7 @@
 
 pub mod agency;
 pub mod calendar;
+pub mod calendardate;
 pub mod feed;
 pub mod route;
 pub mod stop;

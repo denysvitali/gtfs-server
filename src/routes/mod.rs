@@ -14,3 +14,4 @@ use super::rocket_contrib::Json;
 use rocket::State;
 
 pub mod api;
+pub mod ui;

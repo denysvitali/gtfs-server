@@ -10,3 +10,4 @@ resources/gtfs/*
 /*.sql
 /*.zip
 /rancher-docker-compose.yml
+node_modules

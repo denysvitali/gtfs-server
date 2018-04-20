@@ -24,8 +24,11 @@ use r2d2::Pool;
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 
 use routes::api;
+use routes::ui;
 use routes::RoutesHandler;
 use std::env;
+use std::path::{Path, PathBuf};
+use rocket::response::NamedFile;
 
 use chrono::{NaiveDate, NaiveTime};
 
@@ -56,6 +59,16 @@ fn create_pool() -> Pool<PostgresConnectionManager> {
     let manager = PostgresConnectionManager::new(connection_string, TlsMode::None).unwrap();
     let pool = Pool::new(manager).unwrap();
     pool
+}
+
+#[get("/css/<file..>")]
+fn static_css(file: PathBuf) -> Option<NamedFile> {
+    NamedFile::open(Path::new("static/dist/css/").join(file)).ok()
+}
+
+#[get("/js/<file..>")]
+fn static_js(file: PathBuf) -> Option<NamedFile> {
+    NamedFile::open(Path::new("static/dist/js/").join(file)).ok()
 }
 
 fn start_server(rh: RoutesHandler) {
@@ -101,6 +114,15 @@ fn start_server(rh: RoutesHandler) {
                 api::times::times_stop_query
             ],
         )
+        .mount("/",
+        routes![
+            ui::import::main
+        ])
+        .mount("/",
+        routes![
+            static_css,
+            static_js
+        ])
         .launch();
 }
 

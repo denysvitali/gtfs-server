@@ -1,7 +1,6 @@
 use super::super::{NaiveDate, NaiveTime};
 use super::model_api;
 
-use rocket::http::ContentType;
 use rocket::response::content;
 
 pub mod agency;
@@ -11,8 +10,6 @@ pub mod routes;
 pub mod stops;
 pub mod times;
 pub mod trips;
-
-use rocket;
 
 #[get("/")]
 pub fn main() -> content::Html<String> {

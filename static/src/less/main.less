@@ -1,0 +1,349 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans);
+
+@bodybgColor: #fefefe;
+@bodyTextColor: #454545;
+
+// Link Colors
+@linkColor: #07A;
+@linkVisitedColor: #941352;
+@linkVisitedInvertedColor: #ac5a82;
+// ===============
+
+@wrongColor: #c0392b;
+@shittyBlue: #0000EE;
+@shittyViolet: #551A8B;
+@motherfuckingColor: #16a085;
+@blockQuoteColor: #456;
+@openQuoteColor: #666;
+
+html{
+  background-color: @bodybgColor;
+}
+body{
+  font-family: "Open Sans", Arial;
+  color: @bodyTextColor;
+  font-size: 16px;
+  margin: 2em auto;
+  max-width: 800px;
+  padding: 1em;
+  line-height: 1.4;
+  text-align: justify;
+}
+
+html.contrast{
+  /* Accessibility first */
+  @darkenBy: 25%;
+  body{
+    color: darken(@bodyTextColor, @darkenBy);
+  }
+
+  blockquote{
+    color: darken(@blockQuoteColor, @darkenBy);
+    &::before{
+      color: darken(@openQuoteColor, @darkenBy);
+    }
+  }
+
+  a{
+    color: #0051c9;
+    &:visited{
+        color: #7d013e;
+    }
+  }
+
+  span.wr{
+    color: #800;
+  }
+
+  span.mfw{
+    color: darken(@motherfuckingColor, @darkenBy*.3);
+  }
+}
+
+html.inverted{
+  /* Don't let the motherfucking sun disturb you */
+  background-color: #fff - @bodybgColor;
+
+  @lightenBy: 15%;
+  body{
+    color: #FFF - @bodyTextColor;
+  }
+
+  div#invmode{
+    color: #FFF;
+    background-color: #000;
+  }
+
+  blockquote{
+    color: lighten(#FFF - @blockQuoteColor, @lightenBy);
+    &::before{
+      color: lighten(#FFF - @openQuoteColor, @lightenBy);
+    }
+  }
+
+  a{
+    color: @linkColor;
+    &:visited{
+      color: @linkVisitedInvertedColor;
+    }
+  }
+
+  span.wr{
+    color: @wrongColor;
+  }
+
+  span.mfw{
+    color: lighten(@motherfuckingColor, @lightenBy*.3);
+  }
+}
+
+a{
+  color: @linkColor;
+
+  &:visited{
+    color: @linkVisitedColor;
+  }
+}
+
+.noselect{
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+
+span.citneed{
+  vertical-align: top;
+  font-size: 0.7em;
+  padding-left: 0.3em;
+}
+
+small{
+  font-size: 0.4em;
+}
+
+p.st{
+  margin-top: -1em;
+}
+
+div.fancyPositioning{
+
+  div.picture-left{
+    float: left;
+    width: 40%;
+    overflow: hidden;
+    margin-right: 1em;
+
+    img{
+      width: 100%;
+    }
+
+    p.caption{
+      font-size: 0.7em;
+    }
+  }
+
+  div.tleft{
+    float: left;
+    width: 55%;
+    p:first-child{
+      margin-top: 0;
+    }
+  }
+  &::after{
+    display: block;
+    content: "";
+    clear: both;
+  }
+}
+
+ul{
+  li{
+    img{
+      height: 1em;
+    }
+  }
+}
+
+blockquote{
+  color: @blockQuoteColor;
+  margin-left: 0;
+  margin-top: 2em;
+  margin-bottom: 2em;
+
+  span{
+    float: left;
+    margin-left: 1rem;
+    padding-top: 1rem;
+  }
+
+  author{
+    display: block;
+    clear: both;
+    font-size: 0.6em;
+    margin-left: 2.4rem;
+    font-style: oblique;
+
+    &:before{
+      content: "- ";
+      margin-right: 1em;
+    }
+  }
+
+  &::before{
+    font-family: "Times New Roman", Times, Arial;
+    color: @openQuoteColor;
+    content: open-quote;
+    font-size: 2.2em;
+    font-weight: 600;
+    float: left;
+    margin-top: 0em;
+    margin-right: 0.2rem;
+    width: 1.2rem;
+  }
+
+  &::after{
+    content: "";
+    display: block;
+    clear: both;
+  }
+}
+
+@media screen and (max-width: 500px) {
+
+  body{
+    text-align: left;
+  }
+
+  div.fancyPositioning{
+    div.picture-left{
+      float: none;
+      width: inherit;
+    }
+
+    div.tleft{
+      float: none;
+      width: inherit;
+    }
+  }
+
+  blockquote{
+    span{
+      width: 80%;
+    }
+    author{
+      padding-top: 1em;
+      width: 80%;
+      margin-left: 15%;
+      &::before{
+        content: "";
+        margin-right: inherit;
+      }
+    }
+  }
+}
+
+
+// ===== TBMFW specific styles ======
+
+span.visited{
+  color: @linkVisitedColor;
+}
+
+span.visited-maroon{
+  color:  #85144b;
+}
+
+span.wr{
+  color: @wrongColor;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+div#contrast{
+  color: #000;
+  cursor: pointer;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  font-size: 0.8em;
+  text-decoration: underline;
+  .noselect
+}
+
+
+div#invmode{
+  color: #FFF;
+  background-color: #000;
+  cursor: pointer;
+  position: absolute;
+  right: 10px;
+  top: 34px;
+  padding: 2px 5px 2px 5px;
+  font-size: 0.8em;
+  text-decoration: underline;
+  .noselect
+}
+
+span.sb{
+  cursor: not-allowed;
+  color: @shittyBlue;
+}
+
+span.sv{
+  cursor: not-allowed;
+  color: @shittyViolet;
+}
+
+span.foufoufou{
+  &::before{
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    background-color: #444;
+  }
+  color: #444;
+  font-weight: bold;
+}
+
+span.foufivfoufivfoufiv {
+  &::before{
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    background-color: #454545;
+  }
+  color: #454545;
+  font-weight: bold;
+}
+
+span.mfw{
+  color: @motherfuckingColor;
+}
+
+a.kopimi{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  
+  img.kopimi{
+    display: block;
+    height: 2em;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+p.fakepre{
+  font-family: monospace;
+  font-size: 0.9em;
+}

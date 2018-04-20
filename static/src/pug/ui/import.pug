@@ -1,0 +1,16 @@
+doctype html
+html
+ head
+  title Importer
+  link(rel="stylesheet" type="text/css" href="/css/main.css")
+ body
+  h1 Importer
+  div
+   h4 From Feed URL
+   input#import-feed-url(type="text" placeholder="https://denv.it/public/gtfs.zip")
+   button#btn-import-feed-url Import
+  
+  div
+   h4 From Filesystem
+   button#btn-import-feed-fs Import
+  script(src="/js/import.js" type="text/javascript")
