@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["api",""]],"struct":[["RoutesHandler",""]]});
+initSidebarItems({"mod":[["api",""],["ui","UI Routes"]],"struct":[["RoutesHandler",""]]});

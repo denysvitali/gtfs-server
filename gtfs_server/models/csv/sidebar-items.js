@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["agency",""],["calendar",""],["feed",""],["route",""],["stop",""],["stoptime",""],["trip",""]]});
+initSidebarItems({"mod":[["agency",""],["calendar",""],["calendardate",""],["feed",""],["route",""],["stop",""],["stoptime",""],["trip",""]]});

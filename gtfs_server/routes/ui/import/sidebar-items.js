@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["main",""]],"static":[["static_rocket_route_info_for_main","Rocket code generated static route information structure."]]});
