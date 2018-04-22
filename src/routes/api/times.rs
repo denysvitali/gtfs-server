@@ -273,7 +273,6 @@ fn get_times_by_query<'a>(
     let mut string_values: Vec<&String> = Vec::new();
     let mut params: Vec<&ToSql> = Vec::new();
     let mut i = 0;
-
     let mut addition: String;
 
     if time_search.stop.is_some() {

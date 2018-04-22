@@ -154,31 +154,17 @@ pub fn stops_near(
     Json(sr)
 }
 
-/// `/stops/in/<p1_lat>/<p1_lng>/<p2_lat>/<p2_lng>`  
+/// `/stops/in/<bbox>`  
 /// Gets an array of [Stop](../../../models/api/struct.Stop.html)s,
-/// inside a bounding box defined by two points (P1 and P2).
+/// inside a [BoudingBox](../../models/struct.boudingbox.html) defined by two points (P1 and P2).
 ///
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[Stop](../../../models/api/sruct.Stop.html)>
-#[get("/stops/in/<p1_lat>/<p1_lng>/<p2_lat>/<p2_lng>")]
+#[get("/stops/in/<bbox>")]
 pub fn stops_in_bbox(
     rh: State<RoutesHandler>,
-    p1_lat: f64,
-    p1_lng: f64,
-    p2_lat: f64,
-    p2_lng: f64,
+    bbox: BoundingBox
 ) -> Json<ResultArray<Stop>> {
-    let bbox = BoundingBox {
-        p1: Coordinate {
-            lat: p1_lat,
-            lng: p1_lng,
-        },
-        p2: Coordinate {
-            lat: p2_lat,
-            lng: p2_lng,
-        },
-    };
-
     let sr = ResultArray::<Stop> {
         result: Some(get_stops_in_bbox(&rh.pool, bbox)),
         meta: Meta {
@@ -189,31 +175,20 @@ pub fn stops_in_bbox(
     Json(sr)
 }
 
-/// `/stops/in/<p1_lat>/<p1_lng>/<p2_lat>/<p2_lng>/<meters>`  
+/// `/stops/in/<bbox>/<meters>`  
 /// Gets an array of [Stop](../../../models/api/struct.Stop.html)s,
-/// inside a bounding box defined by two circles of a radius `<meters>` meters
+/// inside a [Bouding Box](../../models/struct.boudingbox.html) defined by two circles of a radius `<meters>` meters
 /// with centers in P1 and P2.
 ///
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[Stop](../../../models/api/sruct.Stop.html)>
-#[get("/stops/in/<p1_lat>/<p1_lng>/<p2_lat>/<p2_lng>/<radius>")]
+#[get("/stops/in/<bbox>/<radius>")]
 pub fn stops_in_bbox_radius(
     rh: State<RoutesHandler>,
-    p1_lat: f64,
-    p1_lng: f64,
-    p2_lat: f64,
-    p2_lng: f64,
+    bbox: BoundingBox,
     radius: f64,
 ) -> Json<ResultArray<Stop>> {
-    let p1 = Coordinate {
-        lat: p1_lat,
-        lng: p1_lng,
-    };
-    let p2 = Coordinate {
-        lat: p2_lat,
-        lng: p2_lng,
-    };
-    let bbox = get_bbox_from_points(p1, p2, radius, radius);
+    let bbox = get_bbox_from_points(bbox.p1, bbox.p2, radius, radius);
     let sr = ResultArray::<Stop> {
         result: Some(get_stops_in_bbox(&rh.pool, bbox)),
         meta: Meta {

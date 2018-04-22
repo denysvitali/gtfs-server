@@ -16,6 +16,7 @@ use super::super::RoutesHandler;
 use super::super::State;
 
 use models::api::search::route::RouteSearch;
+use models::boundingbox::BoundingBox;
 use postgres::rows::Row;
 
 use postgres::types::ToSql;
@@ -211,6 +212,40 @@ pub fn route_by_stop_uid(rh: State<RoutesHandler>, stop_uid: String) -> Json<Res
     for row in routes.iter() {
         results.push(parse_route_row(&row, &rh))
     }
+
+    Json(ResultArray {
+        result: Some(results),
+        meta: Meta {
+            success: true,
+            error: Option::None,
+        },
+    })
+}
+
+/// `/routes/by-bbox/<bbox>/`  
+/// Gets the [Route](../../../models/route/struct.Route.html)s that serve a particular [Stop](../../../models/route/struct.Stop.html) by its UID,
+/// parametrized as `<stop_uid>`.  
+/// Returns a [Result](../../../models/api/result/struct.Result.html)
+/// <[Route](../../../models/route/struct.Route.html)>
+#[get("/routes/in/<bbox>")]
+pub fn route_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<ResultArray<Route>> {
+    /*let query = "SELECT route.uid, route.id, route.agency, route.short_name, route.long_name, route.description, route.\"type\", route.feed_id FROM route, (SELECT trip.route_id as rid, trip.feed_id as fid
+    FROM trip, (SELECT trip_id as tid, feed_id as fid FROM stop_time WHERE stop_time.stop_id = (SELECT stop.id FROM stop WHERE stop.uid = $1 )) as sq1
+    WHERE sq1.tid = trip.trip_id 
+    AND sq1.fid = trip.feed_id
+    GROUP BY (trip.route_id, trip.feed_id)) as sq2 WHERE 
+    sq2.rid = route.id AND
+    sq2.fid = route.feed_id";
+
+    let conn = rh.pool.clone().get().unwrap();
+    let routes = conn.query(query, &[]);
+
+    let routes = routes.expect("Query failed");*/
+    let mut results: Vec<Route> = Vec::new();
+
+    /*for row in routes.iter() {
+        results.push(parse_route_row(&row, &rh))
+    }*/
 
     Json(ResultArray {
         result: Some(results),

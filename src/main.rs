@@ -13,6 +13,7 @@ extern crate postgres;
 extern crate r2d2;
 extern crate r2d2_postgres;
 extern crate rocket_contrib;
+extern crate regex;
 
 mod test;
 
@@ -94,6 +95,7 @@ fn start_server(rh: RoutesHandler) {
                 api::routes::routes_by_query,
                 api::routes::route_by_stop_uid,
                 api::routes::route_by_id,
+                api::routes::route_by_bbox,
                 api::stops::stops,
                 api::stops::stops_by_id,
                 api::stops::stops_near_default,
