@@ -225,7 +225,7 @@ fn get_times_by_query<'a>(
         "SELECT t.uid,
         arrival_time,
         departure_time,
-        stop.uid,
+        s.uid,
         stop_sequence,
         pickup_type,
         drop_off_type,
@@ -241,14 +241,14 @@ fn get_times_by_query<'a>(
         c.start_date,
         c.end_date,
         a.feed_id
-        FROM stop_time as a
-        INNER JOIN stop ON (a.stop_id=stop.id)
-        INNER JOIN trip as t ON (a.trip_id = t.trip_id)
-        INNER JOIN route as r ON (t.route_id = r.id)
-        INNER JOIN calendar as c ON (t.service_id = c.service_id)
+        FROM stop_time as a, stop as s, trip as t, route as r, calendar as c
         WHERE
-        a.feed_id = stop.feed_id AND 
-        t.feed_id = stop.feed_id AND 
+        a.stop_id = s.id AND
+        a.trip_id = t.trip_id AND
+        t.route_id = r.id AND
+        t.service_id = c.service_id AND
+        a.feed_id = s.feed_id AND 
+        t.feed_id = s.feed_id AND 
         c.feed_id = t.feed_id AND
         r.feed_id = c.feed_id AND
         r.id = t.route_id",
@@ -279,7 +279,7 @@ fn get_times_by_query<'a>(
     if time_search.stop.is_some() {
         string_values.push(time_search.stop.as_ref().unwrap());
         i += 1;
-        addition = format!(" AND a.stop_id = (SELECT stop.id FROM stop WHERE stop.uid = ${} AND stop.feed_id = a.feed_id LIMIT 1) ", &i);
+        addition = format!(" AND s.uid=${} ", &i);
         query.push_str(&addition);
     }
 
