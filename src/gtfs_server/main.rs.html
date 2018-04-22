@@ -147,6 +147,8 @@
 <span id="147">147</span>
 <span id="148">148</span>
 <span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! This is the documentation for `gtfs-server`</span>
 <span class="doccomment">//!</span>
@@ -163,6 +165,7 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">r2d2</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">r2d2_postgres</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">rocket_contrib</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">regex</span>;
 
 <span class="kw">mod</span> <span class="ident">test</span>;
 
@@ -244,6 +247,7 @@
                 <span class="ident">api</span>::<span class="ident">routes</span>::<span class="ident">routes_by_query</span>,
                 <span class="ident">api</span>::<span class="ident">routes</span>::<span class="ident">route_by_stop_uid</span>,
                 <span class="ident">api</span>::<span class="ident">routes</span>::<span class="ident">route_by_id</span>,
+                <span class="ident">api</span>::<span class="ident">routes</span>::<span class="ident">route_by_bbox</span>,
                 <span class="ident">api</span>::<span class="ident">stops</span>::<span class="ident">stops</span>,
                 <span class="ident">api</span>::<span class="ident">stops</span>::<span class="ident">stops_by_id</span>,
                 <span class="ident">api</span>::<span class="ident">stops</span>::<span class="ident">stops_near_default</span>,
