@@ -1,6 +1,6 @@
 //! DropOff related enums and implementations
 
-#[derive(Debug, Serialize, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Serialize, FromPrimitive, ToPrimitive, Hash)]
 pub enum DropOff {
     RegularlyScheduled = 0,
     NotAvailable = 1,

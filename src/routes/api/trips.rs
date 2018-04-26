@@ -23,7 +23,10 @@ use chrono::NaiveTime;
 use postgres::rows::Row;
 use postgres::types::ToSql;
 
+use std::collections::HashMap;
+
 use models::api::search::trip::TripSearch;
+use models::boundingbox::BoundingBox;
 use num_traits as num;
 
 /// `/trips/`, returns a list of [Trip](../../../models/trip/struct.Trip.html)s.  
@@ -296,7 +299,7 @@ pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>> {
 /// Returns a [Result](../../../models/api/result/struct.Result.html)
 /// <[Trip](../../../models/trip/struct.Trip.html)>
 #[get("/trips/by-route/<route_uid>")]
-pub fn trip_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<ResultArray<Trip>> {
+pub fn trips_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<ResultArray<Trip>> {
     let query = "SELECT \
         trip.uid, \
         route.uid, \
@@ -355,6 +358,105 @@ pub fn trip_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<Result
     Json(result)
 }
 
+/// `/trips/in/<bbox>`, returns the [Trip](../../../models/trip/struct.Trip.html)s contained
+/// in a [Bounding Box](../../../models/struct.BoudingBox.html).
+/// Returns a [Result](../../../models/api/result/struct.Result.html)
+/// <[Trip](../../../models/trip/struct.Trip.html)>
+/// 
+/// Warning: The result may contain duplicate entries!
+#[get("/trips/in/<bbox>")]
+pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<ResultArray<Trip>> {
+    let query = r#"SELECT 
+		tuid,
+		ruid,
+		cuid,
+		ths,
+		tsn,
+		td,
+		tfid,
+		stop.uid as suid,
+		stop.id as sid,
+		stop."name" as sname,
+		ST_Y(stop.position::geometry) as slat,
+		ST_X(stop.position::geometry) as slng,
+		stop."type" as st,
+		pstop.uid as psuid
+	FROM 
+	(SELECT 
+		trip.uid as tuid,
+		route.uid as ruid,
+		calendar.uid as cuid,
+		trip.trip_id as tid,
+		trip.headsign as ths,
+		trip.short_name as tsn,
+		trip.direction_id as td,
+		trip.feed_id as tfid
+		FROM trip, route, calendar 
+		WHERE trip.uid IN ( 
+			SELECT trip.uid
+			FROM trip 
+			WHERE EXISTS ( 
+				SELECT 1 
+				FROM stop AS s 
+				INNER JOIN stop_time AS st 
+				ON s.id = st.stop_id AND s.feed_id = st.feed_id 
+				WHERE ST_Within(s.position::geometry, 
+							ST_MakeEnvelope($1,$2,$3,$4, 4326))
+				AND st.trip_id = trip.trip_id AND trip.feed_id = st.feed_id 
+			) 
+			LIMIT 50 
+		) 
+		AND 
+		route.feed_id = trip.feed_id AND 
+		calendar.feed_id = trip.feed_id AND 
+		route.id = trip.route_id AND 
+		calendar.service_id = trip.service_id
+	) as trip
+	INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid
+	INNER JOIN stop ON stop_time.stop_id = stop.id AND stop_time.feed_id = stop.feed_id
+	LEFT JOIN stop as pstop ON stop.id = stop.parent_stop AND stop.feed_id = tfid 
+	ORDER BY (trip.tuid, stop_sequence)"#;
+
+    let conn = rh.pool.clone().get().unwrap();
+    let trips = conn.query(query, &[&bbox.p1.lng, &bbox.p1.lat, &bbox.p2.lng, &bbox.p2.lat]);
+
+    let trips = &trips.unwrap();
+
+    if trips.len() == 0 {
+        return Json(ResultArray::<Trip> {
+            result: Option::None,
+            meta: Meta {
+                success: false,
+                error: Some(Error {
+                    code: 1,
+                    message: String::from("Trip not found"),
+                }),
+            },
+        });
+    }
+
+    let mut trips_result: Vec<Trip> = Vec::new();
+    let mut trips_hm : HashMap<Trip, &mut Vec<StopTrip>> = HashMap::new();
+
+    for trip_row in trips {
+        parse_stop_trip_trip_row(&mut trips_hm, &trip_row);
+    }
+
+	for (K, V) in trips_hm.iter() {
+		println!("K: {:?}, V: {:?}", K, V);
+	} 
+
+    let result = ResultArray::<Trip> {
+        result: Some(trips_result),
+        meta: Meta {
+            success: true,
+            error: Option::None,
+        },
+    };
+
+    Json(result)
+}
+
 fn get_stop_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager>) -> Vec<StopTrip> {
     let query =
     r#"SELECT 
@@ -388,6 +490,94 @@ fn get_stop_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager>) -> Ve
     }
 
     stop_trip_result
+}
+
+fn parse_stop_trip_trip_row<'a>(trips: &'a mut HashMap<Trip, &'a mut Vec<StopTrip>>, row : &Row){
+    /*
+        trip.uid as tuid,
+        route.uid,
+        calendar.uid,
+        trip.trip_id,
+        trip.headsign,
+        trip.short_name,
+        trip.direction_id,
+        trip.feed_id 
+    */
+	let mut stop_time_v = Vec::new();
+	let mut stop = Stop::new(
+        row.get(7),
+		row.get(9),
+		row.get(10),
+		row.get(11),
+		row.get(12),
+		row.get(13)
+    );
+    let mut t = Trip::new(
+        row.get(0),
+        row.get(1),
+        row.get(2),
+        row.get(3),
+        row.get(4),
+        row.get(5)
+    );
+
+    t.set_feed_id(row.get(6));
+
+	stop.set_id(row.get(8));
+	stop.set_feed_id(row.get(6));
+
+    /*
+		tuid,
+		ruid,
+		cuid,
+		ths,
+		tsn,
+		td,
+		tfid,
+		-------
+		stop.uid as suid,
+		stop.id as sid,
+		stop."name" as sname,
+		ST_Y(stop.position::geometry) as slat,
+		ST_X(stop.position::geometry) as slng,
+		stop."type" as st,
+		pstop.uid as psuid,
+		---
+		14: st_at,
+		st_dt,
+		st_ss,
+		st_do,
+		st_pu
+    */
+
+    stop.set_feed_id(row.get(6));
+
+
+	let drop_off_i: i32 = row.get(17);
+    let pickup_i: i32 = row.get(18);
+
+    let drop_off: DropOff = num::FromPrimitive::from_i32(drop_off_i).unwrap();
+    let pickup: PickUp = num::FromPrimitive::from_i32(pickup_i).unwrap();
+
+    let arrival_time: NaiveTime = row.get(14);
+    let departure_time: NaiveTime = row.get(15);	
+
+    let stop_trip = StopTrip {
+		stop,
+		arrival_time,
+		departure_time,
+		stop_sequence: row.get(16),
+		drop_off,
+		pickup
+    };
+
+	if trips.contains_key(&t) {
+		trips.get(&mut t).unwrap().push(stop_trip);
+	} else {
+		trips.insert(t, &mut stop_time_v)
+			.unwrap()
+			.push(stop_trip);
+	}
 }
 
 fn parse_trip_row(row: &Row) -> Trip {

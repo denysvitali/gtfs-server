@@ -1,5 +1,8 @@
 //! Trip related structs and implementations
 use models::stop::StopTrip;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
 
 #[derive(Debug, Serialize)]
 pub struct Trip {
@@ -47,3 +50,20 @@ impl Trip {
         self.feed_id = feed_id;
     }
 }
+
+
+impl PartialEq for Trip {
+    fn eq(&self, other: &Trip) -> bool {
+        self.uid == other.uid
+    }
+}
+
+// Weakly hashed
+// TODO: Implement a better hashing (maybe?)
+impl Hash for Trip {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.uid.hash(state);
+    }
+}
+
+impl Eq for Trip {}
