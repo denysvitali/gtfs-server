@@ -1,5 +1,5 @@
 //! PickUp related enums and implementations
-#[derive(Debug, Serialize, FromPrimitive, ToPrimitive, Hash)]
+#[derive(Debug, Serialize, FromPrimitive, ToPrimitive, Hash, Clone)]
 pub enum PickUp {
     RegularlyScheduled = 0,
     NoPickupAvailable = 1,

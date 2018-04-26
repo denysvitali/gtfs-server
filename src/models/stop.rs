@@ -6,7 +6,7 @@ use super::dropoff::DropOff;
 use super::pickup::PickUp;
 use super::time::Time;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Stop {
     pub uid: String,
     #[serde(skip_serializing, skip_deserializing)]
@@ -21,7 +21,7 @@ pub struct Stop {
     feed_id: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct StopTrip {
     pub stop: Stop,
     pub arrival_time: NaiveTime,
