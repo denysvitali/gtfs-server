@@ -4,7 +4,7 @@ node {
     }
 
     stage('Build Image'){
-        sh "docker build --pull -t dvitali/gtfs-server:latest ."
+        sh "docker build --pull -t dvitali/gtfs-server-dev:latest ."
     }
 
     stage('Push Image') {
@@ -17,9 +17,9 @@ node {
             sh "docker login -u $USER -p $PASS"
         }
 
-        sh "docker tag dvitali/gtfs-server:latest dvitali/gtfs-server:$BUILD_NUMBER"
+        sh "docker tag dvitali/gtfs-server-dev:latest dvitali/gtfs-server-dev:$BUILD_NUMBER"
         
-        sh "docker push dvitali/gtfs-server:latest"
-        sh "docker push dvitali/gtfs-server:$BUILD_NUMBER"
+        sh "docker push dvitali/gtfs-server-dev:latest"
+        sh "docker push dvitali/gtfs-server-dev:$BUILD_NUMBER"
     }
 }
