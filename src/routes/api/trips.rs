@@ -411,7 +411,8 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
 				WHERE ST_Within(s.position::geometry, 
 							ST_MakeEnvelope($1, $2, $3, $4, 4326))
 				AND st.trip_id = trip.trip_id AND trip.feed_id = st.feed_id 
-			) 
+			)
+			ORDER BY trip.uid
 			LIMIT 50 
 		) 
 		AND 
@@ -419,6 +420,7 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
 		calendar.feed_id = trip.feed_id AND 
 		route.id = trip.route_id AND 
 		calendar.service_id = trip.service_id
+		ORDER BY trip.uid
 	) as trip
 	INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid
 	INNER JOIN stop ON stop_time.stop_id = stop.id AND stop_time.feed_id = stop.feed_id
@@ -503,6 +505,20 @@ fn get_stop_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager>) -> Ve
     stop_trip_result
 }
 
+fn parse_trip_row(row: &Row) -> Trip {
+    let mut t = Trip::new(
+        row.get(0),
+        row.get(1),
+        row.get(2),
+        row.get(4),
+        row.get(5),
+        row.get(6),
+    );
+    t.set_id(row.get(3));
+    t.set_feed_id(row.get(7));
+    t
+}
+
 fn parse_stop_trip_trip_row<'a>(trips: &'a mut HashMap<Trip, Vec<StopTrip>>, row : &Row){
     /*
         trip.uid as tuid,
@@ -512,17 +528,17 @@ fn parse_stop_trip_trip_row<'a>(trips: &'a mut HashMap<Trip, Vec<StopTrip>>, row
         trip.headsign,
         trip.short_name,
         trip.direction_id,
-        trip.feed_id 
+        trip.feed_id
     */
-	let mut new_vec : Vec<StopTrip>;
-	let mut stop_time_v = Vec::new();
-	let mut stop = Stop::new(
+    let mut new_vec : Vec<StopTrip>;
+    let mut stop_time_v = Vec::new();
+    let mut stop = Stop::new(
         row.get(7),
-		row.get(9),
-		row.get(10),
-		row.get(11),
-		row.get(12),
-		row.get(13)
+        row.get(9),
+        row.get(10),
+        row.get(11),
+        row.get(12),
+        row.get(13)
     );
     let mut t = Trip::new(
         row.get(0),
@@ -535,8 +551,8 @@ fn parse_stop_trip_trip_row<'a>(trips: &'a mut HashMap<Trip, Vec<StopTrip>>, row
 
     t.set_feed_id(row.get(6));
 
-	stop.set_id(row.get(8));
-	stop.set_feed_id(row.get(6));
+    stop.set_id(row.get(8));
+    stop.set_feed_id(row.get(6));
 
     /*
 		tuid
@@ -563,46 +579,33 @@ fn parse_stop_trip_trip_row<'a>(trips: &'a mut HashMap<Trip, Vec<StopTrip>>, row
     stop.set_feed_id(row.get(6));
 
 
-	let drop_off_i: i32 = row.get(17);
+    let drop_off_i: i32 = row.get(17);
     let pickup_i: i32 = row.get(18);
 
     let drop_off: DropOff = num::FromPrimitive::from_i32(drop_off_i).unwrap();
     let pickup: PickUp = num::FromPrimitive::from_i32(pickup_i).unwrap();
 
     let arrival_time: NaiveTime = row.get(14);
-    let departure_time: NaiveTime = row.get(15);	
+    let departure_time: NaiveTime = row.get(15);
 
     let stop_trip = StopTrip {
-		stop,
-		arrival_time,
-		departure_time,
-		stop_sequence: row.get(16),
-		drop_off,
-		pickup
+        stop,
+        arrival_time,
+        departure_time,
+        stop_sequence: row.get(16),
+        drop_off,
+        pickup
     };
 
-	if trips.contains_key(&t) {
-		let value : Vec<StopTrip> = trips.get(&t).unwrap().to_vec();
-		new_vec = value.to_vec();
-		new_vec.push(stop_trip);
-		trips.insert(t, new_vec);
-	} else {
-		trips.insert(t, stop_time_v);
-	}
-}
-
-fn parse_trip_row(row: &Row) -> Trip {
-    let mut t = Trip::new(
-        row.get(0),
-        row.get(1),
-        row.get(2),
-        row.get(4),
-        row.get(5),
-        row.get(6),
-    );
-    t.set_id(row.get(3));
-    t.set_feed_id(row.get(7));
-    t
+    if trips.contains_key(&t) {
+        let value : Vec<StopTrip> = trips.get(&t).unwrap().to_vec();
+        new_vec = value.to_vec();
+        new_vec.push(stop_trip);
+        trips.insert(t, new_vec);
+    } else {
+        stop_time_v.push(stop_trip);
+        trips.insert(t, stop_time_v);
+    }
 }
 
 fn parse_stop_trip_row(row: &Row) -> StopTrip {
