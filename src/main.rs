@@ -45,7 +45,7 @@ fn create_pool() -> Pool<PostgresConnectionManager> {
     if env::var_os("IN_DOCKER").is_some()
         && env::var_os("IN_DOCKER").unwrap().to_str().unwrap() == "true"
     {
-        hostname = "postgres";
+        hostname = "gtfs-db.service.dc1.cluster";
         password = String::from(
             env::var_os("POSTGRES_PASSWORD")
                 .unwrap()
