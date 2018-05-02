@@ -2,6 +2,7 @@
 use models::stop::StopTrip;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::cmp::Ordering;
 
 
 #[derive(Debug, Serialize, Clone)]
@@ -67,3 +68,15 @@ impl Hash for Trip {
 }
 
 impl Eq for Trip {}
+
+impl Ord for Trip {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.uid.cmp(&other.uid)
+    }
+}
+
+impl PartialOrd for Trip {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}

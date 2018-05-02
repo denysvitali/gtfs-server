@@ -27,6 +27,7 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 
 use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use models::api::search::trip::TripSearch;
 use models::boundingbox::BoundingBox;
@@ -424,7 +425,7 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
 	) as trip
 	INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid
 	INNER JOIN stop ON stop_time.stop_id = stop.id AND stop_time.feed_id = stop.feed_id
-	LEFT JOIN stop as pstop ON stop.id = stop.parent_stop AND stop.feed_id = tfid 
+	LEFT JOIN stop as pstop ON stop.id = stop. parent_stop AND stop.feed_id = tfid
 	ORDER BY (trip.tuid, stop_sequence)"#;
 
     let conn = rh.pool.clone().get().unwrap();
@@ -446,10 +447,17 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
     }
 
     let mut trips_result: Vec<Trip> = Vec::new();
-    let mut trips_hm : HashMap<Trip, Vec<StopTrip>> = HashMap::new();
+    let mut trips_hm : BTreeMap<Trip, Vec<StopTrip>> = BTreeMap::new();
+
+    let rowuid : String = trips.get(0).get(0);
+    println!("{}", rowuid);
+    let mut i : i32 = 0;
 
     for trip_row in trips {
+        let uid : String = trip_row.get(0);
+        println!("{}: {}", i, uid);
         parse_stop_trip_trip_row(&mut trips_hm, &trip_row);
+        i+=1;
     }
 
     for (k,v) in trips_hm.iter() {
@@ -519,7 +527,7 @@ fn parse_trip_row(row: &Row) -> Trip {
     t
 }
 
-fn parse_stop_trip_trip_row<'a>(trips: &'a mut HashMap<Trip, Vec<StopTrip>>, row : &Row){
+fn parse_stop_trip_trip_row<'a>(trips: &'a mut BTreeMap<Trip, Vec<StopTrip>>, row : &Row){
     /*
         trip.uid as tuid,
         route.uid,
