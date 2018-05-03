@@ -4,12 +4,12 @@ use super::super::Pool;
 use super::super::PostgresConnectionManager;
 use super::super::RoutesHandler;
 
+use super::super::super::importer;
 use super::super::Json;
 use super::super::State;
-use super::model_api::successresult::SuccessResult;
-use super::super::super::importer;
 use super::model_api::meta::Meta;
 use super::model_api::result::Result;
+use super::model_api::successresult::SuccessResult;
 
 /// `/db/update`
 /// Updates the DB schema. This operation should be performed after each update
@@ -19,9 +19,7 @@ use super::model_api::result::Result;
 pub fn update(rh: State<RoutesHandler>) -> Json<SuccessResult> {
     let res = importer::update_db(&rh.pool);
 
-    Json(SuccessResult {
-        success: true
-    })
+    Json(SuccessResult { success: true })
 }
 
 /// `/db/version`
@@ -31,11 +29,11 @@ pub fn update(rh: State<RoutesHandler>) -> Json<SuccessResult> {
 pub fn version(rh: State<RoutesHandler>) -> Json<Result<i32>> {
     let res = importer::get_db_version(&rh.pool);
 
-    Json(Result::<i32>{
+    Json(Result::<i32> {
         result: Some(res),
         meta: Meta {
             success: true,
-            error: Option::None
-        }
+            error: Option::None,
+        },
     })
 }

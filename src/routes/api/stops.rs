@@ -161,10 +161,7 @@ pub fn stops_near(
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[Stop](../../../models/api/sruct.Stop.html)>
 #[get("/stops/in/<bbox>")]
-pub fn stops_in_bbox(
-    rh: State<RoutesHandler>,
-    bbox: BoundingBox
-) -> Json<ResultArray<Stop>> {
+pub fn stops_in_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<ResultArray<Stop>> {
     let sr = ResultArray::<Stop> {
         result: Some(get_stops_in_bbox(&rh.pool, bbox)),
         meta: Meta {

@@ -9,5 +9,5 @@ pub struct RouteCSV {
     pub route_url: Option<String>,
     pub route_color: Option<String>,
     pub route_text_color: Option<String>,
-    pub route_sort_order: Option<i32>
+    pub route_sort_order: Option<i32>,
 }

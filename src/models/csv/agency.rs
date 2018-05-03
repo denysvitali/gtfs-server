@@ -7,5 +7,5 @@ pub struct AgencyCSV {
     pub agency_lang: Option<String>,
     pub agency_phone: Option<String>,
     pub agency_fare_url: Option<String>,
-    pub agency_email: Option<String>
+    pub agency_email: Option<String>,
 }

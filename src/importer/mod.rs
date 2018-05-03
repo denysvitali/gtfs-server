@@ -23,13 +23,13 @@ use std::str::FromStr;
 
 use self::regex::Regex;
 
-use r2d2::Pool;
-use r2d2_postgres::PostgresConnectionManager;
-use postgres::rows::{Row, Rows};
-use postgres::Connection;
-use std::fs::File;
 use importer::zip::read::ZipArchive;
 use importer::zip::read::ZipFile;
+use postgres::rows::{Row, Rows};
+use postgres::Connection;
+use r2d2::Pool;
+use r2d2_postgres::PostgresConnectionManager;
+use std::fs::File;
 
 pub use self::chrono::{NaiveDate, NaiveTime};
 use std::thread;
@@ -41,16 +41,19 @@ use models::csv::feed::FeedCSV;
 use models::csv::route::RouteCSV;
 use models::csv::stop::StopCSV;
 use models::csv::trip::TripCSV;
-use std::io::Read;
-use std::collections::BinaryHeap;
 use std::cmp::Ordering;
+use std::collections::BinaryHeap;
+use std::io::Read;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-pub fn download_feed_zip<'a>(feed_url: &str, pool: &Pool<PostgresConnectionManager>) -> Option<ZipArchive<File>> {
+pub fn download_feed_zip<'a>(
+    feed_url: &str,
+    pool: &Pool<PostgresConnectionManager>,
+) -> Option<ZipArchive<File>> {
     // Download feed from URL
     // Example:  https://opentransportdata.swiss/en/dataset/timetable-2018-gtfs/permalink
     let mut resp = reqwest::get(feed_url).expect("Download failed");
-    let mut tmpfile : File = tempfile::tempfile().expect("Unable to get a tmp file");
+    let mut tmpfile: File = tempfile::tempfile().expect("Unable to get a tmp file");
     //let mut tmpdir = tempfile::tempdir().expect("Unable to create a tmp dir");
 
     let result = resp.copy_to(&mut tmpfile);
@@ -58,16 +61,15 @@ pub fn download_feed_zip<'a>(feed_url: &str, pool: &Pool<PostgresConnectionManag
     if result.is_ok() {
         println!("Result is ok");
         // We've got a zip file!
-        let mut zar : ZipArchive<File> = ZipArchive::new(tmpfile)
-            .expect("This is not a zip file");
+        let mut zar: ZipArchive<File> = ZipArchive::new(tmpfile).expect("This is not a zip file");
         return Some(zar);
     }
     return Option::None;
 }
 
 struct MZipFile<'a> {
-    pub name : &'a str,
-    pub order: i32
+    pub name: &'a str,
+    pub order: i32,
 }
 
 impl<'a> PartialEq for MZipFile<'a> {
@@ -78,7 +80,7 @@ impl<'a> PartialEq for MZipFile<'a> {
 
 impl<'a> Eq for MZipFile<'a> {}
 
-impl<'a> Ord for MZipFile<'a>{
+impl<'a> Ord for MZipFile<'a> {
     fn cmp(&self, other: &Self) -> Ordering {
         if self.order > other.order {
             return Ordering::Greater;
@@ -109,109 +111,81 @@ impl<'a> PartialOrd for MZipFile<'a> {
     }
 }
 
-pub fn parse_feed_zip(zar: &mut ZipArchive<File>, pool: &Pool<PostgresConnectionManager>){
-    let mut feed_id : String = String::new();
-        for i in 0..zar.len() {
-            let mut file = zar.by_index(i).expect("Invalid file index");
-            println!("File {} ", file.name());
-            if file.name() == "feed_info.txt" {
-                feed_id = parse_feed(file, pool);
-                break;
+pub fn parse_feed_zip(zar: &mut ZipArchive<File>, pool: &Pool<PostgresConnectionManager>) {
+    let mut feed_id: String = String::new();
+    for i in 0..zar.len() {
+        let mut file = zar.by_index(i).expect("Invalid file index");
+        println!("File {} ", file.name());
+        if file.name() == "feed_info.txt" {
+            feed_id = parse_feed(file, pool);
+            break;
+        }
+    }
+
+    if feed_id.len() == 0 {
+        println!("feed_info missing!");
+        let start = SystemTime::now();
+        let uts = start.duration_since(UNIX_EPOCH).unwrap();
+        let mut sha = Sha256::new();
+        sha.input_str(&uts.as_secs().to_string());
+        feed_id = sha.result_str();
+        println!("Using fake feed ID {}", feed_id);
+        //return;
+    }
+
+    let mut bh: BinaryHeap<MZipFile> = BinaryHeap::new();
+    for i in 0..zar.len() {
+        let file = zar.by_index(i).expect("Invalid file index");
+        println!("File {} ", file.name());
+        match file.name() {
+            "agency.txt" => bh.push(MZipFile {
+                name: "agency.txt",
+                order: 1,
+            }),
+            "calendar.txt" => bh.push(MZipFile {
+                name: "calendar.txt",
+                order: 2,
+            }),
+            "calendar_dates.txt" => bh.push(MZipFile {
+                name: "calendar_dates.txt",
+                order: 2,
+            }),
+            "routes.txt" => bh.push(MZipFile {
+                name: "routes.txt",
+                order: 3,
+            }),
+            "stops.txt" => bh.push(MZipFile {
+                name: "stops.txt",
+                order: 4,
+            }),
+            "stop_times.txt" => bh.push(MZipFile {
+                name: "stop_times.txt",
+                order: 5,
+            }),
+            "trips.txt" => bh.push(MZipFile {
+                name: "trips.txt",
+                order: 3,
+            }),
+            _ => {}
+        };
+    }
+
+    println!("Parsing BH");
+    for i in bh.into_sorted_vec() {
+        println!("{}", i.name);
+        match i.name {
+            "agency.txt" => parse_agency(&feed_id, zar.by_name(i.name).unwrap(), &pool),
+            "calendar.txt" => parse_calendar(&feed_id, zar.by_name(i.name).unwrap(), &pool),
+            "calendar_dates.txt" => {
+                parse_calendar_dates(&feed_id, zar.by_name(i.name).unwrap(), &pool)
             }
-        }
-
-        if feed_id.len() == 0 {
-            println!("feed_info missing!");
-            let start = SystemTime::now();
-            let uts = start.duration_since(UNIX_EPOCH).unwrap();
-            let mut sha = Sha256::new();
-            sha.input_str(&uts.as_secs().to_string());
-            feed_id = sha.result_str();
-            println!("Using fake feed ID {}", feed_id);
-            //return;
-        }
-
-        let mut bh : BinaryHeap<MZipFile> = BinaryHeap::new();
-        for i in 0..zar.len() {
-            let file = zar.by_index(i).expect("Invalid file index");
-            println!("File {} ", file.name());
-            match file.name() {
-                "agency.txt" => {
-                    bh.push(MZipFile{
-                        name: "agency.txt",
-                        order: 1
-                    })
-                },
-                "calendar.txt" => {
-                    bh.push(MZipFile{
-                        name: "calendar.txt",
-                        order: 2
-                    })
-                },
-                "calendar_dates.txt" => {
-                    bh.push(MZipFile{
-                        name: "calendar_dates.txt",
-                        order: 2
-                    })
-                },
-                "routes.txt" => {
-                    bh.push(MZipFile{
-                        name: "routes.txt",
-                        order: 3
-                    })
-                },
-                "stops.txt" => {
-                    bh.push(MZipFile{
-                        name: "stops.txt",
-                        order: 4
-                    })
-                },
-                "stop_times.txt" => {
-                    bh.push(MZipFile{
-                        name: "stop_times.txt",
-                        order: 5
-                    })
-                },
-                "trips.txt" => {
-                    bh.push(MZipFile{
-                        name: "trips.txt",
-                        order: 3
-                    })
-                },
-                _ => {}
-            };
-        }
-        
-        println!("Parsing BH");
-        for i in bh.into_sorted_vec() {
-            println!("{}", i.name);
-            match i.name {
-                "agency.txt" => {
-                    parse_agency(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                },
-                "calendar.txt" => {
-                    parse_calendar(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                },
-                "calendar_dates.txt" => {
-                    parse_calendar_dates(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                },
-                "routes.txt" => {
-                    parse_routes(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                },
-                "stops.txt" => {
-                    parse_stops(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                },
-                "stop_times.txt" => {
-                    parse_stop_times(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                },
-                "trips.txt" => {
-                    parse_trips(&feed_id, zar.by_name(i.name).unwrap(), &pool)
-                },
-                _ => {}
-            };
-        }
-
-        
+            "routes.txt" => parse_routes(&feed_id, zar.by_name(i.name).unwrap(), &pool),
+            "stops.txt" => parse_stops(&feed_id, zar.by_name(i.name).unwrap(), &pool),
+            "stop_times.txt" => parse_stop_times(&feed_id, zar.by_name(i.name).unwrap(), &pool),
+            "trips.txt" => parse_trips(&feed_id, zar.by_name(i.name).unwrap(), &pool),
+            _ => {}
+        };
+    }
 }
 
 pub fn parse_agency(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager>) {
@@ -289,8 +263,8 @@ pub fn parse_stops(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMana
     println!("Parsing stops for fid {} ...", feed_id);
     let mut rdr = csv::ReaderBuilder::new().from_reader(f);
     for result in rdr.deserialize() {
-    let conn = pool.clone().get().unwrap();
-    let feed_clone: String = String::from(feed_id).to_owned();
+        let conn = pool.clone().get().unwrap();
+        let feed_clone: String = String::from(feed_id).to_owned();
         let record: StopCSV = result.unwrap();
         let stmt = conn.prepare(
             "INSERT INTO stop\
@@ -365,7 +339,7 @@ pub fn parse_routes(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMan
                     feed_id
                 ) \
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) \
-                ON CONFLICT DO NOTHING"
+                ON CONFLICT DO NOTHING",
             ).expect("Unable to create statement");
             println!(
                 "Route ID {}, {}, {} ({})",
@@ -399,7 +373,7 @@ pub fn parse_routes(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMan
 pub fn parse_trips(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager>) {
     println!("Parsing trips for fid {} ...", feed_id);
     let mut rdr = csv::ReaderBuilder::new().from_reader(f);
-    let mut fields : Vec<String> = Vec::new();
+    let mut fields: Vec<String> = Vec::new();
     {
         for i in rdr.byte_headers().unwrap().iter() {
             fields.push(String::from_utf8(i.to_vec()).unwrap());
@@ -433,44 +407,33 @@ pub fn parse_trips(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMana
 
             let uid = generate_uid(
                 "t",
-                &format!(
-                    "{}{}",
-                    feed_clone, &record.trip_id
-                ),
+                &format!("{}{}", feed_clone, &record.trip_id),
                 &record.trip_id,
             );
 
-            let wheelchair_accessible : Option<i32>;
+            let wheelchair_accessible: Option<i32>;
             if record.wheelchair_accessible.is_some() {
                 wheelchair_accessible = match record.wheelchair_accessible {
-                    Some(v) => {
-                        match v.parse::<i32>() {
-                            Ok(v) => { Some(v) },
-                            Err(_e) => { None }
-                        }
-                    }
+                    Some(v) => match v.parse::<i32>() {
+                        Ok(v) => Some(v),
+                        Err(_e) => None,
+                    },
 
-                    None => {
-                        Option::None
-                    }
+                    None => Option::None,
                 };
             } else {
                 wheelchair_accessible = None;
             }
 
-            let bikes_allowed : Option<i32>;
+            let bikes_allowed: Option<i32>;
             if record.bikes_allowed.is_some() {
                 bikes_allowed = match record.bikes_allowed {
-                    Some(v) => {
-                        match v.parse::<i32>() {
-                            Ok(v) => { Some(v) },
-                            Err(_e) => { None }
-                        }
-                    }
+                    Some(v) => match v.parse::<i32>() {
+                        Ok(v) => Some(v),
+                        Err(_e) => None,
+                    },
 
-                    None => {
-                        Option::None
-                    }
+                    None => Option::None,
                 };
             } else {
                 bikes_allowed = None;
@@ -495,12 +458,12 @@ pub fn parse_trips(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMana
 }
 
 fn field_index_by_name(field_name: &str, fields: &Vec<String>) -> Option<usize> {
-    let mut i : usize = 0;
+    let mut i: usize = 0;
     for f in fields {
         if field_name == f {
             return Some(i);
         }
-        i+= 1;
+        i += 1;
     }
     Option::None
 }
@@ -509,7 +472,7 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
     println!("Parsing stop times for fid {} ...", feed_id);
     let reader = BufReader::new(f);
     let mut rdr = csv::Reader::from_reader(reader);
-    let mut fields : Vec<String> = Vec::new();
+    let mut fields: Vec<String> = Vec::new();
     {
         for i in rdr.byte_headers().unwrap().iter() {
             fields.push(String::from_utf8(i.to_vec()).unwrap());
@@ -541,8 +504,12 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
             ).expect("Unable to create statement");
 
             let re = Regex::new(r"^(\d{2}):(\d{2}):(\d{2})$").unwrap();
-            let at = &String::from_utf8(record[field_index_by_name("arrival_time", &fc).unwrap()].to_vec()).unwrap();
-            let dt = &String::from_utf8(record[field_index_by_name("departure_time", &fc).unwrap()].to_vec()).unwrap();
+            let at = &String::from_utf8(
+                record[field_index_by_name("arrival_time", &fc).unwrap()].to_vec(),
+            ).unwrap();
+            let dt = &String::from_utf8(
+                record[field_index_by_name("departure_time", &fc).unwrap()].to_vec(),
+            ).unwrap();
 
             if !re.is_match(at) {
                 panic!("Invalid arrival time!");
@@ -570,52 +537,71 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
             let arr_time = NaiveTime::from_hms(h_arr, m_arr, s_arr);
             let dep_time = NaiveTime::from_hms(h_dep, m_dep, s_dep);
 
-            let mut stop_headsign : Option<String> = Option::None;
-            let mut pickup_type : Option<i32> = Option::None;
-            let mut drop_off_type : Option<i32> = Option::None;
-            let mut shape_dist_traveled : Option<f32> = Option::None;
-            let mut timepoint : Option<i32> = Option::None;
+            let mut stop_headsign: Option<String> = Option::None;
+            let mut pickup_type: Option<i32> = Option::None;
+            let mut drop_off_type: Option<i32> = Option::None;
+            let mut shape_dist_traveled: Option<f32> = Option::None;
+            let mut timepoint: Option<i32> = Option::None;
 
             // Optional fields
             if field_index_by_name("stop_headsign", &fc).is_some() {
                 stop_headsign = Some(
                     String::from_utf8(
-                        record[field_index_by_name("stop_headsign", &fc).unwrap()].to_vec()
-                    ).unwrap()
+                        record[field_index_by_name("stop_headsign", &fc).unwrap()].to_vec(),
+                    ).unwrap(),
                 );
             }
 
             if field_index_by_name("pickup_type", &fc).is_some() {
-                pickup_type = Some(String::from_utf8(
-                        record[field_index_by_name("pickup_type", &fc).unwrap()].to_vec()).unwrap()
-                        .parse::<i32>().unwrap_or_default());
+                pickup_type = Some(
+                    String::from_utf8(
+                        record[field_index_by_name("pickup_type", &fc).unwrap()].to_vec(),
+                    ).unwrap()
+                        .parse::<i32>()
+                        .unwrap_or_default(),
+                );
             }
 
             if field_index_by_name("drop_off_type", &fc).is_some() {
-                drop_off_type = Some(String::from_utf8(
-                        record[field_index_by_name("drop_off_type", &fc).unwrap()].to_vec()).unwrap()
-                        .parse::<i32>().unwrap_or_default());
+                drop_off_type = Some(
+                    String::from_utf8(
+                        record[field_index_by_name("drop_off_type", &fc).unwrap()].to_vec(),
+                    ).unwrap()
+                        .parse::<i32>()
+                        .unwrap_or_default(),
+                );
             }
 
             if field_index_by_name("shape_dist_traveled", &fc).is_some() {
-                shape_dist_traveled = Some(String::from_utf8(
-                        record[field_index_by_name("shape_dist_traveled", &fc).unwrap()].to_vec()).unwrap()
-                        .parse::<f32>().unwrap_or_default());
+                shape_dist_traveled = Some(
+                    String::from_utf8(
+                        record[field_index_by_name("shape_dist_traveled", &fc).unwrap()].to_vec(),
+                    ).unwrap()
+                        .parse::<f32>()
+                        .unwrap_or_default(),
+                );
             }
 
             if field_index_by_name("timepoint", &fc).is_some() {
-                timepoint = Some(String::from_utf8(
-                        record[field_index_by_name("timepoint", &fc).unwrap()].to_vec()).unwrap()
-                        .parse::<i32>().unwrap_or_default());
+                timepoint = Some(
+                    String::from_utf8(
+                        record[field_index_by_name("timepoint", &fc).unwrap()].to_vec(),
+                    ).unwrap()
+                        .parse::<i32>()
+                        .unwrap_or_default(),
+                );
             }
 
             stmt.execute(&[
-                &String::from_utf8(record[field_index_by_name("trip_id", &fc).unwrap()].to_vec()).unwrap(),
+                &String::from_utf8(record[field_index_by_name("trip_id", &fc).unwrap()].to_vec())
+                    .unwrap(),
                 &arr_time,
                 &dep_time,
-                &String::from_utf8(record[field_index_by_name("stop_id", &fc).unwrap()].to_vec()).unwrap(),
-                &String::from_utf8(record[field_index_by_name("stop_sequence", &fc).unwrap()].to_vec())
-                    .unwrap()
+                &String::from_utf8(record[field_index_by_name("stop_id", &fc).unwrap()].to_vec())
+                    .unwrap(),
+                &String::from_utf8(
+                    record[field_index_by_name("stop_sequence", &fc).unwrap()].to_vec(),
+                ).unwrap()
                     .parse::<i32>()
                     .unwrap(),
                 &stop_headsign,
@@ -632,15 +618,16 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
 fn parse_feed(f: ZipFile, pool: &Pool<PostgresConnectionManager>) -> String {
     println!("Parsing feed...");
 
-    let feed_id : String;
+    let feed_id: String;
     let mut sha = Sha256::new();
     let mut reader = BufReader::new(f);
-    let mut bytes : Vec<u8> = Vec::new();
-    reader.read_to_end(&mut bytes).expect("Unable to read the zip file");
+    let mut bytes: Vec<u8> = Vec::new();
+    reader
+        .read_to_end(&mut bytes)
+        .expect("Unable to read the zip file");
     sha.input(&bytes);
     feed_id = sha.result_str();
     println!("Zip SHA256 SUM (aka feed_id): {}", feed_id);
-
 
     let mut rdr = csv::ReaderBuilder::new().from_reader(reader);
     for result in rdr.deserialize() {
@@ -654,12 +641,15 @@ fn parse_feed(f: ZipFile, pool: &Pool<PostgresConnectionManager>) -> String {
         let record: FeedCSV = result.unwrap();
         println!("Parsing Feed from {}", record.feed_publisher_name);
 
-        let mut start_date : Option<NaiveDate> = Option::None;
-        let mut end_date : Option<NaiveDate> = Option::None;
+        let mut start_date: Option<NaiveDate> = Option::None;
+        let mut end_date: Option<NaiveDate> = Option::None;
 
         if record.feed_start_date.is_some() && record.feed_end_date.is_some() {
-            start_date = Some(NaiveDate::parse_from_str(&record.feed_start_date.unwrap(), "%Y%m%d").unwrap());
-            end_date = Some(NaiveDate::parse_from_str(&record.feed_end_date.unwrap(), "%Y%m%d").unwrap());
+            start_date = Some(
+                NaiveDate::parse_from_str(&record.feed_start_date.unwrap(), "%Y%m%d").unwrap(),
+            );
+            end_date =
+                Some(NaiveDate::parse_from_str(&record.feed_end_date.unwrap(), "%Y%m%d").unwrap());
         }
 
         stmt.execute(&[
@@ -698,7 +688,7 @@ pub fn parse_calendar(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionM
             &record.service_id,
         );
 
-       /* println!(
+        /* println!(
             "{} - M:{} T:{} W:{} T:{} F:{} S:{} S:{} SD:{} ED:{}",
             record.service_id,
             record.monday,
@@ -744,7 +734,6 @@ pub fn parse_calendar_dates(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConne
              VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING",
         ).expect("Unable to create statement");
         let record: CalendarDateCSV = result.unwrap();
-
 
         let date = NaiveDate::parse_from_str(&record.date, "%Y%m%d").unwrap();
         let uid = generate_uid(
@@ -979,96 +968,120 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
     ).expect("Add stop_time index 3");
 }
 
-pub fn update_db(pool: &Pool<PostgresConnectionManager>){
+pub fn update_db(pool: &Pool<PostgresConnectionManager>) {
     let conn = pool.clone().get().unwrap();
-    let db_vers : postgres::Result<Rows> = conn.query("SELECT value FROM settings WHERE key='db_version';", &[]);
-    if db_vers.as_ref().is_err() || db_vers.as_ref().is_ok() && db_vers.as_ref().unwrap().len() == 0 {
+    let db_vers: postgres::Result<Rows> =
+        conn.query("SELECT value FROM settings WHERE key='db_version';", &[]);
+    if db_vers.as_ref().is_err() || db_vers.as_ref().is_ok() && db_vers.as_ref().unwrap().len() == 0
+    {
         println!("Cannot get db version");
-        let db_vers : postgres::Result<u64> = conn.execute("SELECT * FROM settings", &[]);
+        let db_vers: postgres::Result<u64> = conn.execute("SELECT * FROM settings", &[]);
         if db_vers.is_err() {
             // The settings table doesn't exists
             create_tables(&pool);
         }
-        conn.execute("INSERT INTO settings (key, value) VALUES('db_version', $1)", &[&"1"])
-            .expect("Unable to add db_version to settings");
+        conn.execute(
+            "INSERT INTO settings (key, value) VALUES('db_version', $1)",
+            &[&"1"],
+        ).expect("Unable to add db_version to settings");
 
         update_db_from(1, &pool);
     } else {
-        let version : String = db_vers.unwrap().get(0).get(0);
+        let version: String = db_vers.unwrap().get(0).get(0);
         update_db_from(version.parse::<u32>().unwrap(), &pool);
     }
 }
 
 pub fn update_db_ver(ver: u32, conn: &Connection) {
-    conn.execute("UPDATE settings SET value=$1 WHERE key = 'db_version'", &[&ver.to_string()]).expect("Version Update Failed");
+    conn.execute(
+        "UPDATE settings SET value=$1 WHERE key = 'db_version'",
+        &[&ver.to_string()],
+    ).expect("Version Update Failed");
 }
 
-pub fn update_db_from(ver : u32, pool: &Pool<PostgresConnectionManager>){
+pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
     let conn = pool.clone().get().unwrap();
     if ver < 2 {
-        conn.execute("ALTER TABLE trip \
-        ADD COLUMN block_id INTEGER, \
-        ADD COLUMN shape_id INTEGER, \
-        ADD COLUMN wheelchair_accessible INTEGER, \
-        ADD COLUMN bikes_allowed INTEGER", &[]).expect("Unable to alter table trip");
+        conn.execute(
+            "ALTER TABLE trip \
+             ADD COLUMN block_id INTEGER, \
+             ADD COLUMN shape_id INTEGER, \
+             ADD COLUMN wheelchair_accessible INTEGER, \
+             ADD COLUMN bikes_allowed INTEGER",
+            &[],
+        ).expect("Unable to alter table trip");
         update_db_ver(2, &conn);
     }
 
     if ver < 3 {
-        conn.execute("ALTER TABLE stop_time \
+        conn.execute(
+            "ALTER TABLE stop_time \
         ADD COLUMN stop_headsign VARCHAR(255), \
         ADD COLUMN shape_dist_traveled REAL, \
         ADD COLUMN timepoint INTEGER
-        ", &[]).expect("Unable to alter table stop_time");
+        ",
+            &[],
+        ).expect("Unable to alter table stop_time");
         update_db_ver(3, &conn);
     }
 
     if ver < 4 {
-        conn.execute("ALTER TABLE route \
-        ADD COLUMN url VARCHAR(255), \
-        ADD COLUMN color CHAR(6), \
-        ADD COLUMN text_color CHAR(6), \
-        ADD COLUMN sort_order INTEGER", &[])
-        .expect("Unable to ALTER TABLE route");
+        conn.execute(
+            "ALTER TABLE route \
+             ADD COLUMN url VARCHAR(255), \
+             ADD COLUMN color CHAR(6), \
+             ADD COLUMN text_color CHAR(6), \
+             ADD COLUMN sort_order INTEGER",
+            &[],
+        ).expect("Unable to ALTER TABLE route");
         update_db_ver(4, &conn);
     }
 
     if ver < 5 {
-        conn.execute("ALTER TABLE stop \
-        ADD COLUMN description VARCHAR(512), \
-        ADD COLUMN code VARCHAR(255), \
-        ADD COLUMN zone_id INTEGER, \
-        ADD COLUMN url VARCHAR(512), \
-        ADD COLUMN timezone VARCHAR(255), \
-        ADD COLUMN wheelchair_boarding INTEGER", &[])
-        .expect("Unable to ALTER TABLE stop");
+        conn.execute(
+            "ALTER TABLE stop \
+             ADD COLUMN description VARCHAR(512), \
+             ADD COLUMN code VARCHAR(255), \
+             ADD COLUMN zone_id INTEGER, \
+             ADD COLUMN url VARCHAR(512), \
+             ADD COLUMN timezone VARCHAR(255), \
+             ADD COLUMN wheelchair_boarding INTEGER",
+            &[],
+        ).expect("Unable to ALTER TABLE stop");
         update_db_ver(5, &conn);
     }
 
     if ver < 6 {
-        conn.execute("ALTER TABLE agency \
+        conn.execute(
+            "ALTER TABLE agency \
         ADD COLUMN fare_url VARCHAR(512),
-        ADD COLUMN email VARCHAR(255)", &[])
-        .expect("Unable to ALTER TABLE agency");
+        ADD COLUMN email VARCHAR(255)",
+            &[],
+        ).expect("Unable to ALTER TABLE agency");
         update_db_ver(6, &conn);
     }
 
     if ver < 7 {
-        conn.execute("ALTER TABLE trip \
-        ALTER COLUMN short_name DROP NOT NULL", &[])
-        .expect("Unable to ALTER TABLE trip");
+        conn.execute(
+            "ALTER TABLE trip \
+             ALTER COLUMN short_name DROP NOT NULL",
+            &[],
+        ).expect("Unable to ALTER TABLE trip");
         update_db_ver(7, &conn);
     }
 
     if ver < 8 {
-        conn.execute("ALTER TABLE trip \
-        DROP CONSTRAINT trip_calendar_fk", &[])
-        .expect("Unable to ALTER TABLE trip");
+        conn.execute(
+            "ALTER TABLE trip \
+             DROP CONSTRAINT trip_calendar_fk",
+            &[],
+        ).expect("Unable to ALTER TABLE trip");
         update_db_ver(8, &conn);
     }
 
     if ver < 9 {
-        conn.execute("CREATE TABLE IF NOT EXISTS calendar_date \
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS calendar_date \
         ( 
             uid VARCHAR(255) NOT NULL,
             service_id VARCHAR(255) NOT NULL, 
@@ -1077,8 +1090,9 @@ pub fn update_db_from(ver : u32, pool: &Pool<PostgresConnectionManager>){
             feed_id VARCHAR(64) NOT NULL, 
             PRIMARY KEY (uid),
             UNIQUE (service_id, date, feed_id)
-        )", &[])
-        .expect("Unable to CREATE TABLE calendar_dates");
+        )",
+            &[],
+        ).expect("Unable to CREATE TABLE calendar_dates");
         /*conn.execute("ALTER TABLE trip \
             ADD CONSTRAINT trip_calendar_dates_fk FOREIGN KEY(service_id, feed_id) REFERENCES 
             calendar_dates(service_id, feed_id)", &[])
@@ -1087,17 +1101,21 @@ pub fn update_db_from(ver : u32, pool: &Pool<PostgresConnectionManager>){
     }
 
     if ver < 10 {
-        conn.execute("ALTER TABLE trip \
-        ALTER COLUMN block_id SET DATA TYPE VARCHAR(255), \
-        ALTER COLUMN shape_id SET DATA TYPE VARCHAR(255)", &[])
-        .expect("Unable to ALTER TABLE trip");
+        conn.execute(
+            "ALTER TABLE trip \
+             ALTER COLUMN block_id SET DATA TYPE VARCHAR(255), \
+             ALTER COLUMN shape_id SET DATA TYPE VARCHAR(255)",
+            &[],
+        ).expect("Unable to ALTER TABLE trip");
         update_db_ver(10, &conn);
     }
 
     if ver < 11 {
-        conn.execute("ALTER TABLE trip \
-        ALTER COLUMN headsign DROP NOT NULL", &[])
-        .expect("Unable to ALTER TABLE trip");
+        conn.execute(
+            "ALTER TABLE trip \
+             ALTER COLUMN headsign DROP NOT NULL",
+            &[],
+        ).expect("Unable to ALTER TABLE trip");
         update_db_ver(11, &conn);
     }
 }
@@ -1109,6 +1127,6 @@ pub fn get_db_version(pool: &Pool<PostgresConnectionManager>) -> i32 {
         return -1;
     }
 
-    let db_vers_string : String = result.unwrap().get(0).get(0);
+    let db_vers_string: String = result.unwrap().get(0).get(0);
     return db_vers_string.parse::<i32>().unwrap();
 }

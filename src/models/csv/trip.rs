@@ -12,8 +12,8 @@ pub struct TripCSV {
     pub direction_id: Option<i32>,
     pub block_id: Option<String>,
     pub shape_id: Option<String>,
-    pub wheelchair_accessible : Option<String>,
-    pub bikes_allowed: Option<String>
+    pub wheelchair_accessible: Option<String>,
+    pub bikes_allowed: Option<String>,
 }
 
 fn i32_def<'de, D>(des: D) -> Result<Option<i32>, D::Error>
@@ -29,7 +29,7 @@ where
             } else {
                 return Ok(Some(0));
             }
-        },
+        }
         Err(e) => Ok(Option::None),
     }
 }

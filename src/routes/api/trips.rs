@@ -26,8 +26,8 @@ use postgres::types::ToSql;
 use std::ops::Deref;
 use std::ops::DerefMut;
 
-use std::collections::HashMap;
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 use models::api::search::trip::TripSearch;
 use models::boundingbox::BoundingBox;
@@ -366,7 +366,7 @@ pub fn trips_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<Resul
 /// in a [Bounding Box](../../../models/struct.BoudingBox.html).
 /// Returns a [Result](../../../models/api/result/struct.Result.html)
 /// <[Trip](../../../models/trip/struct.Trip.html)>
-/// 
+///
 /// Warning: The result may contain duplicate entries!
 #[get("/trips/in/<bbox>")]
 pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<ResultArray<Trip>> {
@@ -429,7 +429,10 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
 	ORDER BY (trip.tuid, stop_sequence)"#;
 
     let conn = rh.pool.clone().get().unwrap();
-    let trips = conn.query(query, &[&bbox.p1.lng, &bbox.p1.lat, &bbox.p2.lng, &bbox.p2.lat]);
+    let trips = conn.query(
+        query,
+        &[&bbox.p1.lng, &bbox.p1.lat, &bbox.p2.lng, &bbox.p2.lat],
+    );
 
     let trips = &trips.unwrap();
 
@@ -447,25 +450,24 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
     }
 
     let mut trips_result: Vec<Trip> = Vec::new();
-    let mut trips_hm : BTreeMap<Trip, Vec<StopTrip>> = BTreeMap::new();
+    let mut trips_hm: BTreeMap<Trip, Vec<StopTrip>> = BTreeMap::new();
 
-    let rowuid : String = trips.get(0).get(0);
+    let rowuid: String = trips.get(0).get(0);
     println!("{}", rowuid);
-    let mut i : i32 = 0;
+    let mut i: i32 = 0;
 
     for trip_row in trips {
-        let uid : String = trip_row.get(0);
+        let uid: String = trip_row.get(0);
         println!("{}: {}", i, uid);
         parse_stop_trip_trip_row(&mut trips_hm, &trip_row);
-        i+=1;
+        i += 1;
     }
 
-    for (k,v) in trips_hm.iter() {
+    for (k, v) in trips_hm.iter() {
         let mut t = (*k).clone();
         t.stop_sequence = Some(v.clone());
         trips_result.push(t);
     }
-
 
     let result = ResultArray::<Trip> {
         result: Some(trips_result),
@@ -527,7 +529,7 @@ fn parse_trip_row(row: &Row) -> Trip {
     t
 }
 
-fn parse_stop_trip_trip_row<'a>(trips: &'a mut BTreeMap<Trip, Vec<StopTrip>>, row : &Row){
+fn parse_stop_trip_trip_row<'a>(trips: &'a mut BTreeMap<Trip, Vec<StopTrip>>, row: &Row) {
     /*
         trip.uid as tuid,
         route.uid,
@@ -538,7 +540,7 @@ fn parse_stop_trip_trip_row<'a>(trips: &'a mut BTreeMap<Trip, Vec<StopTrip>>, ro
         trip.direction_id,
         trip.feed_id
     */
-    let mut new_vec : Vec<StopTrip>;
+    let mut new_vec: Vec<StopTrip>;
     let mut stop_time_v = Vec::new();
     let mut stop = Stop::new(
         row.get(7),
@@ -546,7 +548,7 @@ fn parse_stop_trip_trip_row<'a>(trips: &'a mut BTreeMap<Trip, Vec<StopTrip>>, ro
         row.get(10),
         row.get(11),
         row.get(12),
-        row.get(13)
+        row.get(13),
     );
     let mut t = Trip::new(
         row.get(0),
@@ -554,7 +556,7 @@ fn parse_stop_trip_trip_row<'a>(trips: &'a mut BTreeMap<Trip, Vec<StopTrip>>, ro
         row.get(2),
         row.get(3),
         row.get(4),
-        row.get(5)
+        row.get(5),
     );
 
     t.set_feed_id(row.get(6));
@@ -586,7 +588,6 @@ fn parse_stop_trip_trip_row<'a>(trips: &'a mut BTreeMap<Trip, Vec<StopTrip>>, ro
     */
     stop.set_feed_id(row.get(6));
 
-
     let drop_off_i: i32 = row.get(17);
     let pickup_i: i32 = row.get(18);
 
@@ -602,11 +603,11 @@ fn parse_stop_trip_trip_row<'a>(trips: &'a mut BTreeMap<Trip, Vec<StopTrip>>, ro
         departure_time,
         stop_sequence: row.get(16),
         drop_off,
-        pickup
+        pickup,
     };
 
     if trips.contains_key(&t) {
-        let value : Vec<StopTrip> = trips.get(&t).unwrap().to_vec();
+        let value: Vec<StopTrip> = trips.get(&t).unwrap().to_vec();
         new_vec = value.to_vec();
         new_vec.push(stop_trip);
         trips.insert(t, new_vec);

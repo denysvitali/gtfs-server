@@ -10,10 +10,10 @@ use super::super::Json;
 use super::super::State;
 use super::model_api::successresult::SuccessResult;
 
-use super::super::super::importer;
-use std::thread;
-use std::fs::File;
 use self::zip::ZipArchive;
+use super::super::super::importer;
+use std::fs::File;
+use std::thread;
 
 #[get("/import/url/<feed_url>")]
 pub fn url(rh: State<RoutesHandler>, feed_url: String) -> Json<SuccessResult> {
@@ -37,7 +37,11 @@ pub fn fs(rh: State<RoutesHandler>, file_name: String) -> Json<SuccessResult> {
     let pool: Pool<PostgresConnectionManager> = rh.pool.clone();
     thread::spawn(move || {
         //importer::create_tables(&pool);
-        importer::parse_feed_zip(&mut ZipArchive::new(File::open("resources/gtfs/flixbus/flixbus.zip").unwrap()).unwrap(), &pool);
+        importer::parse_feed_zip(
+            &mut ZipArchive::new(File::open("resources/gtfs/flixbus/flixbus.zip").unwrap())
+                .unwrap(),
+            &pool,
+        );
     });
     let sr = SuccessResult { success: true };
     Json(sr)

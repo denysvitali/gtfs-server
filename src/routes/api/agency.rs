@@ -89,8 +89,8 @@ pub fn agency_by_id(rh: State<RoutesHandler>, agency_uid: String) -> Json<Result
     })
 }
 
-use postgres::rows::Row;
 use models::api::resultarray::ResultArray;
+use postgres::rows::Row;
 
 fn get_agency_by_uid(rh: State<RoutesHandler>, agency_uid: String) -> Option<Agency> {
     let query = "SELECT \
@@ -117,9 +117,7 @@ fn get_agency_by_uid(rh: State<RoutesHandler>, agency_uid: String) -> Option<Age
     return Some(parse_agency_row(&agency.get(0)));
 }
 
-fn get_agencies(
-    rh: &State<RoutesHandler>
-) -> Option<Vec<Agency>> {
+fn get_agencies(rh: &State<RoutesHandler>) -> Option<Vec<Agency>> {
     let query = "SELECT \
                  uid, \
                  id, \
@@ -140,7 +138,7 @@ fn get_agencies(
         return Option::None;
     }
 
-    let mut ag_result : Vec<Agency> = Vec::new();
+    let mut ag_result: Vec<Agency> = Vec::new();
 
     for row in result.iter() {
         ag_result.push(parse_agency_row(&row));

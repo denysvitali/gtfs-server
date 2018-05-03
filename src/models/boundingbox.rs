@@ -7,7 +7,7 @@ use rocket::http::RawStr;
 use rocket::request::FromParam;
 
 /// A Bouding Box is defined (as a parameter) as following:  
-/// `p1_lat,p1_lng,p2_lat,p2_lng` where `pn_lat` is the latitude of the n-th point and 
+/// `p1_lat,p1_lng,p2_lat,p2_lng` where `pn_lat` is the latitude of the n-th point and
 /// `pn_lng` is the longitude of the n-th point.  
 ///   
 /// For example the string `51.2867602,-0.5103751,51.6918741,0.3340155` defines a bouding box
@@ -23,7 +23,8 @@ pub struct BoundingBox {
 impl<'r> FromParam<'r> for BoundingBox {
     type Error = &'r RawStr;
     fn from_param(param: &'r RawStr) -> Result<Self, Self::Error> {
-        let re = Regex::new(r"^(\d+|\d+\.\d+),(\d+|\d+\.\d+),(\d+|\d+\.\d+),(\d+|\d+\.\d+)$").unwrap();
+        let re =
+            Regex::new(r"^(\d+|\d+\.\d+),(\d+|\d+\.\d+),(\d+|\d+\.\d+),(\d+|\d+\.\d+)$").unwrap();
         if re.is_match(param) {
             let caps = re.captures(param).unwrap();
             fn as_f64(c: Option<Match>) -> f64 {

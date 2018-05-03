@@ -1,9 +1,8 @@
 //! Trip related structs and implementations
 use models::stop::StopTrip;
+use std::cmp::Ordering;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use std::cmp::Ordering;
-
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Trip {
@@ -51,7 +50,6 @@ impl Trip {
         self.feed_id = feed_id;
     }
 }
-
 
 impl PartialEq for Trip {
     fn eq(&self, other: &Trip) -> bool {

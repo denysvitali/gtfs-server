@@ -11,5 +11,5 @@ pub struct StopCSV {
     pub location_type: Option<i32>,
     pub parent_station: Option<String>,
     pub stop_timezone: Option<String>,
-    pub wheelchair_boarding: Option<i32>
+    pub wheelchair_boarding: Option<i32>,
 }

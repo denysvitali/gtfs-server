@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 #[derive(Debug, Deserialize)]
 pub struct CalendarDateCSV {
-    pub service_id : String,
-    pub date : String,
-    pub exception_type : i32
+    pub service_id: String,
+    pub date: String,
+    pub exception_type: i32,
 }

@@ -12,8 +12,8 @@ extern crate num_traits;
 extern crate postgres;
 extern crate r2d2;
 extern crate r2d2_postgres;
-extern crate rocket_contrib;
 extern crate regex;
+extern crate rocket_contrib;
 
 mod test;
 
@@ -24,12 +24,12 @@ pub mod routes;
 use r2d2::Pool;
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 
+use rocket::response::NamedFile;
 use routes::api;
 use routes::ui;
 use routes::RoutesHandler;
 use std::env;
 use std::path::{Path, PathBuf};
-use rocket::response::NamedFile;
 
 use chrono::{NaiveDate, NaiveTime};
 
@@ -45,7 +45,7 @@ fn create_pool() -> Pool<PostgresConnectionManager> {
     if env::var_os("IN_DOCKER").is_some()
         && env::var_os("IN_DOCKER").unwrap().to_str().unwrap() == "true"
     {
-        hostname = "gtfs-db.service.dc1.cluster";
+        hostname = "gtfs-db.service.dc1.consul";
         password = String::from(
             env::var_os("POSTGRES_PASSWORD")
                 .unwrap()
@@ -117,15 +117,8 @@ fn start_server(rh: RoutesHandler) {
                 api::times::times_stop_query
             ],
         )
-        .mount("/",
-        routes![
-            ui::import::main
-        ])
-        .mount("/",
-        routes![
-            static_css,
-            static_js
-        ])
+        .mount("/", routes![ui::import::main])
+        .mount("/", routes![static_css, static_js])
         .launch();
 }
 
