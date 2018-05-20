@@ -917,7 +917,7 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         "ALTER TABLE public.stop_time
         ADD CONSTRAINT stop_time_stop_fk
         FOREIGN KEY (stop_id,feed_id)
-        REFERENCES public.stop(id,feed_id) ON CONFLICT DO NOTHING;",
+        REFERENCES public.stop(id,feed_id);",
         &[],
     ).expect("Add stop_time constraints");
 
@@ -933,7 +933,7 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         "ALTER TABLE public.trip \
          ADD CONSTRAINT trip_calendar_fk \
          FOREIGN KEY (service_id,feed_id) \
-         REFERENCES public.calendar(service_id,feed_id) ON CONFLICT DO NOTHING;",
+         REFERENCES public.calendar(service_id,feed_id);",
         &[],
     ).expect("Add stop_time constraints");
 
@@ -1002,14 +1002,7 @@ pub fn update_db_ver(ver: u32, conn: &Connection) {
 pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
     let conn = pool.clone().get().unwrap();
     if ver < 2 {
-        conn.execute(
-            "ALTER TABLE trip \
-             ADD COLUMN block_id INTEGER, \
-             ADD COLUMN shape_id INTEGER, \
-             ADD COLUMN wheelchair_accessible INTEGER, \
-             ADD COLUMN bikes_allowed INTEGER",
-            &[],
-        ).expect("Unable to alter table trip");
+        // Do nothing.
         update_db_ver(2, &conn);
     }
 
