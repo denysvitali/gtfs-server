@@ -539,9 +539,6 @@
 <span id="539">539</span>
 <span id="540">540</span>
 <span id="541">541</span>
-<span id="542">542</span>
-<span id="543">543</span>
-<span id="544">544</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/stops` related routes</span>
 
@@ -706,10 +703,7 @@
 <span class="doccomment">/// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)</span>
 <span class="doccomment">/// &lt;[Stop](../../../models/api/sruct.Stop.html)&gt;</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/stops/in/&lt;bbox&gt;&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops_in_bbox</span>(
-    <span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>,
-    <span class="ident">bbox</span>: <span class="ident">BoundingBox</span>
-) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stops_in_bbox</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">bbox</span>: <span class="ident">BoundingBox</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;&gt;</span> {
     <span class="kw">let</span> <span class="ident">sr</span> <span class="op">=</span> <span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Stop</span><span class="op">&gt;</span> {
         <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">get_stops_in_bbox</span>(<span class="kw-2">&amp;</span><span class="ident">rh</span>.<span class="ident">pool</span>, <span class="ident">bbox</span>)),
         <span class="ident">meta</span>: <span class="ident">Meta</span> {

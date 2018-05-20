@@ -646,6 +646,7 @@
 <span id="646">646</span>
 <span id="647">647</span>
 <span id="648">648</span>
+<span id="649">649</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/trips` related routes</span>
 
@@ -675,8 +676,8 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">Deref</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">DerefMut</span>;
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">BTreeMap</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">api</span>::<span class="ident">search</span>::<span class="ident">trip</span>::<span class="ident">TripSearch</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">boundingbox</span>::<span class="ident">BoundingBox</span>;
@@ -1015,7 +1016,7 @@
 <span class="doccomment">/// in a [Bounding Box](../../../models/struct.BoudingBox.html).</span>
 <span class="doccomment">/// Returns a [Result](../../../models/api/result/struct.Result.html)</span>
 <span class="doccomment">/// &lt;[Trip](../../../models/trip/struct.Trip.html)&gt;</span>
-<span class="doccomment">/// </span>
+<span class="doccomment">///</span>
 <span class="doccomment">/// Warning: The result may contain duplicate entries!</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/trips/in/&lt;bbox&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">trips_by_bbox</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">bbox</span>: <span class="ident">BoundingBox</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Trip</span><span class="op">&gt;&gt;</span> {
@@ -1078,7 +1079,10 @@
 	ORDER BY (trip.tuid, stop_sequence)&quot;#</span>;
 
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">trips</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">bbox</span>.<span class="ident">p1</span>.<span class="ident">lng</span>, <span class="kw-2">&amp;</span><span class="ident">bbox</span>.<span class="ident">p1</span>.<span class="ident">lat</span>, <span class="kw-2">&amp;</span><span class="ident">bbox</span>.<span class="ident">p2</span>.<span class="ident">lng</span>, <span class="kw-2">&amp;</span><span class="ident">bbox</span>.<span class="ident">p2</span>.<span class="ident">lat</span>]);
+    <span class="kw">let</span> <span class="ident">trips</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(
+        <span class="ident">query</span>,
+        <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">bbox</span>.<span class="ident">p1</span>.<span class="ident">lng</span>, <span class="kw-2">&amp;</span><span class="ident">bbox</span>.<span class="ident">p1</span>.<span class="ident">lat</span>, <span class="kw-2">&amp;</span><span class="ident">bbox</span>.<span class="ident">p2</span>.<span class="ident">lng</span>, <span class="kw-2">&amp;</span><span class="ident">bbox</span>.<span class="ident">p2</span>.<span class="ident">lat</span>],
+    );
 
     <span class="kw">let</span> <span class="ident">trips</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">trips</span>.<span class="ident">unwrap</span>();
 
@@ -1096,25 +1100,24 @@
     }
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trips_result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Trip</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trips_hm</span> : <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">Trip</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;&gt;</span> <span class="op">=</span> <span class="ident">BTreeMap</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trips_hm</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">Trip</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;&gt;</span> <span class="op">=</span> <span class="ident">BTreeMap</span>::<span class="ident">new</span>();
 
-    <span class="kw">let</span> <span class="ident">rowuid</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">trips</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">get</span>(<span class="number">0</span>);
+    <span class="kw">let</span> <span class="ident">rowuid</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">trips</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">get</span>(<span class="number">0</span>);
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">rowuid</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> : <span class="ident">i32</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">0</span>;
 
     <span class="kw">for</span> <span class="ident">trip_row</span> <span class="kw">in</span> <span class="ident">trips</span> {
-        <span class="kw">let</span> <span class="ident">uid</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">trip_row</span>.<span class="ident">get</span>(<span class="number">0</span>);
+        <span class="kw">let</span> <span class="ident">uid</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">trip_row</span>.<span class="ident">get</span>(<span class="number">0</span>);
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="ident">i</span>, <span class="ident">uid</span>);
         <span class="ident">parse_stop_trip_trip_row</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">trips_hm</span>, <span class="kw-2">&amp;</span><span class="ident">trip_row</span>);
-        <span class="ident">i</span><span class="op">+=</span><span class="number">1</span>;
+        <span class="ident">i</span> <span class="op">+=</span> <span class="number">1</span>;
     }
 
-    <span class="kw">for</span> (<span class="ident">k</span>,<span class="ident">v</span>) <span class="kw">in</span> <span class="ident">trips_hm</span>.<span class="ident">iter</span>() {
+    <span class="kw">for</span> (<span class="ident">k</span>, <span class="ident">v</span>) <span class="kw">in</span> <span class="ident">trips_hm</span>.<span class="ident">iter</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">k</span>).<span class="ident">clone</span>();
         <span class="ident">t</span>.<span class="ident">stop_sequence</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>.<span class="ident">clone</span>());
         <span class="ident">trips_result</span>.<span class="ident">push</span>(<span class="ident">t</span>);
     }
-
 
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Trip</span><span class="op">&gt;</span> {
         <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">trips_result</span>),
@@ -1176,7 +1179,7 @@
     <span class="ident">t</span>
 }
 
-<span class="kw">fn</span> <span class="ident">parse_stop_trip_trip_row</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">trips</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">Trip</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;&gt;</span>, <span class="ident">row</span> : <span class="kw-2">&amp;</span><span class="ident">Row</span>){
+<span class="kw">fn</span> <span class="ident">parse_stop_trip_trip_row</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">trips</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">Trip</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;&gt;</span>, <span class="ident">row</span>: <span class="kw-2">&amp;</span><span class="ident">Row</span>) {
     <span class="comment">/*
         trip.uid as tuid,
         route.uid,
@@ -1187,7 +1190,7 @@
         trip.direction_id,
         trip.feed_id
     */</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_vec</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_vec</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stop_time_v</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stop</span> <span class="op">=</span> <span class="ident">Stop</span>::<span class="ident">new</span>(
         <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">7</span>),
@@ -1195,7 +1198,7 @@
         <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">10</span>),
         <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">11</span>),
         <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">12</span>),
-        <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">13</span>)
+        <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">13</span>),
     );
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">Trip</span>::<span class="ident">new</span>(
         <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>),
@@ -1203,7 +1206,7 @@
         <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">2</span>),
         <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">3</span>),
         <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">4</span>),
-        <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">5</span>)
+        <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">5</span>),
     );
 
     <span class="ident">t</span>.<span class="ident">set_feed_id</span>(<span class="ident">row</span>.<span class="ident">get</span>(<span class="number">6</span>));
@@ -1235,7 +1238,6 @@
     */</span>
     <span class="ident">stop</span>.<span class="ident">set_feed_id</span>(<span class="ident">row</span>.<span class="ident">get</span>(<span class="number">6</span>));
 
-
     <span class="kw">let</span> <span class="ident">drop_off_i</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">17</span>);
     <span class="kw">let</span> <span class="ident">pickup_i</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">18</span>);
 
@@ -1251,11 +1253,11 @@
         <span class="ident">departure_time</span>,
         <span class="ident">stop_sequence</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">16</span>),
         <span class="ident">drop_off</span>,
-        <span class="ident">pickup</span>
+        <span class="ident">pickup</span>,
     };
 
     <span class="kw">if</span> <span class="ident">trips</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">t</span>) {
-        <span class="kw">let</span> <span class="ident">value</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">trips</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">t</span>).<span class="ident">unwrap</span>().<span class="ident">to_vec</span>();
+        <span class="kw">let</span> <span class="ident">value</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTrip</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">trips</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">t</span>).<span class="ident">unwrap</span>().<span class="ident">to_vec</span>();
         <span class="ident">new_vec</span> <span class="op">=</span> <span class="ident">value</span>.<span class="ident">to_vec</span>();
         <span class="ident">new_vec</span>.<span class="ident">push</span>(<span class="ident">stop_trip</span>);
         <span class="ident">trips</span>.<span class="ident">insert</span>(<span class="ident">t</span>, <span class="ident">new_vec</span>);

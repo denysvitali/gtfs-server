@@ -217,8 +217,6 @@
 <span id="217">217</span>
 <span id="218">218</span>
 <span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/agency` related routes</span>
 
@@ -311,8 +309,8 @@
     })
 }
 
-<span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">rows</span>::<span class="ident">Row</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">api</span>::<span class="ident">resultarray</span>::<span class="ident">ResultArray</span>;
+<span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">rows</span>::<span class="ident">Row</span>;
 
 <span class="kw">fn</span> <span class="ident">get_agency_by_uid</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">agency_uid</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Agency</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">&quot;SELECT \
@@ -339,9 +337,7 @@
     <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">parse_agency_row</span>(<span class="kw-2">&amp;</span><span class="ident">agency</span>.<span class="ident">get</span>(<span class="number">0</span>)));
 }
 
-<span class="kw">fn</span> <span class="ident">get_agencies</span>(
-    <span class="ident">rh</span>: <span class="kw-2">&amp;</span><span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>
-) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Agency</span><span class="op">&gt;&gt;</span> {
+<span class="kw">fn</span> <span class="ident">get_agencies</span>(<span class="ident">rh</span>: <span class="kw-2">&amp;</span><span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Agency</span><span class="op">&gt;&gt;</span> {
     <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">&quot;SELECT \
                  uid, \
                  id, \
@@ -362,7 +358,7 @@
         <span class="kw">return</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ag_result</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Agency</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ag_result</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Agency</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">result</span>.<span class="ident">iter</span>() {
         <span class="ident">ag_result</span>.<span class="ident">push</span>(<span class="ident">parse_agency_row</span>(<span class="kw-2">&amp;</span><span class="ident">row</span>));

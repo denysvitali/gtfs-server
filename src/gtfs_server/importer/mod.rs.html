@@ -1112,6 +1112,17 @@
 <span id="1112">1112</span>
 <span id="1113">1113</span>
 <span id="1114">1114</span>
+<span id="1115">1115</span>
+<span id="1116">1116</span>
+<span id="1117">1117</span>
+<span id="1118">1118</span>
+<span id="1119">1119</span>
+<span id="1120">1120</span>
+<span id="1121">1121</span>
+<span id="1122">1122</span>
+<span id="1123">1123</span>
+<span id="1124">1124</span>
+<span id="1125">1125</span>
 </pre><pre class="rust ">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">chrono</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">crypto</span>;
@@ -1138,13 +1149,13 @@
 
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">regex</span>::<span class="ident">Regex</span>;
 
-<span class="kw">use</span> <span class="ident">r2d2</span>::<span class="ident">Pool</span>;
-<span class="kw">use</span> <span class="ident">r2d2_postgres</span>::<span class="ident">PostgresConnectionManager</span>;
-<span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">rows</span>::{<span class="ident">Row</span>, <span class="ident">Rows</span>};
-<span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">Connection</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
 <span class="kw">use</span> <span class="ident">importer</span>::<span class="ident">zip</span>::<span class="ident">read</span>::<span class="ident">ZipArchive</span>;
 <span class="kw">use</span> <span class="ident">importer</span>::<span class="ident">zip</span>::<span class="ident">read</span>::<span class="ident">ZipFile</span>;
+<span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">rows</span>::{<span class="ident">Row</span>, <span class="ident">Rows</span>};
+<span class="kw">use</span> <span class="ident">postgres</span>::<span class="ident">Connection</span>;
+<span class="kw">use</span> <span class="ident">r2d2</span>::<span class="ident">Pool</span>;
+<span class="kw">use</span> <span class="ident">r2d2_postgres</span>::<span class="ident">PostgresConnectionManager</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fs</span>::<span class="ident">File</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::<span class="ident">chrono</span>::{<span class="ident">NaiveDate</span>, <span class="ident">NaiveTime</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">thread</span>;
@@ -1156,16 +1167,19 @@
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">route</span>::<span class="ident">RouteCSV</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">stop</span>::<span class="ident">StopCSV</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">csv</span>::<span class="ident">trip</span>::<span class="ident">TripCSV</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Read</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">BinaryHeap</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">BinaryHeap</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">Read</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::{<span class="ident">SystemTime</span>, <span class="ident">UNIX_EPOCH</span>};
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">download_feed_zip</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">feed_url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ZipArchive</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">download_feed_zip</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
+    <span class="ident">feed_url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
+    <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>,
+) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ZipArchive</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;&gt;</span> {
     <span class="comment">// Download feed from URL</span>
     <span class="comment">// Example:  https://opentransportdata.swiss/en/dataset/timetable-2018-gtfs/permalink</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">resp</span> <span class="op">=</span> <span class="ident">reqwest</span>::<span class="ident">get</span>(<span class="ident">feed_url</span>).<span class="ident">expect</span>(<span class="string">&quot;Download failed&quot;</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmpfile</span> : <span class="ident">File</span> <span class="op">=</span> <span class="ident">tempfile</span>::<span class="ident">tempfile</span>().<span class="ident">expect</span>(<span class="string">&quot;Unable to get a tmp file&quot;</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmpfile</span>: <span class="ident">File</span> <span class="op">=</span> <span class="ident">tempfile</span>::<span class="ident">tempfile</span>().<span class="ident">expect</span>(<span class="string">&quot;Unable to get a tmp file&quot;</span>);
     <span class="comment">//let mut tmpdir = tempfile::tempdir().expect(&quot;Unable to create a tmp dir&quot;);</span>
 
     <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">resp</span>.<span class="ident">copy_to</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tmpfile</span>);
@@ -1173,16 +1187,15 @@
     <span class="kw">if</span> <span class="ident">result</span>.<span class="ident">is_ok</span>() {
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Result is ok&quot;</span>);
         <span class="comment">// We&#39;ve got a zip file!</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">zar</span> : <span class="ident">ZipArchive</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">ZipArchive</span>::<span class="ident">new</span>(<span class="ident">tmpfile</span>)
-            .<span class="ident">expect</span>(<span class="string">&quot;This is not a zip file&quot;</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">zar</span>: <span class="ident">ZipArchive</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">ZipArchive</span>::<span class="ident">new</span>(<span class="ident">tmpfile</span>).<span class="ident">expect</span>(<span class="string">&quot;This is not a zip file&quot;</span>);
         <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">zar</span>);
     }
     <span class="kw">return</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
 }
 
 <span class="kw">struct</span> <span class="ident">MZipFile</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="ident">name</span> : <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="kw">pub</span> <span class="ident">order</span>: <span class="ident">i32</span>
+    <span class="kw">pub</span> <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
+    <span class="kw">pub</span> <span class="ident">order</span>: <span class="ident">i32</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">MZipFile</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
@@ -1193,7 +1206,7 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">MZipFile</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {}
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Ord</span> <span class="kw">for</span> <span class="ident">MZipFile</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>{
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Ord</span> <span class="kw">for</span> <span class="ident">MZipFile</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">Ordering</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">order</span> <span class="op">&gt;</span> <span class="ident">other</span>.<span class="ident">order</span> {
             <span class="kw">return</span> <span class="ident">Ordering</span>::<span class="ident">Greater</span>;
@@ -1224,109 +1237,81 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_feed_zip</span>(<span class="ident">zar</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ZipArchive</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>){
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">feed_id</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">zar</span>.<span class="ident">len</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">zar</span>.<span class="ident">by_index</span>(<span class="ident">i</span>).<span class="ident">expect</span>(<span class="string">&quot;Invalid file index&quot;</span>);
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;File {} &quot;</span>, <span class="ident">file</span>.<span class="ident">name</span>());
-            <span class="kw">if</span> <span class="ident">file</span>.<span class="ident">name</span>() <span class="op">==</span> <span class="string">&quot;feed_info.txt&quot;</span> {
-                <span class="ident">feed_id</span> <span class="op">=</span> <span class="ident">parse_feed</span>(<span class="ident">file</span>, <span class="ident">pool</span>);
-                <span class="kw">break</span>;
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_feed_zip</span>(<span class="ident">zar</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ZipArchive</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">feed_id</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
+    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">zar</span>.<span class="ident">len</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">zar</span>.<span class="ident">by_index</span>(<span class="ident">i</span>).<span class="ident">expect</span>(<span class="string">&quot;Invalid file index&quot;</span>);
+        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;File {} &quot;</span>, <span class="ident">file</span>.<span class="ident">name</span>());
+        <span class="kw">if</span> <span class="ident">file</span>.<span class="ident">name</span>() <span class="op">==</span> <span class="string">&quot;feed_info.txt&quot;</span> {
+            <span class="ident">feed_id</span> <span class="op">=</span> <span class="ident">parse_feed</span>(<span class="ident">file</span>, <span class="ident">pool</span>);
+            <span class="kw">break</span>;
+        }
+    }
+
+    <span class="kw">if</span> <span class="ident">feed_id</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
+        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;feed_info missing!&quot;</span>);
+        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">SystemTime</span>::<span class="ident">now</span>();
+        <span class="kw">let</span> <span class="ident">uts</span> <span class="op">=</span> <span class="ident">start</span>.<span class="ident">duration_since</span>(<span class="ident">UNIX_EPOCH</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sha</span> <span class="op">=</span> <span class="ident">Sha256</span>::<span class="ident">new</span>();
+        <span class="ident">sha</span>.<span class="ident">input_str</span>(<span class="kw-2">&amp;</span><span class="ident">uts</span>.<span class="ident">as_secs</span>().<span class="ident">to_string</span>());
+        <span class="ident">feed_id</span> <span class="op">=</span> <span class="ident">sha</span>.<span class="ident">result_str</span>();
+        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Using fake feed ID {}&quot;</span>, <span class="ident">feed_id</span>);
+        <span class="comment">//return;</span>
+    }
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bh</span>: <span class="ident">BinaryHeap</span><span class="op">&lt;</span><span class="ident">MZipFile</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">BinaryHeap</span>::<span class="ident">new</span>();
+    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">zar</span>.<span class="ident">len</span>() {
+        <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">zar</span>.<span class="ident">by_index</span>(<span class="ident">i</span>).<span class="ident">expect</span>(<span class="string">&quot;Invalid file index&quot;</span>);
+        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;File {} &quot;</span>, <span class="ident">file</span>.<span class="ident">name</span>());
+        <span class="kw">match</span> <span class="ident">file</span>.<span class="ident">name</span>() {
+            <span class="string">&quot;agency.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span> {
+                <span class="ident">name</span>: <span class="string">&quot;agency.txt&quot;</span>,
+                <span class="ident">order</span>: <span class="number">1</span>,
+            }),
+            <span class="string">&quot;calendar.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span> {
+                <span class="ident">name</span>: <span class="string">&quot;calendar.txt&quot;</span>,
+                <span class="ident">order</span>: <span class="number">2</span>,
+            }),
+            <span class="string">&quot;calendar_dates.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span> {
+                <span class="ident">name</span>: <span class="string">&quot;calendar_dates.txt&quot;</span>,
+                <span class="ident">order</span>: <span class="number">2</span>,
+            }),
+            <span class="string">&quot;routes.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span> {
+                <span class="ident">name</span>: <span class="string">&quot;routes.txt&quot;</span>,
+                <span class="ident">order</span>: <span class="number">3</span>,
+            }),
+            <span class="string">&quot;stops.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span> {
+                <span class="ident">name</span>: <span class="string">&quot;stops.txt&quot;</span>,
+                <span class="ident">order</span>: <span class="number">4</span>,
+            }),
+            <span class="string">&quot;stop_times.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span> {
+                <span class="ident">name</span>: <span class="string">&quot;stop_times.txt&quot;</span>,
+                <span class="ident">order</span>: <span class="number">5</span>,
+            }),
+            <span class="string">&quot;trips.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span> {
+                <span class="ident">name</span>: <span class="string">&quot;trips.txt&quot;</span>,
+                <span class="ident">order</span>: <span class="number">3</span>,
+            }),
+            <span class="kw">_</span> <span class="op">=&gt;</span> {}
+        };
+    }
+
+    <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Parsing BH&quot;</span>);
+    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">bh</span>.<span class="ident">into_sorted_vec</span>() {
+        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">i</span>.<span class="ident">name</span>);
+        <span class="kw">match</span> <span class="ident">i</span>.<span class="ident">name</span> {
+            <span class="string">&quot;agency.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">parse_agency</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>),
+            <span class="string">&quot;calendar.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">parse_calendar</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>),
+            <span class="string">&quot;calendar_dates.txt&quot;</span> <span class="op">=&gt;</span> {
+                <span class="ident">parse_calendar_dates</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>)
             }
-        }
-
-        <span class="kw">if</span> <span class="ident">feed_id</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;feed_info missing!&quot;</span>);
-            <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">SystemTime</span>::<span class="ident">now</span>();
-            <span class="kw">let</span> <span class="ident">uts</span> <span class="op">=</span> <span class="ident">start</span>.<span class="ident">duration_since</span>(<span class="ident">UNIX_EPOCH</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sha</span> <span class="op">=</span> <span class="ident">Sha256</span>::<span class="ident">new</span>();
-            <span class="ident">sha</span>.<span class="ident">input_str</span>(<span class="kw-2">&amp;</span><span class="ident">uts</span>.<span class="ident">as_secs</span>().<span class="ident">to_string</span>());
-            <span class="ident">feed_id</span> <span class="op">=</span> <span class="ident">sha</span>.<span class="ident">result_str</span>();
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Using fake feed ID {}&quot;</span>, <span class="ident">feed_id</span>);
-            <span class="comment">//return;</span>
-        }
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bh</span> : <span class="ident">BinaryHeap</span><span class="op">&lt;</span><span class="ident">MZipFile</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">BinaryHeap</span>::<span class="ident">new</span>();
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">zar</span>.<span class="ident">len</span>() {
-            <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">zar</span>.<span class="ident">by_index</span>(<span class="ident">i</span>).<span class="ident">expect</span>(<span class="string">&quot;Invalid file index&quot;</span>);
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;File {} &quot;</span>, <span class="ident">file</span>.<span class="ident">name</span>());
-            <span class="kw">match</span> <span class="ident">file</span>.<span class="ident">name</span>() {
-                <span class="string">&quot;agency.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span>{
-                        <span class="ident">name</span>: <span class="string">&quot;agency.txt&quot;</span>,
-                        <span class="ident">order</span>: <span class="number">1</span>
-                    })
-                },
-                <span class="string">&quot;calendar.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span>{
-                        <span class="ident">name</span>: <span class="string">&quot;calendar.txt&quot;</span>,
-                        <span class="ident">order</span>: <span class="number">2</span>
-                    })
-                },
-                <span class="string">&quot;calendar_dates.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span>{
-                        <span class="ident">name</span>: <span class="string">&quot;calendar_dates.txt&quot;</span>,
-                        <span class="ident">order</span>: <span class="number">2</span>
-                    })
-                },
-                <span class="string">&quot;routes.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span>{
-                        <span class="ident">name</span>: <span class="string">&quot;routes.txt&quot;</span>,
-                        <span class="ident">order</span>: <span class="number">3</span>
-                    })
-                },
-                <span class="string">&quot;stops.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span>{
-                        <span class="ident">name</span>: <span class="string">&quot;stops.txt&quot;</span>,
-                        <span class="ident">order</span>: <span class="number">4</span>
-                    })
-                },
-                <span class="string">&quot;stop_times.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span>{
-                        <span class="ident">name</span>: <span class="string">&quot;stop_times.txt&quot;</span>,
-                        <span class="ident">order</span>: <span class="number">5</span>
-                    })
-                },
-                <span class="string">&quot;trips.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">bh</span>.<span class="ident">push</span>(<span class="ident">MZipFile</span>{
-                        <span class="ident">name</span>: <span class="string">&quot;trips.txt&quot;</span>,
-                        <span class="ident">order</span>: <span class="number">3</span>
-                    })
-                },
-                <span class="kw">_</span> <span class="op">=&gt;</span> {}
-            };
-        }
-        
-        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Parsing BH&quot;</span>);
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">bh</span>.<span class="ident">into_sorted_vec</span>() {
-            <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">i</span>.<span class="ident">name</span>);
-            <span class="kw">match</span> <span class="ident">i</span>.<span class="ident">name</span> {
-                <span class="string">&quot;agency.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">parse_agency</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>)
-                },
-                <span class="string">&quot;calendar.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">parse_calendar</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>)
-                },
-                <span class="string">&quot;calendar_dates.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">parse_calendar_dates</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>)
-                },
-                <span class="string">&quot;routes.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">parse_routes</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>)
-                },
-                <span class="string">&quot;stops.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">parse_stops</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>)
-                },
-                <span class="string">&quot;stop_times.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">parse_stop_times</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>)
-                },
-                <span class="string">&quot;trips.txt&quot;</span> <span class="op">=&gt;</span> {
-                    <span class="ident">parse_trips</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>)
-                },
-                <span class="kw">_</span> <span class="op">=&gt;</span> {}
-            };
-        }
-
-        
+            <span class="string">&quot;routes.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">parse_routes</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>),
+            <span class="string">&quot;stops.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">parse_stops</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>),
+            <span class="string">&quot;stop_times.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">parse_stop_times</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>),
+            <span class="string">&quot;trips.txt&quot;</span> <span class="op">=&gt;</span> <span class="ident">parse_trips</span>(<span class="kw-2">&amp;</span><span class="ident">feed_id</span>, <span class="ident">zar</span>.<span class="ident">by_name</span>(<span class="ident">i</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>),
+            <span class="kw">_</span> <span class="op">=&gt;</span> {}
+        };
+    }
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_agency</span>(<span class="ident">feed_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">f</span>: <span class="ident">ZipFile</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
@@ -1404,8 +1389,8 @@
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Parsing stops for fid {} ...&quot;</span>, <span class="ident">feed_id</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rdr</span> <span class="op">=</span> <span class="ident">csv</span>::<span class="ident">ReaderBuilder</span>::<span class="ident">new</span>().<span class="ident">from_reader</span>(<span class="ident">f</span>);
     <span class="kw">for</span> <span class="ident">result</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">deserialize</span>() {
-    <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">feed_clone</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>).<span class="ident">to_owned</span>();
+        <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">feed_clone</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>).<span class="ident">to_owned</span>();
         <span class="kw">let</span> <span class="ident">record</span>: <span class="ident">StopCSV</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(
             <span class="string">&quot;INSERT INTO stop\
@@ -1480,7 +1465,7 @@
                     feed_id
                 ) \
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) \
-                ON CONFLICT DO NOTHING&quot;</span>
+                ON CONFLICT DO NOTHING&quot;</span>,
             ).<span class="ident">expect</span>(<span class="string">&quot;Unable to create statement&quot;</span>);
             <span class="macro">println</span><span class="macro">!</span>(
                 <span class="string">&quot;Route ID {}, {}, {} ({})&quot;</span>,
@@ -1514,7 +1499,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_trips</span>(<span class="ident">feed_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">f</span>: <span class="ident">ZipFile</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Parsing trips for fid {} ...&quot;</span>, <span class="ident">feed_id</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rdr</span> <span class="op">=</span> <span class="ident">csv</span>::<span class="ident">ReaderBuilder</span>::<span class="ident">new</span>().<span class="ident">from_reader</span>(<span class="ident">f</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fields</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     {
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">byte_headers</span>().<span class="ident">unwrap</span>().<span class="ident">iter</span>() {
             <span class="ident">fields</span>.<span class="ident">push</span>(<span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">i</span>.<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>());
@@ -1548,44 +1533,33 @@
 
             <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">generate_uid</span>(
                 <span class="string">&quot;t&quot;</span>,
-                <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(
-                    <span class="string">&quot;{}{}&quot;</span>,
-                    <span class="ident">feed_clone</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">trip_id</span>
-                ),
+                <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">feed_clone</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">trip_id</span>),
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">trip_id</span>,
             );
 
-            <span class="kw">let</span> <span class="ident">wheelchair_accessible</span> : <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>;
+            <span class="kw">let</span> <span class="ident">wheelchair_accessible</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>;
             <span class="kw">if</span> <span class="ident">record</span>.<span class="ident">wheelchair_accessible</span>.<span class="ident">is_some</span>() {
                 <span class="ident">wheelchair_accessible</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">record</span>.<span class="ident">wheelchair_accessible</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> {
-                        <span class="kw">match</span> <span class="ident">v</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
-                            <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> { <span class="prelude-val">Some</span>(<span class="ident">v</span>) },
-                            <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=&gt;</span> { <span class="prelude-val">None</span> }
-                        }
-                    }
+                    <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">v</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
+                        <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>),
+                        <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+                    },
 
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
-                        <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
-                    }
+                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
                 };
             } <span class="kw">else</span> {
                 <span class="ident">wheelchair_accessible</span> <span class="op">=</span> <span class="prelude-val">None</span>;
             }
 
-            <span class="kw">let</span> <span class="ident">bikes_allowed</span> : <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>;
+            <span class="kw">let</span> <span class="ident">bikes_allowed</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>;
             <span class="kw">if</span> <span class="ident">record</span>.<span class="ident">bikes_allowed</span>.<span class="ident">is_some</span>() {
                 <span class="ident">bikes_allowed</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">record</span>.<span class="ident">bikes_allowed</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> {
-                        <span class="kw">match</span> <span class="ident">v</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
-                            <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> { <span class="prelude-val">Some</span>(<span class="ident">v</span>) },
-                            <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=&gt;</span> { <span class="prelude-val">None</span> }
-                        }
-                    }
+                    <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">v</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
+                        <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>),
+                        <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+                    },
 
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
-                        <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
-                    }
+                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
                 };
             } <span class="kw">else</span> {
                 <span class="ident">bikes_allowed</span> <span class="op">=</span> <span class="prelude-val">None</span>;
@@ -1610,12 +1584,12 @@
 }
 
 <span class="kw">fn</span> <span class="ident">field_index_by_name</span>(<span class="ident">field_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">fields</span>: <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> : <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="kw">for</span> <span class="ident">f</span> <span class="kw">in</span> <span class="ident">fields</span> {
         <span class="kw">if</span> <span class="ident">field_name</span> <span class="op">==</span> <span class="ident">f</span> {
             <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">i</span>);
         }
-        <span class="ident">i</span><span class="op">+=</span> <span class="number">1</span>;
+        <span class="ident">i</span> <span class="op">+=</span> <span class="number">1</span>;
     }
     <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
 }
@@ -1624,7 +1598,7 @@
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Parsing stop times for fid {} ...&quot;</span>, <span class="ident">feed_id</span>);
     <span class="kw">let</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">BufReader</span>::<span class="ident">new</span>(<span class="ident">f</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rdr</span> <span class="op">=</span> <span class="ident">csv</span>::<span class="ident">Reader</span>::<span class="ident">from_reader</span>(<span class="ident">reader</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fields</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     {
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">byte_headers</span>().<span class="ident">unwrap</span>().<span class="ident">iter</span>() {
             <span class="ident">fields</span>.<span class="ident">push</span>(<span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">i</span>.<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>());
@@ -1656,8 +1630,12 @@
             ).<span class="ident">expect</span>(<span class="string">&quot;Unable to create statement&quot;</span>);
 
             <span class="kw">let</span> <span class="ident">re</span> <span class="op">=</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;^(\d{2}):(\d{2}):(\d{2})$&quot;</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">at</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;arrival_time&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;departure_time&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">at</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(
+                <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;arrival_time&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>(),
+            ).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(
+                <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;departure_time&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>(),
+            ).<span class="ident">unwrap</span>();
 
             <span class="kw">if</span> <span class="op">!</span><span class="ident">re</span>.<span class="ident">is_match</span>(<span class="ident">at</span>) {
                 <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Invalid arrival time!&quot;</span>);
@@ -1685,52 +1663,71 @@
             <span class="kw">let</span> <span class="ident">arr_time</span> <span class="op">=</span> <span class="ident">NaiveTime</span>::<span class="ident">from_hms</span>(<span class="ident">h_arr</span>, <span class="ident">m_arr</span>, <span class="ident">s_arr</span>);
             <span class="kw">let</span> <span class="ident">dep_time</span> <span class="op">=</span> <span class="ident">NaiveTime</span>::<span class="ident">from_hms</span>(<span class="ident">h_dep</span>, <span class="ident">m_dep</span>, <span class="ident">s_dep</span>);
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stop_headsign</span> : <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pickup_type</span> : <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">drop_off_type</span> : <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">shape_dist_traveled</span> : <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">timepoint</span> : <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stop_headsign</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pickup_type</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">drop_off_type</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">shape_dist_traveled</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">timepoint</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
 
             <span class="comment">// Optional fields</span>
             <span class="kw">if</span> <span class="ident">field_index_by_name</span>(<span class="string">&quot;stop_headsign&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">is_some</span>() {
                 <span class="ident">stop_headsign</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
                     <span class="ident">String</span>::<span class="ident">from_utf8</span>(
-                        <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;stop_headsign&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>()
-                    ).<span class="ident">unwrap</span>()
+                        <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;stop_headsign&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>(),
+                    ).<span class="ident">unwrap</span>(),
                 );
             }
 
             <span class="kw">if</span> <span class="ident">field_index_by_name</span>(<span class="string">&quot;pickup_type&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">is_some</span>() {
-                <span class="ident">pickup_type</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String</span>::<span class="ident">from_utf8</span>(
-                        <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;pickup_type&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>()
-                        .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>().<span class="ident">unwrap_or_default</span>());
+                <span class="ident">pickup_type</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
+                    <span class="ident">String</span>::<span class="ident">from_utf8</span>(
+                        <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;pickup_type&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>(),
+                    ).<span class="ident">unwrap</span>()
+                        .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>()
+                        .<span class="ident">unwrap_or_default</span>(),
+                );
             }
 
             <span class="kw">if</span> <span class="ident">field_index_by_name</span>(<span class="string">&quot;drop_off_type&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">is_some</span>() {
-                <span class="ident">drop_off_type</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String</span>::<span class="ident">from_utf8</span>(
-                        <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;drop_off_type&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>()
-                        .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>().<span class="ident">unwrap_or_default</span>());
+                <span class="ident">drop_off_type</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
+                    <span class="ident">String</span>::<span class="ident">from_utf8</span>(
+                        <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;drop_off_type&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>(),
+                    ).<span class="ident">unwrap</span>()
+                        .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>()
+                        .<span class="ident">unwrap_or_default</span>(),
+                );
             }
 
             <span class="kw">if</span> <span class="ident">field_index_by_name</span>(<span class="string">&quot;shape_dist_traveled&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">is_some</span>() {
-                <span class="ident">shape_dist_traveled</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String</span>::<span class="ident">from_utf8</span>(
-                        <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;shape_dist_traveled&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>()
-                        .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>().<span class="ident">unwrap_or_default</span>());
+                <span class="ident">shape_dist_traveled</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
+                    <span class="ident">String</span>::<span class="ident">from_utf8</span>(
+                        <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;shape_dist_traveled&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>(),
+                    ).<span class="ident">unwrap</span>()
+                        .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>()
+                        .<span class="ident">unwrap_or_default</span>(),
+                );
             }
 
             <span class="kw">if</span> <span class="ident">field_index_by_name</span>(<span class="string">&quot;timepoint&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">is_some</span>() {
-                <span class="ident">timepoint</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String</span>::<span class="ident">from_utf8</span>(
-                        <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;timepoint&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>()
-                        .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>().<span class="ident">unwrap_or_default</span>());
+                <span class="ident">timepoint</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
+                    <span class="ident">String</span>::<span class="ident">from_utf8</span>(
+                        <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;timepoint&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>(),
+                    ).<span class="ident">unwrap</span>()
+                        .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>()
+                        .<span class="ident">unwrap_or_default</span>(),
+                );
             }
 
             <span class="ident">stmt</span>.<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[
-                <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;trip_id&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>(),
+                <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;trip_id&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>())
+                    .<span class="ident">unwrap</span>(),
                 <span class="kw-2">&amp;</span><span class="ident">arr_time</span>,
                 <span class="kw-2">&amp;</span><span class="ident">dep_time</span>,
-                <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;stop_id&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>(),
-                <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;stop_sequence&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>())
-                    .<span class="ident">unwrap</span>()
+                <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(<span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;stop_id&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>())
+                    .<span class="ident">unwrap</span>(),
+                <span class="kw-2">&amp;</span><span class="ident">String</span>::<span class="ident">from_utf8</span>(
+                    <span class="ident">record</span>[<span class="ident">field_index_by_name</span>(<span class="string">&quot;stop_sequence&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">fc</span>).<span class="ident">unwrap</span>()].<span class="ident">to_vec</span>(),
+                ).<span class="ident">unwrap</span>()
                     .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>()
                     .<span class="ident">unwrap</span>(),
                 <span class="kw-2">&amp;</span><span class="ident">stop_headsign</span>,
@@ -1747,15 +1744,16 @@
 <span class="kw">fn</span> <span class="ident">parse_feed</span>(<span class="ident">f</span>: <span class="ident">ZipFile</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Parsing feed...&quot;</span>);
 
-    <span class="kw">let</span> <span class="ident">feed_id</span> : <span class="ident">String</span>;
+    <span class="kw">let</span> <span class="ident">feed_id</span>: <span class="ident">String</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sha</span> <span class="op">=</span> <span class="ident">Sha256</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">BufReader</span>::<span class="ident">new</span>(<span class="ident">f</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bytes</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
-    <span class="ident">reader</span>.<span class="ident">read_to_end</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bytes</span>).<span class="ident">expect</span>(<span class="string">&quot;Unable to read the zip file&quot;</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bytes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+    <span class="ident">reader</span>
+        .<span class="ident">read_to_end</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">bytes</span>)
+        .<span class="ident">expect</span>(<span class="string">&quot;Unable to read the zip file&quot;</span>);
     <span class="ident">sha</span>.<span class="ident">input</span>(<span class="kw-2">&amp;</span><span class="ident">bytes</span>);
     <span class="ident">feed_id</span> <span class="op">=</span> <span class="ident">sha</span>.<span class="ident">result_str</span>();
     <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Zip SHA256 SUM (aka feed_id): {}&quot;</span>, <span class="ident">feed_id</span>);
-
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rdr</span> <span class="op">=</span> <span class="ident">csv</span>::<span class="ident">ReaderBuilder</span>::<span class="ident">new</span>().<span class="ident">from_reader</span>(<span class="ident">reader</span>);
     <span class="kw">for</span> <span class="ident">result</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">deserialize</span>() {
@@ -1769,12 +1767,15 @@
         <span class="kw">let</span> <span class="ident">record</span>: <span class="ident">FeedCSV</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Parsing Feed from {}&quot;</span>, <span class="ident">record</span>.<span class="ident">feed_publisher_name</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">start_date</span> : <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NaiveDate</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">end_date</span> : <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NaiveDate</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">start_date</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NaiveDate</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">end_date</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NaiveDate</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
 
         <span class="kw">if</span> <span class="ident">record</span>.<span class="ident">feed_start_date</span>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <span class="ident">record</span>.<span class="ident">feed_end_date</span>.<span class="ident">is_some</span>() {
-            <span class="ident">start_date</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(<span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">feed_start_date</span>.<span class="ident">unwrap</span>(), <span class="string">&quot;%Y%m%d&quot;</span>).<span class="ident">unwrap</span>());
-            <span class="ident">end_date</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(<span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">feed_end_date</span>.<span class="ident">unwrap</span>(), <span class="string">&quot;%Y%m%d&quot;</span>).<span class="ident">unwrap</span>());
+            <span class="ident">start_date</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
+                <span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(<span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">feed_start_date</span>.<span class="ident">unwrap</span>(), <span class="string">&quot;%Y%m%d&quot;</span>).<span class="ident">unwrap</span>(),
+            );
+            <span class="ident">end_date</span> <span class="op">=</span>
+                <span class="prelude-val">Some</span>(<span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(<span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">feed_end_date</span>.<span class="ident">unwrap</span>(), <span class="string">&quot;%Y%m%d&quot;</span>).<span class="ident">unwrap</span>());
         }
 
         <span class="ident">stmt</span>.<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[
@@ -1813,7 +1814,7 @@
             <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">service_id</span>,
         );
 
-       <span class="comment">/* println!(
+        <span class="comment">/* println!(
             &quot;{} - M:{} T:{} W:{} T:{} F:{} S:{} S:{} SD:{} ED:{}&quot;,
             record.service_id,
             record.monday,
@@ -1859,7 +1860,6 @@
              VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING&quot;</span>,
         ).<span class="ident">expect</span>(<span class="string">&quot;Unable to create statement&quot;</span>);
         <span class="kw">let</span> <span class="ident">record</span>: <span class="ident">CalendarDateCSV</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
-
 
         <span class="kw">let</span> <span class="ident">date</span> <span class="op">=</span> <span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(<span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">date</span>, <span class="string">&quot;%Y%m%d&quot;</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">generate_uid</span>(
@@ -2043,7 +2043,7 @@
         <span class="string">&quot;ALTER TABLE public.stop_time
         ADD CONSTRAINT stop_time_stop_fk
         FOREIGN KEY (stop_id,feed_id)
-        REFERENCES public.stop(id,feed_id) ON CONFLICT DO NOTHING;&quot;</span>,
+        REFERENCES public.stop(id,feed_id);&quot;</span>,
         <span class="kw-2">&amp;</span>[],
     ).<span class="ident">expect</span>(<span class="string">&quot;Add stop_time constraints&quot;</span>);
 
@@ -2059,7 +2059,7 @@
         <span class="string">&quot;ALTER TABLE public.trip \
          ADD CONSTRAINT trip_calendar_fk \
          FOREIGN KEY (service_id,feed_id) \
-         REFERENCES public.calendar(service_id,feed_id) ON CONFLICT DO NOTHING;&quot;</span>,
+         REFERENCES public.calendar(service_id,feed_id);&quot;</span>,
         <span class="kw-2">&amp;</span>[],
     ).<span class="ident">expect</span>(<span class="string">&quot;Add stop_time constraints&quot;</span>);
 
@@ -2094,96 +2094,113 @@
     ).<span class="ident">expect</span>(<span class="string">&quot;Add stop_time index 3&quot;</span>);
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_db</span>(<span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>){
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_db</span>(<span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">db_vers</span> : <span class="ident">postgres</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Rows</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="string">&quot;SELECT value FROM settings WHERE key=&#39;db_version&#39;;&quot;</span>, <span class="kw-2">&amp;</span>[]);
-    <span class="kw">if</span> <span class="ident">db_vers</span>.<span class="ident">as_ref</span>().<span class="ident">is_err</span>() <span class="op">||</span> <span class="ident">db_vers</span>.<span class="ident">as_ref</span>().<span class="ident">is_ok</span>() <span class="op">&amp;&amp;</span> <span class="ident">db_vers</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
+    <span class="kw">let</span> <span class="ident">db_vers</span>: <span class="ident">postgres</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Rows</span><span class="op">&gt;</span> <span class="op">=</span>
+        <span class="ident">conn</span>.<span class="ident">query</span>(<span class="string">&quot;SELECT value FROM settings WHERE key=&#39;db_version&#39;;&quot;</span>, <span class="kw-2">&amp;</span>[]);
+    <span class="kw">if</span> <span class="ident">db_vers</span>.<span class="ident">as_ref</span>().<span class="ident">is_err</span>() <span class="op">||</span> <span class="ident">db_vers</span>.<span class="ident">as_ref</span>().<span class="ident">is_ok</span>() <span class="op">&amp;&amp;</span> <span class="ident">db_vers</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span>
+    {
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Cannot get db version&quot;</span>);
-        <span class="kw">let</span> <span class="ident">db_vers</span> : <span class="ident">postgres</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;SELECT * FROM settings&quot;</span>, <span class="kw-2">&amp;</span>[]);
+        <span class="kw">let</span> <span class="ident">db_vers</span>: <span class="ident">postgres</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;SELECT * FROM settings&quot;</span>, <span class="kw-2">&amp;</span>[]);
         <span class="kw">if</span> <span class="ident">db_vers</span>.<span class="ident">is_err</span>() {
             <span class="comment">// The settings table doesn&#39;t exists</span>
             <span class="ident">create_tables</span>(<span class="kw-2">&amp;</span><span class="ident">pool</span>);
         }
-        <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;INSERT INTO settings (key, value) VALUES(&#39;db_version&#39;, $1)&quot;</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="string">&quot;1&quot;</span>])
-            .<span class="ident">expect</span>(<span class="string">&quot;Unable to add db_version to settings&quot;</span>);
+        <span class="ident">conn</span>.<span class="ident">execute</span>(
+            <span class="string">&quot;INSERT INTO settings (key, value) VALUES(&#39;db_version&#39;, $1)&quot;</span>,
+            <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="string">&quot;1&quot;</span>],
+        ).<span class="ident">expect</span>(<span class="string">&quot;Unable to add db_version to settings&quot;</span>);
 
         <span class="ident">update_db_from</span>(<span class="number">1</span>, <span class="kw-2">&amp;</span><span class="ident">pool</span>);
     } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="ident">version</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">db_vers</span>.<span class="ident">unwrap</span>().<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">get</span>(<span class="number">0</span>);
+        <span class="kw">let</span> <span class="ident">version</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">db_vers</span>.<span class="ident">unwrap</span>().<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">get</span>(<span class="number">0</span>);
         <span class="ident">update_db_from</span>(<span class="ident">version</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>(), <span class="kw-2">&amp;</span><span class="ident">pool</span>);
     }
 }
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_db_ver</span>(<span class="ident">ver</span>: <span class="ident">u32</span>, <span class="ident">conn</span>: <span class="kw-2">&amp;</span><span class="ident">Connection</span>) {
-    <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;UPDATE settings SET value=$1 WHERE key = &#39;db_version&#39;&quot;</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">ver</span>.<span class="ident">to_string</span>()]).<span class="ident">expect</span>(<span class="string">&quot;Version Update Failed&quot;</span>);
+    <span class="ident">conn</span>.<span class="ident">execute</span>(
+        <span class="string">&quot;UPDATE settings SET value=$1 WHERE key = &#39;db_version&#39;&quot;</span>,
+        <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">ver</span>.<span class="ident">to_string</span>()],
+    ).<span class="ident">expect</span>(<span class="string">&quot;Version Update Failed&quot;</span>);
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_db_from</span>(<span class="ident">ver</span> : <span class="ident">u32</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>){
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_db_from</span>(<span class="ident">ver</span>: <span class="ident">u32</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
     <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">2</span> {
-        <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ALTER TABLE trip \
-        ADD COLUMN block_id INTEGER, \
-        ADD COLUMN shape_id INTEGER, \
-        ADD COLUMN wheelchair_accessible INTEGER, \
-        ADD COLUMN bikes_allowed INTEGER&quot;</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">expect</span>(<span class="string">&quot;Unable to alter table trip&quot;</span>);
+        <span class="comment">// Do nothing.</span>
         <span class="ident">update_db_ver</span>(<span class="number">2</span>, <span class="kw-2">&amp;</span><span class="ident">conn</span>);
     }
 
     <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">3</span> {
-        <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ALTER TABLE stop_time \
+        <span class="ident">conn</span>.<span class="ident">execute</span>(
+            <span class="string">&quot;ALTER TABLE stop_time \
         ADD COLUMN stop_headsign VARCHAR(255), \
         ADD COLUMN shape_dist_traveled REAL, \
         ADD COLUMN timepoint INTEGER
-        &quot;</span>, <span class="kw-2">&amp;</span>[]).<span class="ident">expect</span>(<span class="string">&quot;Unable to alter table stop_time&quot;</span>);
+        &quot;</span>,
+            <span class="kw-2">&amp;</span>[],
+        ).<span class="ident">expect</span>(<span class="string">&quot;Unable to alter table stop_time&quot;</span>);
         <span class="ident">update_db_ver</span>(<span class="number">3</span>, <span class="kw-2">&amp;</span><span class="ident">conn</span>);
     }
 
     <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">4</span> {
-        <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ALTER TABLE route \
-        ADD COLUMN url VARCHAR(255), \
-        ADD COLUMN color CHAR(6), \
-        ADD COLUMN text_color CHAR(6), \
-        ADD COLUMN sort_order INTEGER&quot;</span>, <span class="kw-2">&amp;</span>[])
-        .<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE route&quot;</span>);
+        <span class="ident">conn</span>.<span class="ident">execute</span>(
+            <span class="string">&quot;ALTER TABLE route \
+             ADD COLUMN url VARCHAR(255), \
+             ADD COLUMN color CHAR(6), \
+             ADD COLUMN text_color CHAR(6), \
+             ADD COLUMN sort_order INTEGER&quot;</span>,
+            <span class="kw-2">&amp;</span>[],
+        ).<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE route&quot;</span>);
         <span class="ident">update_db_ver</span>(<span class="number">4</span>, <span class="kw-2">&amp;</span><span class="ident">conn</span>);
     }
 
     <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">5</span> {
-        <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ALTER TABLE stop \
-        ADD COLUMN description VARCHAR(512), \
-        ADD COLUMN code VARCHAR(255), \
-        ADD COLUMN zone_id INTEGER, \
-        ADD COLUMN url VARCHAR(512), \
-        ADD COLUMN timezone VARCHAR(255), \
-        ADD COLUMN wheelchair_boarding INTEGER&quot;</span>, <span class="kw-2">&amp;</span>[])
-        .<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE stop&quot;</span>);
+        <span class="ident">conn</span>.<span class="ident">execute</span>(
+            <span class="string">&quot;ALTER TABLE stop \
+             ADD COLUMN description VARCHAR(512), \
+             ADD COLUMN code VARCHAR(255), \
+             ADD COLUMN zone_id INTEGER, \
+             ADD COLUMN url VARCHAR(512), \
+             ADD COLUMN timezone VARCHAR(255), \
+             ADD COLUMN wheelchair_boarding INTEGER&quot;</span>,
+            <span class="kw-2">&amp;</span>[],
+        ).<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE stop&quot;</span>);
         <span class="ident">update_db_ver</span>(<span class="number">5</span>, <span class="kw-2">&amp;</span><span class="ident">conn</span>);
     }
 
     <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">6</span> {
-        <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ALTER TABLE agency \
+        <span class="ident">conn</span>.<span class="ident">execute</span>(
+            <span class="string">&quot;ALTER TABLE agency \
         ADD COLUMN fare_url VARCHAR(512),
-        ADD COLUMN email VARCHAR(255)&quot;</span>, <span class="kw-2">&amp;</span>[])
-        .<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE agency&quot;</span>);
+        ADD COLUMN email VARCHAR(255)&quot;</span>,
+            <span class="kw-2">&amp;</span>[],
+        ).<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE agency&quot;</span>);
         <span class="ident">update_db_ver</span>(<span class="number">6</span>, <span class="kw-2">&amp;</span><span class="ident">conn</span>);
     }
 
     <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">7</span> {
-        <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ALTER TABLE trip \
-        ALTER COLUMN short_name DROP NOT NULL&quot;</span>, <span class="kw-2">&amp;</span>[])
-        .<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE trip&quot;</span>);
+        <span class="ident">conn</span>.<span class="ident">execute</span>(
+            <span class="string">&quot;ALTER TABLE trip \
+             ALTER COLUMN short_name DROP NOT NULL&quot;</span>,
+            <span class="kw-2">&amp;</span>[],
+        ).<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE trip&quot;</span>);
         <span class="ident">update_db_ver</span>(<span class="number">7</span>, <span class="kw-2">&amp;</span><span class="ident">conn</span>);
     }
 
     <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">8</span> {
-        <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ALTER TABLE trip \
-        DROP CONSTRAINT trip_calendar_fk&quot;</span>, <span class="kw-2">&amp;</span>[])
-        .<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE trip&quot;</span>);
+        <span class="ident">conn</span>.<span class="ident">execute</span>(
+            <span class="string">&quot;ALTER TABLE trip \
+             DROP CONSTRAINT trip_calendar_fk&quot;</span>,
+            <span class="kw-2">&amp;</span>[],
+        ).<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE trip&quot;</span>);
         <span class="ident">update_db_ver</span>(<span class="number">8</span>, <span class="kw-2">&amp;</span><span class="ident">conn</span>);
     }
 
     <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">9</span> {
-        <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;CREATE TABLE IF NOT EXISTS calendar_date \
+        <span class="ident">conn</span>.<span class="ident">execute</span>(
+            <span class="string">&quot;CREATE TABLE IF NOT EXISTS calendar_date \
         ( 
             uid VARCHAR(255) NOT NULL,
             service_id VARCHAR(255) NOT NULL, 
@@ -2192,8 +2209,9 @@
             feed_id VARCHAR(64) NOT NULL, 
             PRIMARY KEY (uid),
             UNIQUE (service_id, date, feed_id)
-        )&quot;</span>, <span class="kw-2">&amp;</span>[])
-        .<span class="ident">expect</span>(<span class="string">&quot;Unable to CREATE TABLE calendar_dates&quot;</span>);
+        )&quot;</span>,
+            <span class="kw-2">&amp;</span>[],
+        ).<span class="ident">expect</span>(<span class="string">&quot;Unable to CREATE TABLE calendar_dates&quot;</span>);
         <span class="comment">/*conn.execute(&quot;ALTER TABLE trip \
             ADD CONSTRAINT trip_calendar_dates_fk FOREIGN KEY(service_id, feed_id) REFERENCES 
             calendar_dates(service_id, feed_id)&quot;, &amp;[])
@@ -2202,17 +2220,21 @@
     }
 
     <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">10</span> {
-        <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ALTER TABLE trip \
-        ALTER COLUMN block_id SET DATA TYPE VARCHAR(255), \
-        ALTER COLUMN shape_id SET DATA TYPE VARCHAR(255)&quot;</span>, <span class="kw-2">&amp;</span>[])
-        .<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE trip&quot;</span>);
+        <span class="ident">conn</span>.<span class="ident">execute</span>(
+            <span class="string">&quot;ALTER TABLE trip \
+             ALTER COLUMN block_id SET DATA TYPE VARCHAR(255), \
+             ALTER COLUMN shape_id SET DATA TYPE VARCHAR(255)&quot;</span>,
+            <span class="kw-2">&amp;</span>[],
+        ).<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE trip&quot;</span>);
         <span class="ident">update_db_ver</span>(<span class="number">10</span>, <span class="kw-2">&amp;</span><span class="ident">conn</span>);
     }
 
     <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">11</span> {
-        <span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ALTER TABLE trip \
-        ALTER COLUMN headsign DROP NOT NULL&quot;</span>, <span class="kw-2">&amp;</span>[])
-        .<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE trip&quot;</span>);
+        <span class="ident">conn</span>.<span class="ident">execute</span>(
+            <span class="string">&quot;ALTER TABLE trip \
+             ALTER COLUMN headsign DROP NOT NULL&quot;</span>,
+            <span class="kw-2">&amp;</span>[],
+        ).<span class="ident">expect</span>(<span class="string">&quot;Unable to ALTER TABLE trip&quot;</span>);
         <span class="ident">update_db_ver</span>(<span class="number">11</span>, <span class="kw-2">&amp;</span><span class="ident">conn</span>);
     }
 }
@@ -2224,7 +2246,8 @@
         <span class="kw">return</span> <span class="op">-</span><span class="number">1</span>;
     }
 
-    <span class="kw">let</span> <span class="ident">db_vers_string</span> : <span class="ident">String</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>().<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">get</span>(<span class="number">0</span>);
+    <span class="kw">let</span> <span class="ident">db_vers_string</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>().<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">get</span>(<span class="number">0</span>);
     <span class="kw">return</span> <span class="ident">db_vers_string</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-}</pre>
+}
+</pre>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g. <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g. <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g. <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../../";window.currentCrate = "gtfs_server";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>
