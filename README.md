@@ -24,7 +24,7 @@ unzip gtfs.zip
 #### PostGIS
 ```
 docker network create --subnet=172.18.0.0/16 gtfs-server-net
-docker run --name gtfs-server-db --net gtfs-server-net --ip 172.18.0.2 -e POSTGRES_PASSWORD=mysecretpassword -d mdillon/postgis/
+docker run --name gtfs-server-db --net gtfs-server-net --ip 172.18.0.2 -e POSTGRES_PASSWORD=mysecretpassword -d mdillon/postgis
 ```
 
 ### Run the server
