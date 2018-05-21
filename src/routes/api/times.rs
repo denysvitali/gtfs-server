@@ -33,6 +33,7 @@ pub fn times_query(rh: State<RoutesHandler>, time_search: TimeSearch) -> Json<Re
     let meta = Meta {
         success: true,
         error: None,
+        pagination: Option::None
     };
 
     Json(ResultArray::<Time> {
@@ -53,6 +54,7 @@ pub fn times_by_trip(rh: State<RoutesHandler>, trip_uid: String) -> Json<ResultA
     let meta = Meta {
         success: true,
         error: None,
+        pagination: Option::None
     };
 
     Json(ResultArray::<Time> {
@@ -189,11 +191,12 @@ pub fn times_stop_query(
     let meta = Meta {
         success: true,
         error: None,
+        pagination: Option::None
     };
 
     Json(ResultArray::<Time> {
         result: Some(result),
-        meta,
+        meta
     })
 }
 
@@ -209,6 +212,7 @@ pub fn times_stop(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray
     let meta = Meta {
         success: true,
         error: None,
+        pagination: Option::None
     };
 
     Json(ResultArray::<Time> {

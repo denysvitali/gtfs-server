@@ -32,8 +32,195 @@ use std::collections::HashMap;
 use models::api::search::trip::TripSearch;
 use models::boundingbox::BoundingBox;
 use num_traits as num;
+use models::api::paginatedvec::PaginatedVec;
+use models::api::pagination::Pagination;
 
-/// `/trips/`, returns a list of [Trip](../../../models/trip/struct.Trip.html)s.  
+fn trips_query_filter(ts: &TripSearch,
+                      query: String,
+                      params: Vec<&ToSql>,
+                      pool: &Pool<PostgresConnectionManager>,
+                      has_times: bool,
+                      has_stop: bool
+) -> PaginatedVec<Trip> {
+
+    let mut has_times = has_times;
+    let mut has_stop = has_stop;
+
+
+    let mut query : String = String::from(query);
+    let mut trips_result: Vec<Trip> = Vec::new();
+    let mut ints : Vec<i64> = Vec::new();
+    let mut values: Vec<String> = Vec::new();
+    let mut times : Vec<NaiveTime> = Vec::new();
+    let mut params: Vec<&ToSql> = Vec::new();
+    let mut i = match params.len() {
+        0 => 0,
+        _ => params.len() -1
+    };
+    let mut addition: String;
+
+    if ts.departure_after.is_some() {
+        let departure_after_str = ts.departure_after.as_ref().unwrap();
+        let departure_after =
+            NaiveTime::parse_from_str(&departure_after_str,
+                                      "%H:%M:%S"
+            ).unwrap();
+
+        if !has_times {
+            query.push_str("INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid");
+            has_times = true;
+        }
+
+        if !has_stop {
+            query.push_str("INNER JOIN stop ON stop_time.stop_id = stop.id AND stop_time.feed_id = stop.feed_id");
+            has_stop = true;
+        }
+
+        i += 1;
+        addition = format!(
+            "stop_time.departure_time >= ${} ",
+            &i
+        );
+
+        times.push(departure_after);
+        query.push_str(&addition);
+    }
+
+    if ts.arrival_before.is_some() {
+        let arrival_before =
+            NaiveTime::parse_from_str(ts.arrival_before.as_ref().unwrap(),
+                                      "%H:%M:%S"
+            ).unwrap();
+
+        if !has_times {
+            query.push_str("INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid");
+            has_times = true;
+        }
+
+        if !has_stop {
+            query.push_str("INNER JOIN stop ON stop_time.stop_id = stop.id AND stop_time.feed_id = stop.feed_id");
+            has_stop = true;
+        }
+
+        i += 1;
+        addition = format!(
+            "stop_time.arrival_time <= ${} ",
+            &i
+        );
+
+        times.push(arrival_before);
+        query.push_str(&addition);
+    }
+
+    for time in &times {
+        params.push(time);
+    }
+
+    if ts.route.is_some() {
+        i+= 1;
+
+        let route_uid : String = ts.route.as_ref().unwrap().to_string();
+
+        addition = format!(" AND r.uid = ${}", &i);
+        values.push(route_uid);
+        query.push_str(&addition);
+    }
+
+    if ts.stops_visited.is_some() {
+        addition = format!(" AND t.uid IN ( ");
+        query.push_str(&addition);
+        let split_stops: Vec<&str> = ts.stops_visited.as_ref().unwrap().split(",").collect();
+        let mut first = true;
+        for stop in split_stops {
+            if first {
+                first = !first;
+            } else {
+                addition = format!(" INTERSECT ");
+                query.push_str(&addition);
+            }
+            i += 1;
+            addition = format!(
+                "SELECT
+                trip.uid as tuid
+                FROM trip
+                INNER JOIN stop_time ON (trip.trip_id = stop_time.trip_id)
+                INNER JOIN stop ON (stop_time.stop_id = stop.id)
+                WHERE
+                        trip.feed_id = stop_time.feed_id
+                        AND
+                        stop_time.feed_id = stop.feed_id
+                        AND
+                        stop.uid = ${}",
+                &i
+            );
+            query.push_str(&addition);
+            values.push(String::from(stop));
+            println!("Stop {} ", stop);
+        }
+        addition = format!(" )");
+        query.push_str(&addition);
+    }
+
+    let mut offset : i64 = 0;
+    let mut limit: i64  = 50;
+
+    if ts.offset.is_some() {
+        let c_offset = ts.offset.unwrap();
+        if c_offset > 0 {
+            offset = c_offset;
+        }
+    }
+
+    if ts.per_page.is_some() {
+        let c_limit = ts.per_page.unwrap();
+        if c_limit > 0 && c_limit <= 500 {
+            limit = c_limit;
+        }
+    }
+
+    for value in &values {
+        params.push(value);
+    }
+
+    i += 1;
+    addition = format!(" LIMIT ${} OFFSET ${}", &i, &(i + 1));
+    query.push_str(&addition);
+    i += 1; // Because we added 2 args
+
+    ints.push(limit);
+    ints.push(offset);
+
+    for value in &ints {
+        params.push(value);
+    }
+
+    println!("Query is: {}", query);
+
+    let conn = pool.clone().get().unwrap();
+    let trips = conn.query(&query, &params);
+
+    for row in trips.expect("Query failed").iter() {
+        //let sequence: Vec<StopTrip>;
+        let mut route = parse_trip_row(&row);
+        //let route_uid = route.uid.clone();
+        //sequence = get_stop_trip(route_uid, pool);
+        //route.stop_sequence = sequence;
+        route.stop_sequence = Option::None; // stop_sequence is removed from the result
+        trips_result.push(route);
+    }
+
+    let paginatedvec: PaginatedVec<Trip> = PaginatedVec {
+        vec: trips_result,
+        pag: Some(Pagination{
+            limit,
+            offset
+        })
+    };
+
+    paginatedvec
+}
+
+/// `/trips/`, returns a list of [Trip](../../../models/trip/struct.Trip.html)s.
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[Trip](../../../models/trip/struct.Trip.html)>
 #[get("/trips")]
@@ -73,6 +260,7 @@ pub fn trips(rh: State<RoutesHandler>) -> Json<ResultArray<Trip>> {
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     };
 
@@ -90,20 +278,21 @@ pub fn trips(rh: State<RoutesHandler>) -> Json<ResultArray<Trip>> {
 
 #[get("/trips?<query>")]
 pub fn trips_by_query(rh: State<RoutesHandler>, query: TripSearch) -> Json<ResultArray<Trip>> {
-    let trips_result: Vec<Trip> = get_trips_by_query(&query, &rh.pool);
+    let trips_result: PaginatedVec<Trip> = get_trips_by_query(&query, &rh.pool);
 
     let rr = ResultArray::<Trip> {
-        result: Some(trips_result),
+        result: Some(trips_result.vec),
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: trips_result.pag
         },
     };
 
     Json(rr)
 }
 
-fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -> Vec<Trip> {
+fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -> PaginatedVec<Trip> {
     let mut query = String::from(
         "SELECT \
          t.uid,\
@@ -121,70 +310,7 @@ fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -
          AND r.feed_id = t.feed_id ",
     );
 
-    let mut trips_result: Vec<Trip> = Vec::new();
-    let mut values: Vec<String> = Vec::new();
-    let mut params: Vec<&ToSql> = Vec::new();
-    let mut i = 0;
-    let mut addition: String;
-
-    if ts.stops_visited.is_some() {
-        addition = format!(" AND t.uid IN ( ");
-        query.push_str(&addition);
-        let split_stops: Vec<&str> = ts.stops_visited.as_ref().unwrap().split(",").collect();
-        let mut first = true;
-        for stop in split_stops {
-            if first {
-                first = !first;
-            } else {
-                addition = format!(" INTERSECT ");
-                query.push_str(&addition);
-            }
-            i += 1;
-            addition = format!(
-                "SELECT
-                trip.uid as tuid
-                FROM trip
-                INNER JOIN stop_time ON (trip.trip_id = stop_time.trip_id)
-                INNER JOIN stop ON (stop_time.stop_id = stop.id)
-                WHERE
-                        trip.feed_id = stop_time.feed_id
-                        AND
-                        stop_time.feed_id = stop.feed_id
-                        AND
-                        stop.uid = ${}",
-                &i
-            );
-            query.push_str(&addition);
-            values.push(String::from(stop));
-            println!("Stop {} ", stop);
-        }
-        addition = format!(" )");
-        query.push_str(&addition);
-    }
-
-    for value in &values {
-        params.push(value);
-    }
-
-    addition = format!(" LIMIT 50"); // TODO: Pagination
-    query.push_str(&addition);
-
-    println!("Query is: {}", query);
-
-    let conn = pool.clone().get().unwrap();
-    let trips = conn.query(&query, &params);
-
-    for row in trips.expect("Query failed").iter() {
-        //let sequence: Vec<StopTrip>;
-        let mut route = parse_trip_row(&row);
-        //let route_uid = route.uid.clone();
-        //sequence = get_stop_trip(route_uid, pool);
-        //route.stop_sequence = sequence;
-        route.stop_sequence = Option::None; // stop_sequence is removed from the result
-        trips_result.push(route);
-    }
-
-    trips_result
+    return trips_query_filter(ts, query, vec![], pool, false, false);
 }
 
 /// `/trips/by-stop/<stop_id>`, returns the [Trip](../../../models/trip/struct.Trip.html)s associated
@@ -235,6 +361,7 @@ pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArr
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     };
 
@@ -277,6 +404,7 @@ pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>> {
                     code: 1,
                     message: String::from("Trip not found"),
                 }),
+                pagination: Option::None
             },
         });
     }
@@ -292,6 +420,7 @@ pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>> {
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     };
 
@@ -304,6 +433,7 @@ pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>> {
 /// <[Trip](../../../models/trip/struct.Trip.html)>
 #[get("/trips/by-route/<route_uid>")]
 pub fn trips_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<ResultArray<Trip>> {
+    // TODO: Pagination
     let query = "SELECT \
         trip.uid, \
         route.uid, \
@@ -335,6 +465,7 @@ pub fn trips_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<Resul
                     code: 1,
                     message: String::from("Trip not found"),
                 }),
+                pagination: Option::None
             },
         });
     }
@@ -356,6 +487,7 @@ pub fn trips_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<Resul
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     };
 
@@ -364,13 +496,13 @@ pub fn trips_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<Resul
 
 /// `/trips/in/<bbox>`, returns the [Trip](../../../models/trip/struct.Trip.html)s contained
 /// in a [Bounding Box](../../../models/struct.BoudingBox.html).
-/// Returns a [Result](../../../models/api/result/struct.Result.html)
+/// Returns a [ResultArray](../../../models/api/result/struct.ResultArray.html)
 /// <[Trip](../../../models/trip/struct.Trip.html)>
 ///
-/// Warning: The result may contain duplicate entries!
 #[get("/trips/in/<bbox>")]
 pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<ResultArray<Trip>> {
-    let query = r#"SELECT 
+    // TODO: Implement Pagination
+    let query = r#"SELECT
 		tuid,
 		ruid,
 		cuid,
@@ -390,8 +522,8 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
 		stop_time.stop_sequence as st_ss,
 		stop_time.drop_off_type as st_do,
 		stop_time.pickup_type as st_pu
-	FROM 
-	(SELECT 
+	FROM
+	(SELECT DISTINCT
 		trip.uid as tuid,
 		route.uid as ruid,
 		calendar.uid as cuid,
@@ -400,33 +532,33 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
 		trip.short_name as tsn,
 		trip.direction_id as td,
 		trip.feed_id as tfid
-		FROM trip, route, calendar 
-		WHERE trip.uid IN ( 
-			SELECT trip.uid
-			FROM trip 
-			WHERE EXISTS ( 
-				SELECT 1 
-				FROM stop AS s 
-				INNER JOIN stop_time AS st 
-				ON s.id = st.stop_id AND s.feed_id = st.feed_id 
-				WHERE ST_Within(s.position::geometry, 
+		FROM trip, route, calendar
+		WHERE trip.uid IN (
+			SELECT DISTINCT trip.uid
+			FROM trip
+			WHERE EXISTS (
+				SELECT 1
+				FROM stop AS s
+				INNER JOIN stop_time AS st
+				ON s.id = st.stop_id AND s.feed_id = st.feed_id
+				WHERE ST_Within(s.position::geometry,
 							ST_MakeEnvelope($1, $2, $3, $4, 4326))
-				AND st.trip_id = trip.trip_id AND trip.feed_id = st.feed_id 
+				AND st.trip_id = trip.trip_id AND trip.feed_id = st.feed_id
 			)
-			ORDER BY trip.uid
-			LIMIT 50 
-		) 
-		AND 
-		route.feed_id = trip.feed_id AND 
-		calendar.feed_id = trip.feed_id AND 
-		route.id = trip.route_id AND 
+			LIMIT 50
+		)
+		AND
+		route.feed_id = trip.feed_id AND
+		calendar.feed_id = trip.feed_id AND
+		route.id = trip.route_id AND
 		calendar.service_id = trip.service_id
+		GROUP BY tuid, ruid, cuid, tid, ths, tsn, td, tfid
 		ORDER BY trip.uid
 	) as trip
 	INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid
 	INNER JOIN stop ON stop_time.stop_id = stop.id AND stop_time.feed_id = stop.feed_id
 	LEFT JOIN stop as pstop ON stop.id = stop. parent_stop AND stop.feed_id = tfid
-	ORDER BY (trip.tuid, stop_sequence)"#;
+	ORDER BY (tuid, stop_time.stop_sequence)"#;
 
     let conn = rh.pool.clone().get().unwrap();
     let trips = conn.query(
@@ -445,6 +577,7 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
                     code: 1,
                     message: String::from("Trip not found"),
                 }),
+                pagination: Option::None
             },
         });
     }
@@ -452,13 +585,10 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
     let mut trips_result: Vec<Trip> = Vec::new();
     let mut trips_hm: BTreeMap<Trip, Vec<StopTrip>> = BTreeMap::new();
 
-    let rowuid: String = trips.get(0).get(0);
-    println!("{}", rowuid);
     let mut i: i32 = 0;
 
     for trip_row in trips {
         let uid: String = trip_row.get(0);
-        println!("{}: {}", i, uid);
         parse_stop_trip_trip_row(&mut trips_hm, &trip_row);
         i += 1;
     }
@@ -474,6 +604,126 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
+        },
+    };
+
+    Json(result)
+}
+
+/// `/trips/in/<bbox>?<query>`, returns the [Trip](../../../models/trip/struct.Trip.html)s contained
+/// in a [Bounding Box](../../../models/struct.BoudingBox.html), filtered w/ the TripSearch query.
+/// Returns a [ResultArray](../../../models/api/result/struct.ResultArray.html)
+/// <[Trip](../../../models/trip/struct.Trip.html)>
+///
+#[get("/trips/in/<bbox>/?<query>")]
+pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, query: TripSearch)
+    -> Json<ResultArray<Trip>> {
+    // TODO: Implement Pagination
+    let query = r#"SELECT
+		tuid,
+		ruid,
+		cuid,
+		ths,
+		tsn,
+		td,
+		tfid,
+		stop.uid as suid,
+		stop.id as sid,
+		stop."name" as sname,
+		ST_Y(stop.position::geometry) as slat,
+		ST_X(stop.position::geometry) as slng,
+		stop."type" as st,
+		pstop.uid,
+		stop_time.arrival_time as st_at,
+		stop_time.departure_time as st_dt,
+		stop_time.stop_sequence as st_ss,
+		stop_time.drop_off_type as st_do,
+		stop_time.pickup_type as st_pu
+	FROM
+	(SELECT DISTINCT
+		trip.uid as tuid,
+		route.uid as ruid,
+		calendar.uid as cuid,
+		trip.trip_id as tid,
+		trip.headsign as ths,
+		trip.short_name as tsn,
+		trip.direction_id as td,
+		trip.feed_id as tfid
+		FROM trip, route, calendar
+		WHERE trip.uid IN (
+			SELECT DISTINCT trip.uid
+			FROM trip
+			WHERE EXISTS (
+				SELECT 1
+				FROM stop AS s
+				INNER JOIN stop_time AS st
+				ON s.id = st.stop_id AND s.feed_id = st.feed_id
+				WHERE ST_Within(s.position::geometry,
+							ST_MakeEnvelope($1, $2, $3, $4, 4326))
+				AND st.trip_id = trip.trip_id AND trip.feed_id = st.feed_id
+			)
+			LIMIT 50
+		)
+		AND
+		route.feed_id = trip.feed_id AND
+		calendar.feed_id = trip.feed_id AND
+		route.id = trip.route_id AND
+		calendar.service_id = trip.service_id
+		GROUP BY tuid, ruid, cuid, tid, ths, tsn, td, tfid
+		ORDER BY trip.uid
+	) as trip
+	INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid
+	INNER JOIN stop ON stop_time.stop_id = stop.id AND stop_time.feed_id = stop.feed_id
+	LEFT JOIN stop as pstop ON stop.id = stop. parent_stop AND stop.feed_id = tfid
+	ORDER BY (tuid, stop_time.stop_sequence)"#;
+
+    let conn = rh.pool.clone().get().unwrap();
+    let trips = conn.query(
+        query,
+        &[&bbox.p1.lng, &bbox.p1.lat, &bbox.p2.lng, &bbox.p2.lat],
+    );
+
+    let trips = &trips.unwrap();
+
+    if trips.len() == 0 {
+        return Json(ResultArray::<Trip> {
+            result: Option::None,
+            meta: Meta {
+                success: false,
+                error: Some(Error {
+                    code: 1,
+                    message: String::from("Trip not found"),
+                }),
+                pagination: Option::None
+            },
+        });
+    }
+
+    let mut trips_result: Vec<Trip> = Vec::new();
+    let mut trips_hm: BTreeMap<Trip, Vec<StopTrip>> = BTreeMap::new();
+
+    let row_uid: String = trips.get(0).get(0);
+    let mut i: i32 = 0;
+
+    for trip_row in trips {
+        let uid: String = trip_row.get(0);
+        parse_stop_trip_trip_row(&mut trips_hm, &trip_row);
+        i += 1;
+    }
+
+    for (k, v) in trips_hm.iter() {
+        let mut t = (*k).clone();
+        t.stop_sequence = Some(v.clone());
+        trips_result.push(t);
+    }
+
+    let result = ResultArray::<Trip> {
+        result: Some(trips_result),
+        meta: Meta {
+            success: true,
+            error: Option::None,
+            pagination: Option::None
         },
     };
 
@@ -534,7 +784,7 @@ fn parse_stop_trip_trip_row<'a>(trips: &'a mut BTreeMap<Trip, Vec<StopTrip>>, ro
         trip.uid as tuid,
         route.uid,
         calendar.uid,
-        trip.trip_id,
+        trip.trip_id,Ü
         trip.headsign,
         trip.short_name,
         trip.direction_id,

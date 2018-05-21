@@ -62,6 +62,7 @@ pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     };
     Json(sr)
@@ -82,6 +83,7 @@ pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Sto
                     code: 2,
                     message: String::from("Invalid stop id"),
                 }),
+                pagination: Option::None
             },
         });
     }
@@ -91,6 +93,7 @@ pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Sto
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     };
     Json(sr)
@@ -105,6 +108,7 @@ pub fn stops_by_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultAr
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     };
     Json(sr)
@@ -126,6 +130,7 @@ pub fn stops_near_default(
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     };
     Json(sr)
@@ -149,6 +154,7 @@ pub fn stops_near(
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     };
     Json(sr)
@@ -167,6 +173,7 @@ pub fn stops_in_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     };
     Json(sr)
@@ -191,6 +198,7 @@ pub fn stops_in_bbox_radius(
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     };
     Json(sr)
@@ -246,7 +254,7 @@ fn parse_stop_row(row: &Row) -> Stop {
     let uid = row.get(0);
     let id = row.get(1);
     let name = row.get(2);
-    let location_type = row.get(3);
+    let location_type : Option<i32> = row.get(3);
     let parent_station: Option<String> = row.get(4);
     let feed_id = row.get(5);
 

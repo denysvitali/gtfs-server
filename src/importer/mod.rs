@@ -411,32 +411,32 @@ pub fn parse_trips(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMana
                 &record.trip_id,
             );
 
-            let wheelchair_accessible: Option<i32>;
+            let wheelchair_accessible: Option<bool>;
             if record.wheelchair_accessible.is_some() {
                 wheelchair_accessible = match record.wheelchair_accessible {
-                    Some(v) => match v.parse::<i32>() {
+                    Some(v) => match v.parse::<bool>() {
                         Ok(v) => Some(v),
-                        Err(_e) => None,
+                        Err(_e) => Option::None,
                     },
 
                     None => Option::None,
                 };
             } else {
-                wheelchair_accessible = None;
+                wheelchair_accessible = Option::None;
             }
 
-            let bikes_allowed: Option<i32>;
+            let bikes_allowed: Option<bool>;
             if record.bikes_allowed.is_some() {
                 bikes_allowed = match record.bikes_allowed {
-                    Some(v) => match v.parse::<i32>() {
+                    Some(v) => match v.parse::<bool>() {
                         Ok(v) => Some(v),
-                        Err(_e) => None,
+                        Err(_e) => Option::None,
                     },
 
                     None => Option::None,
                 };
             } else {
-                bikes_allowed = None;
+                bikes_allowed = Option::None;
             }
 
             stmt.execute(&[
@@ -727,28 +727,33 @@ pub fn parse_calendar_dates(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConne
     let mut rdr = csv::Reader::from_reader(f);
 
     for result in rdr.deserialize() {
+
         let conn = pool.clone().get().unwrap();
-        let stmt = conn.prepare(
-            "INSERT INTO calendar_date \
-             (uid, service_id, date, exception_type, feed_id) \
-             VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING",
-        ).expect("Unable to create statement");
-        let record: CalendarDateCSV = result.unwrap();
+        let feed_clone = String::from(feed_id);
+        thread::spawn(move || {
+            let feed_id = feed_clone;
+            let stmt = conn.prepare(
+                "INSERT INTO calendar_date \
+                 (uid, service_id, date, exception_type, feed_id) \
+                 VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING",
+            ).expect("Unable to create statement");
+            let record: CalendarDateCSV = result.unwrap();
 
-        let date = NaiveDate::parse_from_str(&record.date, "%Y%m%d").unwrap();
-        let uid = generate_uid(
-            "se",
-            &format!("{}{}{}", &record.service_id, &record.date, &feed_id),
-            &record.service_id,
-        );
+            let date = NaiveDate::parse_from_str(&record.date, "%Y%m%d").unwrap();
+            let uid = generate_uid(
+                "se",
+                &format!("{}{}{}", &record.service_id, &record.date, &feed_id),
+                &record.service_id,
+            );
 
-        stmt.execute(&[
-            &uid,
-            &record.service_id,
-            &date,
-            &record.exception_type,
-            &feed_id,
-        ]).expect("Unable to insert calendar entry");
+            stmt.execute(&[
+                &uid,
+                &record.service_id,
+                &date,
+                &record.exception_type,
+                &feed_id,
+            ]).expect("Unable to insert calendar entry");
+        });
     }
 }
 

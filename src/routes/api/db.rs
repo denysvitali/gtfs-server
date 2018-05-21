@@ -34,6 +34,7 @@ pub fn version(rh: State<RoutesHandler>) -> Json<Result<i32>> {
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     })
 }

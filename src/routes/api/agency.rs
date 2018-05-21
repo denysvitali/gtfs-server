@@ -27,6 +27,7 @@ pub fn agency(rh: State<RoutesHandler>) -> Json<ResultArray<Agency>> {
                     code: 3,
                     message: String::from("This agency doesn't exists"),
                 }),
+                pagination: Option::None
             },
         });
     }
@@ -36,6 +37,7 @@ pub fn agency(rh: State<RoutesHandler>) -> Json<ResultArray<Agency>> {
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     })
 }
@@ -76,6 +78,7 @@ pub fn agency_by_id(rh: State<RoutesHandler>, agency_uid: String) -> Json<Result
                     code: 3,
                     message: String::from("This agency doesn't exists"),
                 }),
+                pagination: Option::None
             },
         });
     }
@@ -85,6 +88,7 @@ pub fn agency_by_id(rh: State<RoutesHandler>, agency_uid: String) -> Json<Result
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     })
 }

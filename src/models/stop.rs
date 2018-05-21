@@ -37,7 +37,7 @@ impl Stop {
         name: String,
         lat: f64,
         lng: f64,
-        location_type: i32,
+        location_type: Option<i32>,
         parent_station: Option<String>,
     ) -> Stop {
         let id = String::new();
@@ -48,7 +48,10 @@ impl Stop {
             name,
             lat,
             lng,
-            location_type,
+            location_type: match location_type.is_none() {
+                true => 0,
+                false => location_type.unwrap()
+            },
             parent_station,
             feed_id,
         }

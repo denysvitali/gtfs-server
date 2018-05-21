@@ -41,6 +41,7 @@ pub fn routes(rh: State<RoutesHandler>) -> Json<ResultArray<Route>> {
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     })
 }
@@ -63,6 +64,7 @@ pub fn routes_by_query(
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     })
 }
@@ -173,6 +175,7 @@ pub fn route_by_id(rh: State<RoutesHandler>, route_uid: String) -> Json<Result<R
                     code: 4,
                     message: String::from("Unable to find this route"),
                 }),
+                pagination: Option::None
             },
         });
     }
@@ -184,6 +187,7 @@ pub fn route_by_id(rh: State<RoutesHandler>, route_uid: String) -> Json<Result<R
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     })
 }
@@ -218,6 +222,7 @@ pub fn route_by_stop_uid(rh: State<RoutesHandler>, stop_uid: String) -> Json<Res
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     })
 }
@@ -252,6 +257,7 @@ pub fn route_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
         meta: Meta {
             success: true,
             error: Option::None,
+            pagination: Option::None
         },
     })
 }
