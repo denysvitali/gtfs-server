@@ -1123,6 +1123,11 @@
 <span id="1123">1123</span>
 <span id="1124">1124</span>
 <span id="1125">1125</span>
+<span id="1126">1126</span>
+<span id="1127">1127</span>
+<span id="1128">1128</span>
+<span id="1129">1129</span>
+<span id="1130">1130</span>
 </pre><pre class="rust ">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">chrono</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">crypto</span>;
@@ -1537,32 +1542,32 @@
                 <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">trip_id</span>,
             );
 
-            <span class="kw">let</span> <span class="ident">wheelchair_accessible</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>;
+            <span class="kw">let</span> <span class="ident">wheelchair_accessible</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>;
             <span class="kw">if</span> <span class="ident">record</span>.<span class="ident">wheelchair_accessible</span>.<span class="ident">is_some</span>() {
                 <span class="ident">wheelchair_accessible</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">record</span>.<span class="ident">wheelchair_accessible</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">v</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
+                    <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">v</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>() {
                         <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>),
-                        <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+                        <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=&gt;</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
                     },
 
                     <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
                 };
             } <span class="kw">else</span> {
-                <span class="ident">wheelchair_accessible</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+                <span class="ident">wheelchair_accessible</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
             }
 
-            <span class="kw">let</span> <span class="ident">bikes_allowed</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>;
+            <span class="kw">let</span> <span class="ident">bikes_allowed</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>;
             <span class="kw">if</span> <span class="ident">record</span>.<span class="ident">bikes_allowed</span>.<span class="ident">is_some</span>() {
                 <span class="ident">bikes_allowed</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">record</span>.<span class="ident">bikes_allowed</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">v</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>() {
+                    <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">v</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>() {
                         <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>),
-                        <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+                        <span class="prelude-val">Err</span>(<span class="ident">_e</span>) <span class="op">=&gt;</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
                     },
 
                     <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
                 };
             } <span class="kw">else</span> {
-                <span class="ident">bikes_allowed</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+                <span class="ident">bikes_allowed</span> <span class="op">=</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
             }
 
             <span class="ident">stmt</span>.<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[
@@ -1853,28 +1858,33 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rdr</span> <span class="op">=</span> <span class="ident">csv</span>::<span class="ident">Reader</span>::<span class="ident">from_reader</span>(<span class="ident">f</span>);
 
     <span class="kw">for</span> <span class="ident">result</span> <span class="kw">in</span> <span class="ident">rdr</span>.<span class="ident">deserialize</span>() {
+
         <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(
-            <span class="string">&quot;INSERT INTO calendar_date \
-             (uid, service_id, date, exception_type, feed_id) \
-             VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING&quot;</span>,
-        ).<span class="ident">expect</span>(<span class="string">&quot;Unable to create statement&quot;</span>);
-        <span class="kw">let</span> <span class="ident">record</span>: <span class="ident">CalendarDateCSV</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">feed_clone</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">feed_id</span>);
+        <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
+            <span class="kw">let</span> <span class="ident">feed_id</span> <span class="op">=</span> <span class="ident">feed_clone</span>;
+            <span class="kw">let</span> <span class="ident">stmt</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">prepare</span>(
+                <span class="string">&quot;INSERT INTO calendar_date \
+                 (uid, service_id, date, exception_type, feed_id) \
+                 VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING&quot;</span>,
+            ).<span class="ident">expect</span>(<span class="string">&quot;Unable to create statement&quot;</span>);
+            <span class="kw">let</span> <span class="ident">record</span>: <span class="ident">CalendarDateCSV</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">unwrap</span>();
 
-        <span class="kw">let</span> <span class="ident">date</span> <span class="op">=</span> <span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(<span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">date</span>, <span class="string">&quot;%Y%m%d&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">generate_uid</span>(
-            <span class="string">&quot;se&quot;</span>,
-            <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">service_id</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">feed_id</span>),
-            <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">service_id</span>,
-        );
+            <span class="kw">let</span> <span class="ident">date</span> <span class="op">=</span> <span class="ident">NaiveDate</span>::<span class="ident">parse_from_str</span>(<span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">date</span>, <span class="string">&quot;%Y%m%d&quot;</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">uid</span> <span class="op">=</span> <span class="ident">generate_uid</span>(
+                <span class="string">&quot;se&quot;</span>,
+                <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}{}{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">service_id</span>, <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">date</span>, <span class="kw-2">&amp;</span><span class="ident">feed_id</span>),
+                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">service_id</span>,
+            );
 
-        <span class="ident">stmt</span>.<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[
-            <span class="kw-2">&amp;</span><span class="ident">uid</span>,
-            <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">service_id</span>,
-            <span class="kw-2">&amp;</span><span class="ident">date</span>,
-            <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">exception_type</span>,
-            <span class="kw-2">&amp;</span><span class="ident">feed_id</span>,
-        ]).<span class="ident">expect</span>(<span class="string">&quot;Unable to insert calendar entry&quot;</span>);
+            <span class="ident">stmt</span>.<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[
+                <span class="kw-2">&amp;</span><span class="ident">uid</span>,
+                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">service_id</span>,
+                <span class="kw-2">&amp;</span><span class="ident">date</span>,
+                <span class="kw-2">&amp;</span><span class="ident">record</span>.<span class="ident">exception_type</span>,
+                <span class="kw-2">&amp;</span><span class="ident">feed_id</span>,
+            ]).<span class="ident">expect</span>(<span class="string">&quot;Unable to insert calendar entry&quot;</span>);
+        });
     }
 }
 

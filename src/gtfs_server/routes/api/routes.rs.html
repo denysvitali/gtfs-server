@@ -269,6 +269,14 @@
 <span id="269">269</span>
 <span id="270">270</span>
 <span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/routes` related routes</span>
 
@@ -313,6 +321,7 @@
         <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
             <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+            <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
         },
     })
 }
@@ -335,6 +344,7 @@
         <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
             <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+            <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
         },
     })
 }
@@ -445,6 +455,7 @@
                     <span class="ident">code</span>: <span class="number">4</span>,
                     <span class="ident">message</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;Unable to find this route&quot;</span>),
                 }),
+                <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
             },
         });
     }
@@ -456,6 +467,7 @@
         <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
             <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+            <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
         },
     })
 }
@@ -490,6 +502,7 @@
         <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
             <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+            <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
         },
     })
 }
@@ -515,6 +528,8 @@
     let routes = routes.expect(&quot;Query failed&quot;);*/</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">results</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
+    <span class="comment">// TODO: Implement</span>
+
     <span class="comment">/*for row in routes.iter() {
         results.push(parse_route_row(&amp;row, &amp;rh))
     }*/</span>
@@ -524,6 +539,7 @@
         <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
             <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+            <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
         },
     })
 }

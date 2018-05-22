@@ -143,6 +143,8 @@
 <span id="143">143</span>
 <span id="144">144</span>
 <span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! This is the documentation for `gtfs-server`</span>
 <span class="doccomment">//!</span>
@@ -160,6 +162,7 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">r2d2_postgres</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">regex</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">rocket_contrib</span>;
+<span class="attribute">#[<span class="ident">macro_use</span>]</span> <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">runtime_fmt</span>;
 
 <span class="kw">mod</span> <span class="ident">test</span>;
 
@@ -257,6 +260,7 @@
                 <span class="ident">api</span>::<span class="ident">trips</span>::<span class="ident">trips_by_route</span>,
                 <span class="ident">api</span>::<span class="ident">trips</span>::<span class="ident">trips_by_query</span>,
                 <span class="ident">api</span>::<span class="ident">trips</span>::<span class="ident">trips_by_bbox</span>,
+                <span class="ident">api</span>::<span class="ident">trips</span>::<span class="ident">trips_by_bbox_query</span>,
                 <span class="ident">api</span>::<span class="ident">times</span>::<span class="ident">times_query</span>,
                 <span class="ident">api</span>::<span class="ident">times</span>::<span class="ident">times_by_trip</span>,
                 <span class="ident">api</span>::<span class="ident">times</span>::<span class="ident">times_stop</span>,

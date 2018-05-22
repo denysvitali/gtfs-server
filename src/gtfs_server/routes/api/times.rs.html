@@ -542,6 +542,10 @@
 <span id="542">542</span>
 <span id="543">543</span>
 <span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/times` related routes</span>
 
@@ -578,6 +582,7 @@
     <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Meta</span> {
         <span class="ident">success</span>: <span class="bool-val">true</span>,
         <span class="ident">error</span>: <span class="prelude-val">None</span>,
+        <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
     };
 
     <span class="ident">Json</span>(<span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span> {
@@ -598,6 +603,7 @@
     <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Meta</span> {
         <span class="ident">success</span>: <span class="bool-val">true</span>,
         <span class="ident">error</span>: <span class="prelude-val">None</span>,
+        <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
     };
 
     <span class="ident">Json</span>(<span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span> {
@@ -734,11 +740,12 @@
     <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Meta</span> {
         <span class="ident">success</span>: <span class="bool-val">true</span>,
         <span class="ident">error</span>: <span class="prelude-val">None</span>,
+        <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
     };
 
     <span class="ident">Json</span>(<span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span> {
         <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">result</span>),
-        <span class="ident">meta</span>,
+        <span class="ident">meta</span>
     })
 }
 
@@ -754,6 +761,7 @@
     <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="ident">Meta</span> {
         <span class="ident">success</span>: <span class="bool-val">true</span>,
         <span class="ident">error</span>: <span class="prelude-val">None</span>,
+        <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
     };
 
     <span class="ident">Json</span>(<span class="ident">ResultArray</span>::<span class="op">&lt;</span><span class="ident">Time</span><span class="op">&gt;</span> {

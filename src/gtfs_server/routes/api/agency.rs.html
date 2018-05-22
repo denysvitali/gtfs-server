@@ -217,6 +217,10 @@
 <span id="217">217</span>
 <span id="218">218</span>
 <span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/agency` related routes</span>
 
@@ -247,6 +251,7 @@
                     <span class="ident">code</span>: <span class="number">3</span>,
                     <span class="ident">message</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;This agency doesn&#39;t exists&quot;</span>),
                 }),
+                <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
             },
         });
     }
@@ -256,6 +261,7 @@
         <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
             <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+            <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
         },
     })
 }
@@ -296,6 +302,7 @@
                     <span class="ident">code</span>: <span class="number">3</span>,
                     <span class="ident">message</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;This agency doesn&#39;t exists&quot;</span>),
                 }),
+                <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
             },
         });
     }
@@ -305,6 +312,7 @@
         <span class="ident">meta</span>: <span class="ident">Meta</span> {
             <span class="ident">success</span>: <span class="bool-val">true</span>,
             <span class="ident">error</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+            <span class="ident">pagination</span>: <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>
         },
     })
 }
