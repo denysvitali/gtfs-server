@@ -1,7 +1,7 @@
 use rocket::request::FromFormValue;
 use rocket::http::RawStr;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub enum AscDesc {
     ASC,
     DESC,

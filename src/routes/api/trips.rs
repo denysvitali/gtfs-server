@@ -41,6 +41,22 @@ use std::str::FromStr;
 use models::api::sort::tripsort::TripSort;
 use std::cmp::Ordering;
 
+fn add_stop_times_to_query(has_times: &mut bool, has_stop: &mut bool, query: &mut Query) {
+    if !*has_times {
+        query.join_v.push(String::from_str(
+            "INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid"
+        ).unwrap());
+        *has_times = true;
+    }
+
+    if !*has_stop {
+        query.join_v.push(String::from_str(
+            "INNER JOIN stop ON stop_time.stop_id = stop.id AND stop_time.feed_id = stop.feed_id"
+        ).unwrap());
+        *has_stop = true;
+    }
+}
+
 fn trips_query_filter(ts: &TripSearch,
                       query: Query,
                       params: Vec<&ToSql>,
@@ -48,6 +64,9 @@ fn trips_query_filter(ts: &TripSearch,
                       has_times: bool,
                       has_stop: bool
 ) -> PaginatedVec<Trip> {
+
+    let select_has_times = has_times;
+    let select_has_stop = has_stop;
 
     let mut has_times = has_times;
     let mut has_stop = has_stop;
@@ -67,21 +86,7 @@ fn trips_query_filter(ts: &TripSearch,
             NaiveTime::parse_from_str(&departure_after_str,
                                       "%H:%M:%S"
             ).unwrap();
-
-        if !has_times {
-            query.join_v.push(String::from_str(
-                "INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid"
-            ).unwrap());
-            has_times = true;
-        }
-
-        if !has_stop {
-            query.join_v.push(String::from_str(
-                "INNER JOIN stop ON stop_time.stop_id = stop.id AND stop_time.feed_id = stop.feed_id"
-            ).unwrap());
-            has_stop = true;
-        }
-
+        add_stop_times_to_query(&mut has_times, &mut has_stop, &mut query);
         i += 1;
         addition = format!(
             "stop_time.departure_time >= ${} ",
@@ -98,24 +103,7 @@ fn trips_query_filter(ts: &TripSearch,
                                       "%H:%M:%S"
             ).unwrap();
 
-        if !has_times {
-            query.join_v.push(
-                String::from_str(
-                    "INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid"
-                ).unwrap()
-            );
-            has_times = true;
-        }
-
-        if !has_stop {
-            query.join_v.push(
-                String::from_str(
-                    "INNER JOIN stop ON stop_time.stop_id = stop.id AND stop_time.feed_id = stop.feed_id"
-                ).unwrap()
-            );
-            has_stop = true;
-        }
-
+        add_stop_times_to_query(&mut has_times, &mut has_stop, &mut query);
         i += 1;
         addition = format!(
             "stop_time.arrival_time <= ${} ",
@@ -142,7 +130,7 @@ fn trips_query_filter(ts: &TripSearch,
 
     if ts.stops_visited.is_some() {
         let mut where_string = String::new();
-        addition = format!(" AND t.uid IN ( ");
+        addition = format!("tuid IN ( ");
         where_string.push_str(&addition);
         let split_stops: Vec<&str> = ts.stops_visited.as_ref().unwrap().split(",").collect();
         let mut first = true;
@@ -177,25 +165,40 @@ fn trips_query_filter(ts: &TripSearch,
         query.where_v.push(where_string);
     }
 
-    /*if ts.sort_by.is_some() {
-        let v_v : TripSort = ts.sort_by.as_ref().unwrap().clone();
-        let v : Option<&str> = (match v_v {
-            TripSort::ArrivalTime => Some("stop_time.arrival_time"),
-            TripSort::DepartureTime => Some("stop_time.departure_time"),
-            _ => None
-        });
-
-        if v.is_some(){
-            if v_v == TripSort::ArrivalTime ||
-                v_v == TripSort::DepartureTime {
-                // Ignore, we reorder it afterwards!
-            } else {
-                query.order_v.push(String::from(v.unwrap()));
-                // Set the recently added item to the first position:
-                query.order_v.rotate_right(1);
+    if ts.sort_by.as_ref().is_some() {
+        if !(select_has_stop && select_has_times) {
+            match ts.sort_by.as_ref().unwrap() {
+                &TripSort::ServiceId => {
+                    query.select_v.push(String::from("tsid"));
+                    query.order_v.push(String::from("tsid"));
+                    query.order_v.rotate_right(1);
+                },
+                &TripSort::RouteId => {
+                    query.order_v.push(String::from("ruid"));
+                    query.order_v.rotate_right(1);
+                },
+                &TripSort::Uid => {
+                    query.order_v.push(String::from("tuid"));
+                    query.order_v.rotate_right(1);
+                },
+                &TripSort::DirectionId => {
+                    query.order_v.push(String::from("td"));
+                    query.order_v.rotate_right(1);
+                }
+                &TripSort::DepartureTime => {
+                    query.select_v.push(String::from("stop_time.departure_time"));
+                    query.order_v.push(String::from("stop_time.departure_time"));
+                    query.order_v.rotate_right(1);
+                },
+                &TripSort::ArrivalTime => {
+                    query.select_v.push(String::from("stop_time.arrival_time"));
+                    query.order_v.push(String::from("stop_time.arrival_time"));
+                    query.order_v.rotate_right(1);
+                },
+                _ => {}
             }
         }
-    }*/
+    }
 
     if ts.sort_order.as_ref().is_some() {
         query.sort_order = ts.sort_order.as_ref().unwrap().clone();
@@ -236,7 +239,7 @@ fn trips_query_filter(ts: &TripSearch,
     let trips = conn.query(&query.format(), &params);
 
 
-    if has_times && has_stop {
+    if select_has_times && select_has_stop {
         let mut trips_hm: BTreeMap<Trip, Vec<StopTrip>> = BTreeMap::new();
 
         let mut i: i32 = 0;
@@ -256,45 +259,53 @@ fn trips_query_filter(ts: &TripSearch,
 
         if ts.sort_by.is_some() {
             let v_v = ts.sort_by.as_ref().unwrap();
-            if v_v == &TripSort::ArrivalTime || v_v == &TripSort::DepartureTime {
-                // Handle sorting of BTreeMap
-                match v_v {
-                    &TripSort::ArrivalTime => {
-                        trips_result.sort_by(|a, b| {
-                            if a.stop_sequence.as_ref().is_some() {
-                                if b.stop_sequence.as_ref().is_some() {
-                                    let at_a = a.stop_sequence.as_ref().unwrap().get(0)
-                                        .unwrap().arrival_time;
-                                    let at_b = b.stop_sequence.as_ref().unwrap().get(0)
-                                        .unwrap().arrival_time;
-                                    return at_a.cmp(&at_b);
-                                } else {
-                                    return Ordering::Less;
-                                }
+            // Handle sorting of BTreeMap
+            match v_v {
+                &TripSort::ArrivalTime => {
+                    trips_result.sort_by(|a, b| {
+                        if a.stop_sequence.as_ref().is_some() {
+                            if b.stop_sequence.as_ref().is_some() {
+                                let at_a = a.stop_sequence.as_ref().unwrap().get(0)
+                                    .unwrap().arrival_time;
+                                let at_b = b.stop_sequence.as_ref().unwrap().get(0)
+                                    .unwrap().arrival_time;
+                                return at_a.cmp(&at_b);
                             } else {
-                                return Ordering::Greater;
+                                return Ordering::Less;
                             }
-                        })
-                    },
-                    &TripSort::DepartureTime => {
-                        trips_result.sort_by(|a, b| {
-                            if a.stop_sequence.as_ref().is_some() {
-                                if b.stop_sequence.as_ref().is_some() {
-                                    let at_a = a.stop_sequence.as_ref().unwrap().get(0)
-                                        .unwrap().departure_time;
-                                    let at_b = b.stop_sequence.as_ref().unwrap().get(0)
-                                        .unwrap().departure_time;
-                                    return at_a.cmp(&at_b);
-                                } else {
-                                    return Ordering::Less;
-                                }
+                        } else {
+                            return Ordering::Greater;
+                        }
+                    })
+                },
+                &TripSort::DepartureTime => {
+                    trips_result.sort_by(|a, b| {
+                        if a.stop_sequence.as_ref().is_some() {
+                            if b.stop_sequence.as_ref().is_some() {
+                                let at_a = a.stop_sequence.as_ref().unwrap().get(0)
+                                    .unwrap().departure_time;
+                                let at_b = b.stop_sequence.as_ref().unwrap().get(0)
+                                    .unwrap().departure_time;
+                                return at_a.cmp(&at_b);
                             } else {
-                                return Ordering::Greater;
+                                return Ordering::Less;
                             }
-                        })
-                    }
-                    _ => {}
-                }
+                        } else {
+                            return Ordering::Greater;
+                        }
+                    })
+                },
+                &TripSort::DirectionId => {
+                    trips_result.sort_by(|a, b| {
+                        return a.direction_id.cmp(&b.direction_id);
+                    })
+                },
+                _ => {}
+            }
+
+            if ts.sort_order.is_some() &&
+                ts.sort_order.as_ref().unwrap() == &AscDesc::DESC {
+                trips_result.reverse();
             }
         }
 
@@ -456,37 +467,56 @@ fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -
         sort_order: AscDesc::ASC,
     };
 
-    query.select_v.push(String::from("t.uid"));
-    query.select_v.push(String::from("r.uid"));
-    query.select_v.push(String::from("c.uid"));
-    query.select_v.push(String::from("trip_id"));
-    query.select_v.push(String::from("headsign"));
-    query.select_v.push(String::from("t.short_name"));
-    query.select_v.push(String::from("direction_id"));
-    query.select_v.push(String::from("t.feed_id"));
+    query.format = String::from(r#"SELECT DISTINCT
+        {0}
+        FROM {1}
+        {2}
+        WHERE {3}
+        {4}
+        {5}
+    "#);
 
-    query.from_v.push(String::from("trip as t"));
+    query.select_v.push(String::from("tuid"));
+    query.select_v.push(String::from("r.uid as ruid"));
+    query.select_v.push(String::from("c.uid as cuid"));
+    query.select_v.push(String::from("tid"));
+    query.select_v.push(String::from("ths"));
+    query.select_v.push(String::from("tsn"));
+    query.select_v.push(String::from("td"));
+    query.select_v.push(String::from("tfid"));
+
+    query.from_v.push(String::from(r#"(
+    SELECT
+        trip.uid as tuid,
+        trip.trip_id as tid,
+        trip.short_name as tsn,
+        trip.feed_id as tfid,
+        trip.direction_id as td,
+        trip.headsign as ths,
+        trip.route_id as truid,
+        trip.service_id as tsid
+    FROM trip) as t"#));
     query.join_v.push(
         String::from(
-            "INNER JOIN calendar as c ON c.service_id=t.service_id"
+            "INNER JOIN calendar as c ON c.service_id=tsid"
         )
     );
 
     query.join_v.push(
         String::from(
-            "INNER JOIN route as r ON r.id = t.route_id"
+            "INNER JOIN route as r ON r.id = truid"
         )
     );
 
     query.where_v.push(
         String::from(
-            "c.feed_id = t.feed_id"
+            "c.feed_id = tfid"
         )
     );
 
     query.where_v.push(
         String::from(
-            "r.feed_id = t.feed_id"
+            "r.feed_id = tfid"
         )
     );
 
@@ -720,7 +750,7 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
 		calendar.service_id = trip.service_id
 		GROUP BY tuid, ruid, cuid, tid, ths, tsn, td, tfid
 		ORDER BY trip.uid
-	) as trip"#).unwrap());
+	) as t"#).unwrap());
 
     query.join_v.push(
         String::from_str(
