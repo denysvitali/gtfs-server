@@ -14,6 +14,7 @@ extern crate r2d2;
 extern crate r2d2_postgres;
 extern crate regex;
 extern crate rocket_contrib;
+#[macro_use] extern crate runtime_fmt;
 
 mod test;
 
@@ -111,6 +112,7 @@ fn start_server(rh: RoutesHandler) {
                 api::trips::trips_by_route,
                 api::trips::trips_by_query,
                 api::trips::trips_by_bbox,
+                api::trips::trips_by_bbox_query,
                 api::times::times_query,
                 api::times::times_by_trip,
                 api::times::times_stop,

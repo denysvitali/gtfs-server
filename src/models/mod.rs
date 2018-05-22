@@ -12,6 +12,7 @@ pub mod coordinate;
 pub mod csv;
 pub mod dropoff;
 pub mod pickup;
+pub mod query;
 pub mod route;
 pub mod stop;
 pub mod time;

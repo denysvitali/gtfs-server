@@ -367,6 +367,7 @@ dependencies = [
  "rocket 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket_codegen 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket_contrib 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "runtime-fmt 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rust-crypto 0.2.36 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.58 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.58 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1059,6 +1060,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "runtime-fmt"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "rust-crypto"
 version = "0.2.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1741,6 +1747,7 @@ dependencies = [
 "checksum rocket 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)" = "46002c78d93f9272d59ffb24ded4ad90782ef203e9eac635d1f150ca5a88b87f"
 "checksum rocket_codegen 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)" = "63686b070f0520a93e98ce169e517d6218d1210cc98c066f9ccf120ad05199c9"
 "checksum rocket_contrib 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)" = "243a018305a2a2c1b26e60e6a9240f94f3f82e5c7a203fc2edf042e4977c77e6"
+"checksum runtime-fmt 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "647a821d66049faccc993fc3c379d1181b81a484097495cda79ffdb17b55b87f"
 "checksum rust-crypto 0.2.36 (registry+https://github.com/rust-lang/crates.io-index)" = "f76d05d3993fd5f4af9434e8e436db163a12a9d40e1a58a726f27a01dfd12a2a"
 "checksum rustc-serialize 0.3.24 (registry+https://github.com/rust-lang/crates.io-index)" = "dcf128d1287d2ea9d80910b5f1120d0b8eede3fbf1abe91c40d39ea7d51e6fda"
 "checksum safemem 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e27a8b19b835f7aea908818e871f5cc3a5a186550c30773be987e155e8163d8f"

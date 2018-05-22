@@ -20,6 +20,7 @@ chrono = { version = "0.4", features = ["serde"] }
 regex = "0.2"
 rocket = "*"
 rocket_codegen = "*"
+runtime-fmt = "0.3.0"
 num-traits = "0.2"
 num-derive = "0.2"
 reqwest = "0.8.5"
