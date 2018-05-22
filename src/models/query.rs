@@ -25,7 +25,7 @@ impl Query {
 
         let select_string = self.select_v.join(",\n");
         let from_string = self.from_v.join(",\n");
-        let where_string = self.where_v.join(",\n");
+        let where_string = self.where_v.join(" AND \n");
         let join_string = self.join_v.join("\n");
         let order_string = match self.order_v.len() {
             0 => String::from(""),

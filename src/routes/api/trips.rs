@@ -135,7 +135,7 @@ fn trips_query_filter(ts: &TripSearch,
 
         let route_uid : String = ts.route.as_ref().unwrap().to_string();
 
-        addition = format!(" AND r.uid = ${}", &i);
+        addition = format!("ruid = ${}", &i);
         values.push(route_uid);
         query.where_v.push(addition);
     }
@@ -251,33 +251,51 @@ fn trips_query_filter(ts: &TripSearch,
             let mut t = (*k).clone();
             t.stop_sequence = Some(v.clone());
             trips_result.push(t);
+
         }
 
         if ts.sort_by.is_some() {
-            /* Uncomment me for a nice Stack Overflow error:
             let v_v = ts.sort_by.as_ref().unwrap();
             if v_v == &TripSort::ArrivalTime || v_v == &TripSort::DepartureTime {
                 // Handle sorting of BTreeMap
-                /*match v_v {
-                    TripSort::ArrivalTime => {
-                        println!("Sorting!");
-                        trips_result.sort_by(|a,b| {
-                            let at_a = a.stop_sequence.as_ref().unwrap().get(0)
-                                .unwrap().arrival_time;
-                            let at_b = b.stop_sequence.as_ref().unwrap().get(0)
-                                .unwrap().arrival_time;
-                            println!("A: {}, B: {}", at_a, at_b);
-                            return at_a.cmp(&at_b);
-                        }
-                        )
+                match v_v {
+                    &TripSort::ArrivalTime => {
+                        trips_result.sort_by(|a, b| {
+                            if a.stop_sequence.as_ref().is_some() {
+                                if b.stop_sequence.as_ref().is_some() {
+                                    let at_a = a.stop_sequence.as_ref().unwrap().get(0)
+                                        .unwrap().arrival_time;
+                                    let at_b = b.stop_sequence.as_ref().unwrap().get(0)
+                                        .unwrap().arrival_time;
+                                    return at_a.cmp(&at_b);
+                                } else {
+                                    return Ordering::Less;
+                                }
+                            } else {
+                                return Ordering::Greater;
+                            }
+                        })
                     },
-                    TripSort::DepartureTime => {
-
+                    &TripSort::DepartureTime => {
+                        trips_result.sort_by(|a, b| {
+                            if a.stop_sequence.as_ref().is_some() {
+                                if b.stop_sequence.as_ref().is_some() {
+                                    let at_a = a.stop_sequence.as_ref().unwrap().get(0)
+                                        .unwrap().departure_time;
+                                    let at_b = b.stop_sequence.as_ref().unwrap().get(0)
+                                        .unwrap().departure_time;
+                                    return at_a.cmp(&at_b);
+                                } else {
+                                    return Ordering::Less;
+                                }
+                            } else {
+                                return Ordering::Greater;
+                            }
+                        })
                     }
                     _ => {}
-                }*/
+                }
             }
-            */
         }
 
     } else {

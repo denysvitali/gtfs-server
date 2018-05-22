@@ -4,7 +4,7 @@ use rocket::request::{FromForm, FormItems};
 use rocket::request::FromFormValue;
 use rocket::http::RawStr;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub enum TripSort {
     ArrivalTime,
     DepartureTime,
@@ -28,11 +28,5 @@ impl<'f> FromFormValue<'f> for TripSort {
             "uid" => TripSort::Uid,
             _ => TripSort::None
         })
-    }
-}
-
-impl PartialEq for TripSort {
-    fn eq(&self, other: &Self) -> bool {
-        return self == other;
     }
 }
