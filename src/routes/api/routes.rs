@@ -248,6 +248,8 @@ pub fn route_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
     let routes = routes.expect("Query failed");*/
     let mut results: Vec<Route> = Vec::new();
 
+    // TODO: Implement
+
     /*for row in routes.iter() {
         results.push(parse_route_row(&row, &rh))
     }*/
