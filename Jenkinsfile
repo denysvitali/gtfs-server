@@ -17,9 +17,9 @@ node {
             sh "docker login -u $USER -p $PASS"
         }
 
-        sh "docker tag dvitali/gtfs-server-dev:latest dvitali/gtfs-server-dev:$BUILD_NUMBER"
+        sh "docker tag dvitali/gtfs-server:latest dvitali/gtfs-server:master-$BUILD_NUMBER"
         
-        sh "docker push dvitali/gtfs-server-dev:latest"
-        sh "docker push dvitali/gtfs-server-dev:$BUILD_NUMBER"
+        sh "docker push dvitali/gtfs-server:latest"
+        sh "docker push dvitali/gtfs-server:master-$BUILD_NUMBER"
     }
 }
