@@ -33,6 +33,9 @@ use std::env;
 use std::path::{Path, PathBuf};
 
 use chrono::{NaiveDate, NaiveTime};
+use std::{time,thread};
+use models::api::result::Result;
+use postgres::Error;
 
 #[macro_use]
 extern crate serde_derive;
@@ -42,6 +45,8 @@ extern crate num_derive;
 fn create_pool() -> Pool<PostgresConnectionManager> {
     let mut hostname = "172.18.0.2";
     let mut password = String::from("mysecretpassword");
+    let MAX_ATTEMPTS = 10;
+    let mut attempts = 1;
 
     if env::var_os("IN_DOCKER").is_some()
         && env::var_os("IN_DOCKER").unwrap().to_str().unwrap() == "true"
@@ -58,9 +63,27 @@ fn create_pool() -> Pool<PostgresConnectionManager> {
 
     let connection_string = format!("postgres://postgres:{}@{}:5432", password, hostname);
 
-    let manager = PostgresConnectionManager::new(connection_string, TlsMode::None).unwrap();
-    let pool = Pool::new(manager).unwrap();
-    pool
+    let manager = PostgresConnectionManager::new(
+        connection_string.clone(),
+        TlsMode::None).unwrap();
+    let mut pool = Pool::new(manager);
+
+    while pool.is_err() && attempts <= MAX_ATTEMPTS {
+        let manager = PostgresConnectionManager::new(
+            connection_string.clone(),
+            TlsMode::None).unwrap();
+
+        println!("Unable to connect, attempt {}/{}", attempts, MAX_ATTEMPTS);
+        pool = Pool::new(manager);
+        attempts += 1;
+        println!("Waiting 5s for the next try...");
+        thread::sleep_ms(5000);
+    }
+
+    if pool.is_ok() {
+        return pool.unwrap();
+    }
+    panic!(format!("Unable to connect to {}!", hostname));
 }
 
 #[get("/css/<file..>")]
