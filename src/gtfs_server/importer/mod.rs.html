@@ -1192,7 +1192,7 @@
     <span class="kw">if</span> <span class="ident">result</span>.<span class="ident">is_ok</span>() {
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Result is ok&quot;</span>);
         <span class="comment">// We&#39;ve got a zip file!</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">zar</span>: <span class="ident">ZipArchive</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">ZipArchive</span>::<span class="ident">new</span>(<span class="ident">tmpfile</span>).<span class="ident">expect</span>(<span class="string">&quot;This is not a zip file&quot;</span>);
+        <span class="kw">let</span> <span class="ident">zar</span>: <span class="ident">ZipArchive</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">ZipArchive</span>::<span class="ident">new</span>(<span class="ident">tmpfile</span>).<span class="ident">expect</span>(<span class="string">&quot;This is not a zip file&quot;</span>);
         <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">zar</span>);
     }
     <span class="kw">return</span> <span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>;
