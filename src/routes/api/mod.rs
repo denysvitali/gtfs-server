@@ -8,6 +8,7 @@ pub mod db;
 pub mod import;
 pub mod routes;
 pub mod stops;
+pub mod stop_times;
 pub mod times;
 pub mod trips;
 

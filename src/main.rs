@@ -129,6 +129,7 @@ fn start_server(rh: RoutesHandler) {
                 api::stops::stops_in_bbox_radius,
                 api::stops::stops_latlng_test,
                 api::stops::stops_latlng_test_zoom,
+                api::stop_times::stop_times_after_near,
                 api::trips::trips,
                 api::trips::trips_stopid,
                 api::trips::trip,

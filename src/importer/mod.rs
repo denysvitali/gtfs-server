@@ -61,7 +61,7 @@ pub fn download_feed_zip<'a>(
     if result.is_ok() {
         println!("Result is ok");
         // We've got a zip file!
-        let mut zar: ZipArchive<File> = ZipArchive::new(tmpfile).expect("This is not a zip file");
+        let zar: ZipArchive<File> = ZipArchive::new(tmpfile).expect("This is not a zip file");
         return Some(zar);
     }
     return Option::None;
