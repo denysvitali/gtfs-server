@@ -169,17 +169,6 @@ pub fn stop_times_between_near(rh: State<RoutesHandler>,
 
     let stop_times : Vec<StopTimes> = parse_stop_times(&stop_times.expect("Query failed"));
 
-    if stop_times.len() == 0 {
-        return Json(ResultArray {
-            result: None,
-            meta: Meta{
-                success: true,
-                error: None,
-                pagination: None,
-            },
-        });
-    }
-
     Json(ResultArray{
         result: Some(stop_times),
         meta: Meta{
