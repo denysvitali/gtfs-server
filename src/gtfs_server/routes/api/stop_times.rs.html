@@ -206,6 +206,93 @@
 <span id="206">206</span>
 <span id="207">207</span>
 <span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/stop_times` related routes</span>
 
@@ -255,8 +342,14 @@
     <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">r#&quot;SELECT DISTINCT
     trip.uid,
     stop.uid,
-    stop_time.departure_time
+    stop_time.departure_time, j1.uid
     FROM stop_time, stop,trip
+    INNER JOIN LATERAL (
+        SELECT s2.uid FROM stop_time as st2
+         JOIN stop as s2 ON s2.id = st2.stop_id AND s2.feed_id = st2.feed_id
+        WHERE st2.trip_id = stop_time.trip_id
+        AND st2.stop_sequence = (stop_time.stop_sequence + 1)
+    )  j1 ON true
     WHERE
         stop_time.stop_id = stop.id AND
         stop_time.feed_id = stop.feed_id AND
@@ -325,8 +418,14 @@
     <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">r#&quot;SELECT DISTINCT
     trip.uid,
     stop.uid,
-    stop_time.departure_time
+    stop_time.departure_time, j1.uid
     FROM stop_time, stop,trip
+    INNER JOIN LATERAL (
+        SELECT s2.uid FROM stop_time as st2
+         JOIN stop as s2 ON s2.id = st2.stop_id AND s2.feed_id = st2.feed_id
+        WHERE st2.trip_id = stop_time.trip_id
+        AND st2.stop_sequence = (stop_time.stop_sequence + 1)
+    )  j1 ON true
     WHERE
         stop_time.stop_id = stop.id AND
         stop_time.feed_id = stop.feed_id AND
@@ -388,6 +487,80 @@
     })
 }
 
+<span class="comment">/*
+
+*/</span>
+
+<span class="doccomment">/// `/stop_times/by-stop/&lt;stop&gt;/after/&lt;time&gt;`</span>
+<span class="doccomment">/// Gets an array of [StopTimes](../../../models/api/stoptimes/struct.StopTimes.html) after a `&lt;time&gt;`,</span>
+<span class="doccomment">/// within a `&lt;radius&gt;` from a specified location (`&lt;lat&gt;`, `&lt;lng&gt;`).</span>
+<span class="doccomment">/// Returns a [ResultArray](../../../models/api/result/struct.ResultArray.html)&lt;[StopTimes](../../../models/api/stoptimes/struct.StopTimes.html)&gt;</span>
+<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/stop_times/by-stop/&lt;stop&gt;/after/&lt;time&gt;&quot;</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stop_times_by_stop_after</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>,
+                             <span class="ident">stop</span>: <span class="ident">String</span>,
+                             <span class="ident">time</span>: <span class="ident">String</span>
+)
+                             <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">StopTimes</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">r#&quot;SELECT DISTINCT trip.uid, stop.uid, stop_time.departure_time, j1.uid
+    FROM stop_time, stop, trip
+    INNER JOIN LATERAL (
+        SELECT s2.uid FROM stop_time as st2
+         JOIN stop as s2 ON s2.id = st2.stop_id AND s2.feed_id = st2.feed_id
+        WHERE st2.trip_id = stop_time.trip_id
+        AND st2.stop_sequence = (stop_time.stop_sequence + 1)
+    )  j1 ON true
+    WHERE stop_time.stop_id = stop.id
+    AND stop.uid = $1
+    AND stop_time.feed_id = stop.feed_id
+    AND trip.trip_id = stop_time.trip_id AND trip.feed_id = stop_time.feed_id
+    AND stop_time.departure_time &gt; $2
+    ORDER BY stop.uid,stop_time.departure_time
+    LIMIT 5000&quot;#</span>;
+
+    <span class="kw">let</span> <span class="ident">time1</span> : <span class="ident">ParseResult</span><span class="op">&lt;</span><span class="ident">NaiveTime</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">NaiveTime</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">time</span>);
+
+    <span class="kw">if</span> <span class="ident">time1</span>.<span class="ident">is_err</span>() {
+        <span class="kw">return</span> <span class="ident">Json</span>(<span class="prelude-ty">Result</span>{
+            <span class="ident">result</span>: <span class="prelude-val">None</span>,
+            <span class="ident">meta</span>: <span class="ident">Meta</span>{
+                <span class="ident">success</span>: <span class="bool-val">false</span>,
+                <span class="ident">error</span>: <span class="prelude-val">Some</span>(<span class="ident">Error</span> {
+                    <span class="ident">code</span>: <span class="number">1</span>,
+                    <span class="ident">message</span>: <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;Time is invalid&quot;</span>),
+                }),
+                <span class="ident">pagination</span>: <span class="prelude-val">None</span>,
+            },
+        })
+    }
+
+    <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">stop_times</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">stop</span>, <span class="kw-2">&amp;</span><span class="ident">time1</span>.<span class="ident">unwrap</span>()]);
+
+    <span class="kw">let</span> <span class="ident">stop_times</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTimes</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">parse_stop_times</span>(<span class="kw-2">&amp;</span><span class="ident">stop_times</span>.<span class="ident">expect</span>(<span class="string">&quot;Query failed&quot;</span>));
+
+    <span class="kw">if</span> (<span class="kw-2">&amp;</span><span class="ident">stop_times</span>).<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">return</span> <span class="ident">Json</span>(<span class="prelude-ty">Result</span> {
+            <span class="ident">result</span>: <span class="prelude-val">None</span>,
+            <span class="ident">meta</span>: <span class="ident">Meta</span>{
+                <span class="ident">success</span>: <span class="bool-val">true</span>,
+                <span class="ident">error</span>: <span class="prelude-val">None</span>,
+                <span class="ident">pagination</span>: <span class="prelude-val">None</span>,
+            },
+        });
+    }
+
+    <span class="kw">let</span> <span class="ident">st_result</span> : <span class="ident">StopTimes</span> <span class="op">=</span> <span class="ident">stop_times</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">unwrap</span>().<span class="ident">clone</span>();
+
+    <span class="ident">Json</span>(<span class="prelude-ty">Result</span>{
+        <span class="ident">result</span>: <span class="prelude-val">Some</span>(<span class="ident">st_result</span>),
+        <span class="ident">meta</span>: <span class="ident">Meta</span>{
+            <span class="ident">success</span>: <span class="bool-val">true</span>,
+            <span class="ident">error</span>: <span class="prelude-val">None</span>,
+            <span class="ident">pagination</span>: <span class="prelude-val">None</span>,
+        },
+    })
+}
+
 <span class="kw">fn</span> <span class="ident">parse_stop_times</span>(<span class="ident">rows</span>: <span class="kw-2">&amp;</span><span class="ident">Rows</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTimes</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stop_times</span> : <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">StopTimes</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stop_times_hm</span> : <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TripTime</span><span class="op">&gt;&gt;</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
@@ -405,12 +578,13 @@
         (<span class="ident">st_stop</span>).<span class="ident">push</span>(<span class="ident">TripTime</span>{
             <span class="ident">trip</span>: <span class="ident">i</span>.<span class="ident">get</span>(<span class="number">0</span>),
             <span class="ident">time</span>: <span class="ident">i</span>.<span class="ident">get</span>(<span class="number">2</span>),
+            <span class="ident">next_stop</span>: <span class="ident">i</span>.<span class="ident">get</span>(<span class="number">3</span>),
         });
     }
     <span class="kw">for</span> (<span class="ident">k</span>,<span class="ident">v</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">stop_times_hm</span>{
         <span class="ident">stop_times</span>.<span class="ident">push</span>(<span class="ident">StopTimes</span>{
             <span class="ident">stop</span>: <span class="ident">k</span>.<span class="ident">to_string</span>(),
-            <span class="ident">time</span>: <span class="ident">v</span>.<span class="ident">to_vec</span>(),
+            <span class="ident">time</span>: <span class="ident">v</span>.<span class="ident">to_vec</span>()
         })
     }
     <span class="ident">stop_times</span>
