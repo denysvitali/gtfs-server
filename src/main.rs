@@ -131,6 +131,7 @@ fn start_server(rh: RoutesHandler) {
                 api::stops::stops_latlng_test_zoom,
                 api::stop_times::stop_times_after_near,
                 api::stop_times::stop_times_between_near,
+                api::stop_times::stop_times_by_stop_after,
                 api::trips::trips,
                 api::trips::trips_stopid,
                 api::trips::trip,

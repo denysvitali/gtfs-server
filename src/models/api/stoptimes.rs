@@ -6,7 +6,7 @@ extern crate serde;
 use self::serde::ser::{Serialize, SerializeStruct, Serializer};
 use chrono::NaiveTime;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct StopTimes {
     pub stop: String,
     pub time: Vec<TripTime>
@@ -15,5 +15,6 @@ pub struct StopTimes {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TripTime{
     pub trip: String,
-    pub time: NaiveTime
+    pub time: NaiveTime,
+    pub next_stop: Option<String>
 }
