@@ -1006,6 +1006,9 @@ pub fn update_db_ver(ver: u32, conn: &Connection) {
 
 pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
     let conn = pool.clone().get().unwrap();
+    if ver < 0 
+        create_tables(pool);
+    }
     if ver < 2 {
         // Do nothing.
         update_db_ver(2, &conn);
