@@ -1128,6 +1128,9 @@
 <span id="1128">1128</span>
 <span id="1129">1129</span>
 <span id="1130">1130</span>
+<span id="1131">1131</span>
+<span id="1132">1132</span>
+<span id="1133">1133</span>
 </pre><pre class="rust ">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">chrono</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">crypto</span>;
@@ -2137,6 +2140,9 @@
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_db_from</span>(<span class="ident">ver</span>: <span class="ident">u32</span>, <span class="ident">pool</span>: <span class="kw-2">&amp;</span><span class="ident">Pool</span><span class="op">&lt;</span><span class="ident">PostgresConnectionManager</span><span class="op">&gt;</span>) {
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
+    <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">0</span> {
+        <span class="ident">create_tables</span>(<span class="ident">pool</span>);
+    }
     <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">2</span> {
         <span class="comment">// Do nothing.</span>
         <span class="ident">update_db_ver</span>(<span class="number">2</span>, <span class="kw-2">&amp;</span><span class="ident">conn</span>);
