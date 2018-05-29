@@ -132,6 +132,7 @@ fn start_server(rh: RoutesHandler) {
                 api::stop_times::stop_times_after_near,
                 api::stop_times::stop_times_between_near,
                 api::stop_times::stop_times_by_stop_after,
+                api::stop_times::stop_times_by_stop_between,
                 api::trips::trips,
                 api::trips::trips_stopid,
                 api::trips::trip,
