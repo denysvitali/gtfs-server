@@ -375,7 +375,7 @@ fn get_stops_in_bbox(pool: &Pool<PostgresConnectionManager>, bbox: BoundingBox) 
                 $4, \
                 $3, \
                 4326), \
-            ST_Transform(position::geometry,4326) \
+            position::geometry \
         ) \
         LIMIT 50;";
     let p1 = bbox.p1;
