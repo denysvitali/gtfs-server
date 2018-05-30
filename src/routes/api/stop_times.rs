@@ -221,7 +221,7 @@ pub fn stop_times_by_stop_after(rh: State<RoutesHandler>,
     AND stop_time.feed_id = stop.feed_id
     AND trip.trip_id = stop_time.trip_id AND trip.feed_id = stop_time.feed_id
     AND stop_time.departure_time > $2
-    ORDER BY stop.uid,stop_time.departure_time
+    ORDER BY stop.uid, j1.departure_time
     LIMIT 5000"#;
 
     let time1 : ParseResult<NaiveTime> = NaiveTime::from_str(&time);
