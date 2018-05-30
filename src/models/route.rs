@@ -9,7 +9,7 @@ pub struct Route {
     pub agency_id: Option<String>,
     pub short_name: String,
     pub long_name: String,
-    pub description: String,
+    pub description: Option<String>,
     #[serde(rename = "type")]
     pub route_type: i32,
     #[serde(skip_serializing)]
