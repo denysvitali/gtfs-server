@@ -961,8 +961,6 @@
 <span id="961">961</span>
 <span id="962">962</span>
 <span id="963">963</span>
-<span id="964">964</span>
-<span id="965">965</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/trips` related routes</span>
 
@@ -1498,18 +1496,16 @@
     <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">&quot;SELECT \
                  trip.uid,\
                  route.uid,\
-                 calendar.uid,\
+                 trip.service_id,\
                  trip.trip_id,\
                  trip.headsign,\
                  trip.short_name,\
                  trip.direction_id,\
                  trip.feed_id \
-                 FROM trip, route, calendar \
+                 FROM trip, route
                  WHERE trip.uid = $1 AND \
                  route.feed_id = trip.feed_id AND \
-                 calendar.feed_id = trip.feed_id AND \
-                 route.id = trip.route_id AND \
-                 calendar.service_id = trip.service_id&quot;</span>;
+                 route.id = trip.route_id&quot;</span>;
 
     <span class="kw">let</span> <span class="ident">conn</span> <span class="op">=</span> <span class="ident">rh</span>.<span class="ident">pool</span>.<span class="ident">clone</span>().<span class="ident">get</span>().<span class="ident">unwrap</span>();
     <span class="kw">let</span> <span class="ident">trips</span> <span class="op">=</span> <span class="ident">conn</span>.<span class="ident">query</span>(<span class="ident">query</span>, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">trip_id</span>]);
