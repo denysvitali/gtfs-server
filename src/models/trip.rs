@@ -8,11 +8,11 @@ use std::hash::{Hash, Hasher};
 pub struct Trip {
     pub uid: String,
     pub route_id: String,
-    pub service_id: String,
-    pub headsign: String,
+    pub service_id: Option<String>,
+    pub headsign: Option<String>,
     #[serde(skip_serializing)]
     trip_id: String,
-    pub short_name: String,
+    pub short_name: Option<String>,
     pub direction_id: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stop_sequence: Option<Vec<StopTrip>>,
@@ -24,9 +24,9 @@ impl Trip {
     pub fn new(
         uid: String,
         route_id: String,
-        service_id: String,
-        headsign: String,
-        short_name: String,
+        service_id: Option<String>,
+        headsign: Option<String>,
+        short_name: Option<String>,
         direction_id: i32,
     ) -> Trip {
         Trip {

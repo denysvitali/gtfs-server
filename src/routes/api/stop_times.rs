@@ -30,6 +30,7 @@ use models::api::stoptimes::TripTime;
 use std::str::FromStr;
 use chrono::ParseError;
 use chrono::ParseResult;
+use chrono::NaiveDate;
 
 /// `/stop_times/after/<time>/near/<lat>/<lng>/<radius>`
 /// Gets an array of [StopTimes](../../../models/api/stoptimes/struct.StopTimes.html) after a `<time>`,
@@ -268,15 +269,16 @@ pub fn stop_times_by_stop_after(rh: State<RoutesHandler>,
     })
 }
 
-/// `/stop_times/by-stop/<stop>/between/<time>/<time2>`
+/// `/stop_times/by-stop/<stop>/between/<time>/<time2>/<date>`
 /// Gets an array of [StopTimes](../../../models/api/stoptimes/struct.StopTimes.html) between
 /// `<time>` and `<time2>` at a specified `<stop>`.
 /// Returns a [ResultArray](../../../models/api/result/struct.ResultArray.html)<[StopTimes](../../../models/api/stoptimes/struct.StopTimes.html)>
-#[get("/stop_times/by-stop/<stop>/between/<time>/<time2>")]
+#[get("/stop_times/by-stop/<stop>/between/<time>/<time2>/<date>")]
 pub fn stop_times_by_stop_between(rh: State<RoutesHandler>,
-                                  stop: String,
-                                  time: String,
-                                  time2: String,
+                                    stop: String,
+                                    time: String,
+                                    time2: String,
+                                    date: String
 )
                                   -> Json<Result<StopTimes>> {
     let query = r#"SELECT DISTINCT
@@ -297,11 +299,27 @@ pub fn stop_times_by_stop_between(rh: State<RoutesHandler>,
         trip.feed_id = stop_time.feed_id AND
         stop.uid = $1 AND
         stop_time.departure_time >= $2 AND
-        stop_time.departure_time < $3
+        stop_time.departure_time < $3 AND
+        (
+       	    trip.service_id IN (
+       	        SELECT calendar.service_id
+       	        FROM calendar
+       	        WHERE calendar.feed_id=trip.feed_id AND
+       	        calendar.start_date <= $4 AND
+       	        calendar.end_date >= $4
+       	    ) OR
+       	    trip.service_id IN (
+       	        SELECT calendar_date.service_id
+       	        FROM calendar_date
+       	        WHERE calendar_date.feed_id = trip.feed_id AND
+       	        calendar_date."date" = $4
+       	    )
+       )
     LIMIT 8000"#;
-
+    
     let time1 : ParseResult<NaiveTime> = NaiveTime::from_str(&time);
     let time2 : ParseResult<NaiveTime> = NaiveTime::from_str(&time2);
+    let date : ParseResult<NaiveDate> = NaiveDate::from_str(&date);
 
     if time1.is_err() {
         return Json(Result{
@@ -331,10 +349,25 @@ pub fn stop_times_by_stop_between(rh: State<RoutesHandler>,
         })
     }
 
+    if date.is_err() {
+        return Json(Result{
+            result: None,
+            meta: Meta{
+                success: false,
+                error: Some(Error {
+                    code: 1,
+                    message: String::from("Date is invalid"),
+                }),
+                pagination: None,
+            },
+        })
+    }
+
     let conn = rh.pool.clone().get().unwrap();
     let stop_times = conn.query(query, &[&stop,
         &time1.unwrap(),
-        &time2.unwrap()]
+        &time2.unwrap(),
+        &date.unwrap()]
     );
 
     let stop_times : Vec<StopTimes> = parse_stop_times(&stop_times.expect("Query failed"));

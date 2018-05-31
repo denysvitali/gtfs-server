@@ -36,6 +36,7 @@ use chrono::{NaiveDate, NaiveTime};
 use std::{time,thread};
 use models::api::result::Result;
 use postgres::Error;
+use importer::update_db;
 
 #[macro_use]
 extern crate serde_derive;
@@ -153,7 +154,12 @@ fn start_server(rh: RoutesHandler) {
 
 fn main() {
     let pool = create_pool();
+
+    println!("Updating Database...");
+    update_db(&pool.clone());
+
     let rh = RoutesHandler { pool };
+
     //create_tables(&pool);
 
     //let feed_id = parse_feed("./resources/gtfs/sbb/feed_info.txt", &pool);

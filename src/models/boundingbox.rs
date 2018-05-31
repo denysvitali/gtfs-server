@@ -24,7 +24,7 @@ impl<'r> FromParam<'r> for BoundingBox {
     type Error = &'r RawStr;
     fn from_param(param: &'r RawStr) -> Result<Self, Self::Error> {
         let re =
-            Regex::new(r"^(\d+|\d+\.\d+),(\d+|\d+\.\d+),(\d+|\d+\.\d+),(\d+|\d+\.\d+)$").unwrap();
+            Regex::new(r"^((?:-)*\d+|(?:-)*\d+\.\d+),((?:-)*\d+|(?:-)*\d+\.\d+),((?:-)*\d+|(?:-)*\d+\.\d+),((?:-)*\d+|(?:-)*\d+\.\d+)$").unwrap();
         if re.is_match(param) {
             let caps = re.captures(param).unwrap();
             fn as_f64(c: Option<Match>) -> f64 {

@@ -532,18 +532,16 @@ pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>> {
     let query = "SELECT \
                  trip.uid,\
                  route.uid,\
-                 calendar.uid,\
+                 trip.service_id,\
                  trip.trip_id,\
                  trip.headsign,\
                  trip.short_name,\
                  trip.direction_id,\
                  trip.feed_id \
-                 FROM trip, route, calendar \
+                 FROM trip, route
                  WHERE trip.uid = $1 AND \
                  route.feed_id = trip.feed_id AND \
-                 calendar.feed_id = trip.feed_id AND \
-                 route.id = trip.route_id AND \
-                 calendar.service_id = trip.service_id";
+                 route.id = trip.route_id";
 
     let conn = rh.pool.clone().get().unwrap();
     let trips = conn.query(query, &[&trip_id]);

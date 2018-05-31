@@ -1119,6 +1119,20 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
         ).expect("Unable to ALTER TABLE trip");
         update_db_ver(11, &conn);
     }
+
+    if ver < 12 {
+        conn.execute(
+            r#"CREATE UNIQUE INDEX calendar_date_service_id_idx ON
+               public.calendar_date (service_id,feed_id,"date")"#,
+            &[],
+        ).expect("Unable to CREATE index 1 for calendar_date");
+        conn.execute(
+            r#"CREATE UNIQUE INDEX calendar_date_uid_idx ON
+               public.calendar_date (uid)"#,
+            &[],
+        ).expect("Unable to CREATE index 2 for calendar_date");
+        update_db_ver(12, &conn);
+    }
 }
 
 pub fn get_db_version(pool: &Pool<PostgresConnectionManager>) -> i32 {
