@@ -316,7 +316,7 @@ pub fn stop_times_by_stop_between(rh: State<RoutesHandler>,
        	    )
        )
     LIMIT 8000"#;
-    
+
     let time1 : ParseResult<NaiveTime> = NaiveTime::from_str(&time);
     let time2 : ParseResult<NaiveTime> = NaiveTime::from_str(&time2);
     let date : ParseResult<NaiveDate> = NaiveDate::from_str(&date);

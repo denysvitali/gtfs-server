@@ -1133,6 +1133,19 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
         ).expect("Unable to CREATE index 2 for calendar_date");
         update_db_ver(12, &conn);
     }
+
+    if ver < 13 {
+        // calendar + calendar_date indexes
+        conn.execute(
+            r#"CREATE INDEX calendar_feed_id_start_end_date ON public.calendar (feed_id,start_date,end_date);"#,
+            &[],
+        ).expect("[13] Unable to CREATE index for calendar");
+        conn.execute(
+            r#"CREATE INDEX calendar_date_date_idx ON public.calendar_date ("date",feed_id);"#,
+            &[],
+        ).expect("[13] Unable to CREATE index for calendar_date");
+        update_db_ver(13, &conn);
+    }
 }
 
 pub fn get_db_version(pool: &Pool<PostgresConnectionManager>) -> i32 {
