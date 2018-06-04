@@ -16,7 +16,7 @@
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">api</span>::<span class="ident">sort</span>::<span class="ident">tripsort</span>::<span class="ident">TripSort</span>;
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">api</span>::<span class="ident">search</span>::<span class="ident">ascdesc</span>::<span class="ident">AscDesc</span>;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">FromForm</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">FromForm</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TripSearch</span> {
     <span class="kw">pub</span> <span class="ident">stops_visited</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">route</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
