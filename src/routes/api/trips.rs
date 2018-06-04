@@ -681,11 +681,13 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
         where_v: Vec::new(),
         join_v: Vec::new(),
         order_v: Vec::new(),
-        limit: 0,
+        limit: 500,
         offset: 0,
         format: String::new(),
         sort_order: AscDesc::ASC,
     };
+
+    let mut ts = ts.clone();
 
     query.format = String::from(r#"SELECT
         {0}
@@ -717,7 +719,15 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
     query.select_v.push(String::from_str("stop_time.drop_off_type as st_do").unwrap());
     query.select_v.push(String::from_str("stop_time.pickup_type as st_pu").unwrap());
 
-    query.from_v.push(String::from_str(r#"(SELECT DISTINCT
+    let mut limited_range = false;
+    let mut addition = "";
+
+    if ts.departure_after.is_some() && ts.arrival_before.is_some() {
+        limited_range = true;
+        addition = "AND st.departure_time >= $5 AND st.arrival_time <= $6";
+    }
+
+    let mut formatted_query = r#"(SELECT DISTINCT
 		trip.uid as tuid,
 		route.uid as ruid,
 		calendar.uid as cuid,
@@ -738,6 +748,7 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
 				WHERE ST_Within(s.position::geometry,
 							ST_MakeEnvelope($1, $2, $3, $4, 4326))
 				AND st.trip_id = trip.trip_id AND trip.feed_id = st.feed_id
+				{addition_goes_here}
 			)
 			{0}
 		)
@@ -748,7 +759,9 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
 		calendar.service_id = trip.service_id
 		GROUP BY tuid, ruid, cuid, tid, ths, tsn, td, tfid
 		ORDER BY trip.uid
-	) as t"#).unwrap());
+	) as t"#.replace("{addition_goes_here}", addition);
+
+    query.from_v.push(String::from_str(&formatted_query).unwrap());
 
     query.join_v.push(
         String::from_str(
@@ -769,9 +782,27 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
     query.order_v.push(String::from_str("tuid").unwrap());
     query.order_v.push(String::from_str("stop_time.stop_sequence").unwrap());
 
-    let params: Vec<&ToSql> =
+    let mut da : NaiveTime;
+    let mut ab : NaiveTime;
+
+    let mut params: Vec<&ToSql> =
         vec![&bbox.p1.lng, &bbox.p1.lat, &bbox.p2.lng, &bbox.p2.lat];
 
+    if limited_range {
+        da =
+            NaiveTime::parse_from_str(&ts.departure_after.clone().unwrap(),
+                                      "%H:%M:%S"
+            ).unwrap();
+        ab =
+            NaiveTime::parse_from_str(&ts.arrival_before.clone().unwrap(),
+                                      "%H:%M:%S"
+            ).unwrap();
+        ts.departure_after = None;
+        ts.arrival_before = None;
+        params.push(&da);
+        params.push(&da);
+    }
+    
     let paginated_result = trips_query_filter(&ts,
                                               query,
                                               params,

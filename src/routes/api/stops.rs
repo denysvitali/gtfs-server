@@ -377,7 +377,7 @@ fn get_stops_in_bbox(pool: &Pool<PostgresConnectionManager>, bbox: BoundingBox) 
                 4326), \
             position::geometry \
         ) \
-        LIMIT 50;";
+        LIMIT 5000;";
     let p1 = bbox.p1;
     let p2 = bbox.p2;
     //println!(format!("{}", query));

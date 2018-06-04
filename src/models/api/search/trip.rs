@@ -1,7 +1,7 @@
 use models::api::sort::tripsort::TripSort;
 use models::api::search::ascdesc::AscDesc;
 
-#[derive(FromForm, Serialize, Deserialize)]
+#[derive(FromForm, Serialize, Deserialize, Clone)]
 pub struct TripSearch {
     pub stops_visited: Option<String>,
     pub route: Option<String>,
