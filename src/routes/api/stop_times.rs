@@ -193,6 +193,99 @@ pub fn stop_times_between_near(rh: State<RoutesHandler>,
     })
 }
 
+#[get("/stop_times/between/<time>/<time2>/in/<bbox>")]
+pub fn stop_times_between_in(rh: State<RoutesHandler>,
+                               time: String,
+                               time2: String,
+                               bbox: BoundingBox
+)
+                               -> Json<ResultArray<StopTimes>> {
+    let query = r#"SELECT DISTINCT
+    trip.uid,
+    stop.uid,
+    j1.departure_time, j1.uid
+    FROM stop_time, stop, trip
+    INNER JOIN LATERAL (
+        SELECT s2.uid, st2.departure_time FROM stop_time as st2
+         JOIN stop as s2 ON s2.id = st2.stop_id AND s2.feed_id = st2.feed_id
+        WHERE st2.trip_id = stop_time.trip_id
+        AND st2.stop_sequence = (stop_time.stop_sequence + 1)
+    )  j1 ON true
+    WHERE
+        stop_time.stop_id = stop.id AND
+        stop_time.feed_id = stop.feed_id AND
+        trip.trip_id = stop_time.trip_id AND
+        trip.feed_id = stop_time.feed_id AND
+        ST_Contains(
+            ST_MakeEnvelope(
+                $2,
+                $1,
+                $4,
+                $3,
+                4326),
+            position::geometry
+        ) AND
+        stop_time.departure_time >= $5 AND
+        stop_time.departure_time < $6
+    LIMIT 8000"#;
+
+    let time1 : ParseResult<NaiveTime> = NaiveTime::from_str(&time);
+    let time2 : ParseResult<NaiveTime> = NaiveTime::from_str(&time2);
+
+    if time1.is_err() {
+        return Json(ResultArray{
+            result: None,
+            meta: Meta{
+                success: false,
+                error: Some(Error {
+                    code: 1,
+                    message: String::from("Time 1 is invalid"),
+                }),
+                pagination: None,
+            },
+        })
+    }
+
+    if time2.is_err() {
+        return Json(ResultArray{
+            result: None,
+            meta: Meta{
+                success: false,
+                error: Some(Error {
+                    code: 1,
+                    message: String::from("Time 2 is invalid"),
+                }),
+                pagination: None,
+            },
+        })
+    }
+
+    let conn = rh.pool.clone().get().unwrap();
+    let p1 = bbox.p1;
+    let p2 = bbox.p2;
+    let stop_times = conn.query(query, &[
+        &p1.lat,
+        &p1.lng,
+        &p2.lat,
+        &p2.lng,
+        &time1.unwrap(),
+        &time2.unwrap()
+    ]
+    );
+
+
+    let stop_times : Vec<StopTimes> = parse_stop_times(&stop_times.expect("Query failed"));
+
+    Json(ResultArray{
+        result: Some(stop_times),
+        meta: Meta{
+            success: true,
+            error: None,
+            pagination: None,
+        },
+    })
+}
+
 /*
 
 */

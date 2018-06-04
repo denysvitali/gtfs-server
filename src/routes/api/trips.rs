@@ -902,11 +902,26 @@ fn parse_stop_trip_trip_row<'a>(trips: &'a mut BTreeMap<Trip, Vec<StopTrip>>, ro
     */
     stop.set_feed_id(row.get(6));
 
-    let drop_off_i: i32 = row.get(17);
-    let pickup_i: i32 = row.get(18);
+    let drop_off_i: Option<i32> = row.get(17);
+    let pickup_i: Option<i32> = row.get(18);
 
-    let drop_off: DropOff = num::FromPrimitive::from_i32(drop_off_i).unwrap();
-    let pickup: PickUp = num::FromPrimitive::from_i32(pickup_i).unwrap();
+    let drop_off: DropOff = match drop_off_i {
+        Some(n) => {
+            num::FromPrimitive::from_i32(n).unwrap()
+        },
+        None => {
+            DropOff::RegularlyScheduled
+        }
+    };
+
+    let pickup: PickUp = match pickup_i {
+        Some(n) => {
+            num::FromPrimitive::from_i32(n).unwrap()
+        },
+        None => {
+            PickUp::RegularlyScheduled
+        }
+    };
 
     let arrival_time: NaiveTime = row.get(14);
     let departure_time: NaiveTime = row.get(15);
