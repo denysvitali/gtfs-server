@@ -78,6 +78,13 @@
 <span id="78">78</span>
 <span id="79">79</span>
 <span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! Trip related structs and implementations</span>
 <span class="kw">use</span> <span class="ident">models</span>::<span class="ident">stop</span>::<span class="ident">StopTrip</span>;
@@ -108,7 +115,7 @@
         <span class="ident">service_id</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
         <span class="ident">headsign</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
         <span class="ident">short_name</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-        <span class="ident">direction_id</span>: <span class="ident">i32</span>,
+        <span class="ident">direction_id</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>,
     ) <span class="op">-&gt;</span> <span class="ident">Trip</span> {
         <span class="ident">Trip</span> {
             <span class="ident">uid</span>,
@@ -117,7 +124,14 @@
             <span class="ident">trip_id</span>: <span class="ident">String</span>::<span class="ident">new</span>(),
             <span class="ident">headsign</span>,
             <span class="ident">short_name</span>,
-            <span class="ident">direction_id</span>,
+            <span class="ident">direction_id</span>: <span class="kw">match</span> <span class="ident">direction_id</span>.<span class="ident">is_some</span>(){
+                <span class="bool-val">true</span> <span class="op">=&gt;</span> {
+                    <span class="ident">direction_id</span>.<span class="ident">unwrap</span>()
+                },
+                <span class="bool-val">false</span> <span class="op">=&gt;</span> {
+                    <span class="number">1</span>
+                }
+            },
             <span class="ident">stop_sequence</span>: <span class="prelude-val">Some</span>(<span class="macro">vec</span><span class="macro">!</span>[]),
             <span class="ident">feed_id</span>: <span class="ident">String</span>::<span class="ident">new</span>(),
         }

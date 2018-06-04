@@ -961,6 +961,21 @@
 <span id="961">961</span>
 <span id="962">962</span>
 <span id="963">963</span>
+<span id="964">964</span>
+<span id="965">965</span>
+<span id="966">966</span>
+<span id="967">967</span>
+<span id="968">968</span>
+<span id="969">969</span>
+<span id="970">970</span>
+<span id="971">971</span>
+<span id="972">972</span>
+<span id="973">973</span>
+<span id="974">974</span>
+<span id="975">975</span>
+<span id="976">976</span>
+<span id="977">977</span>
+<span id="978">978</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/trips` related routes</span>
 
@@ -1866,11 +1881,26 @@
     */</span>
     <span class="ident">stop</span>.<span class="ident">set_feed_id</span>(<span class="ident">row</span>.<span class="ident">get</span>(<span class="number">6</span>));
 
-    <span class="kw">let</span> <span class="ident">drop_off_i</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">17</span>);
-    <span class="kw">let</span> <span class="ident">pickup_i</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">18</span>);
+    <span class="kw">let</span> <span class="ident">drop_off_i</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">17</span>);
+    <span class="kw">let</span> <span class="ident">pickup_i</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">18</span>);
 
-    <span class="kw">let</span> <span class="ident">drop_off</span>: <span class="ident">DropOff</span> <span class="op">=</span> <span class="ident">num</span>::<span class="ident">FromPrimitive</span>::<span class="ident">from_i32</span>(<span class="ident">drop_off_i</span>).<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">pickup</span>: <span class="ident">PickUp</span> <span class="op">=</span> <span class="ident">num</span>::<span class="ident">FromPrimitive</span>::<span class="ident">from_i32</span>(<span class="ident">pickup_i</span>).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">drop_off</span>: <span class="ident">DropOff</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">drop_off_i</span> {
+        <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=&gt;</span> {
+            <span class="ident">num</span>::<span class="ident">FromPrimitive</span>::<span class="ident">from_i32</span>(<span class="ident">n</span>).<span class="ident">unwrap</span>()
+        },
+        <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
+            <span class="ident">DropOff</span>::<span class="ident">RegularlyScheduled</span>
+        }
+    };
+
+    <span class="kw">let</span> <span class="ident">pickup</span>: <span class="ident">PickUp</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">pickup_i</span> {
+        <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=&gt;</span> {
+            <span class="ident">num</span>::<span class="ident">FromPrimitive</span>::<span class="ident">from_i32</span>(<span class="ident">n</span>).<span class="ident">unwrap</span>()
+        },
+        <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
+            <span class="ident">PickUp</span>::<span class="ident">RegularlyScheduled</span>
+        }
+    };
 
     <span class="kw">let</span> <span class="ident">arrival_time</span>: <span class="ident">NaiveTime</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">14</span>);
     <span class="kw">let</span> <span class="ident">departure_time</span>: <span class="ident">NaiveTime</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">15</span>);

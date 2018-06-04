@@ -1145,6 +1145,19 @@
 <span id="1145">1145</span>
 <span id="1146">1146</span>
 <span id="1147">1147</span>
+<span id="1148">1148</span>
+<span id="1149">1149</span>
+<span id="1150">1150</span>
+<span id="1151">1151</span>
+<span id="1152">1152</span>
+<span id="1153">1153</span>
+<span id="1154">1154</span>
+<span id="1155">1155</span>
+<span id="1156">1156</span>
+<span id="1157">1157</span>
+<span id="1158">1158</span>
+<span id="1159">1159</span>
+<span id="1160">1160</span>
 </pre><pre class="rust ">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">chrono</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">crypto</span>;
@@ -2280,6 +2293,19 @@
             <span class="kw-2">&amp;</span>[],
         ).<span class="ident">expect</span>(<span class="string">&quot;Unable to CREATE index 2 for calendar_date&quot;</span>);
         <span class="ident">update_db_ver</span>(<span class="number">12</span>, <span class="kw-2">&amp;</span><span class="ident">conn</span>);
+    }
+
+    <span class="kw">if</span> <span class="ident">ver</span> <span class="op">&lt;</span> <span class="number">13</span> {
+        <span class="comment">// calendar + calendar_date indexes</span>
+        <span class="ident">conn</span>.<span class="ident">execute</span>(
+            <span class="string">r#&quot;CREATE INDEX calendar_feed_id_start_end_date ON public.calendar (feed_id,start_date,end_date);&quot;#</span>,
+            <span class="kw-2">&amp;</span>[],
+        ).<span class="ident">expect</span>(<span class="string">&quot;[13] Unable to CREATE index for calendar&quot;</span>);
+        <span class="ident">conn</span>.<span class="ident">execute</span>(
+            <span class="string">r#&quot;CREATE INDEX calendar_date_date_idx ON public.calendar_date (&quot;date&quot;,feed_id);&quot;#</span>,
+            <span class="kw-2">&amp;</span>[],
+        ).<span class="ident">expect</span>(<span class="string">&quot;[13] Unable to CREATE index for calendar_date&quot;</span>);
+        <span class="ident">update_db_ver</span>(<span class="number">13</span>, <span class="kw-2">&amp;</span><span class="ident">conn</span>);
     }
 }
 
