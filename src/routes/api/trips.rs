@@ -739,7 +739,7 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
 		trip.feed_id as tfid
 		FROM trip, route, calendar
 		WHERE trip.uid IN (
-			SELECT DISTINCT trip.uid
+			SELECT trip.uid
 			FROM trip
 			WHERE EXISTS (
 				SELECT 1
@@ -759,7 +759,6 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
 		route.id = trip.route_id AND
 		calendar.service_id = trip.service_id
 		GROUP BY tuid, ruid, cuid, tid, ths, tsn, td, tfid
-		ORDER BY trip.uid
 	) as t"#.replace("{addition_goes_here}", addition);
 
     query.from_v.push(String::from_str(&formatted_query).unwrap());
@@ -776,12 +775,12 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
     );
     query.join_v.push(
         String::from_str(
-            "LEFT JOIN stop as pstop ON stop.id = stop. parent_stop AND stop.feed_id = tfid"
+            "LEFT JOIN stop as pstop ON pstop.id = stop.parent_stop AND pstop.feed_id = tfid"
         ).unwrap()
     );
 
-    query.order_v.push(String::from_str("tuid").unwrap());
-    query.order_v.push(String::from_str("stop_time.stop_sequence").unwrap());
+    //query.order_v.push(String::from_str("tuid").unwrap());
+    //query.order_v.push(String::from_str("stop_time.stop_sequence").unwrap());
 
     let mut da : NaiveTime;
     let mut ab : NaiveTime;
@@ -988,11 +987,23 @@ fn parse_stop_trip_row(row: &Row) -> StopTrip {
         row.get(5),
     );
 
-    let drop_off_i: i32 = row.get(7);
-    let pickup_i: i32 = row.get(8);
+    let drop_off_i: Option<i32> = row.get(7);
+    let pickup_i: Option<i32> = row.get(8);
 
-    let drop_off: DropOff = num::FromPrimitive::from_i32(drop_off_i).unwrap();
-    let pickup: PickUp = num::FromPrimitive::from_i32(pickup_i).unwrap();
+    let drop_off : DropOff;
+    let pickup : PickUp;
+
+    if drop_off_i.is_some() {
+        drop_off = num::FromPrimitive::from_i32(drop_off_i.unwrap()).unwrap();
+    } else {
+        drop_off = DropOff::RegularlyScheduled;
+    }
+
+    if pickup_i.is_some() {
+        pickup = num::FromPrimitive::from_i32(pickup_i.unwrap()).unwrap();
+    } else {
+        pickup = PickUp::RegularlyScheduled;
+    }
 
     let arrival_time: NaiveTime = row.get(9);
     let departure_time: NaiveTime = row.get(10);

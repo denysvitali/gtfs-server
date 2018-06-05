@@ -227,7 +227,7 @@ pub fn stop_times_between_in(rh: State<RoutesHandler>,
         ) AND
         stop_time.departure_time >= $5 AND
         stop_time.departure_time < $6
-    LIMIT 8000"#;
+    LIMIT 1000"#;
 
     let time1 : ParseResult<NaiveTime> = NaiveTime::from_str(&time);
     let time2 : ParseResult<NaiveTime> = NaiveTime::from_str(&time2);
