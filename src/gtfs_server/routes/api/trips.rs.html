@@ -1007,6 +1007,7 @@
 <span id="1007">1007</span>
 <span id="1008">1008</span>
 <span id="1009">1009</span>
+<span id="1010">1010</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/trips` related routes</span>
 
@@ -1226,7 +1227,7 @@
 
     <span class="kw">if</span> <span class="ident">ts</span>.<span class="ident">per_page</span>.<span class="ident">is_some</span>() {
         <span class="kw">let</span> <span class="ident">c_limit</span> <span class="op">=</span> <span class="ident">ts</span>.<span class="ident">per_page</span>.<span class="ident">unwrap</span>();
-        <span class="kw">if</span> <span class="ident">c_limit</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">c_limit</span> <span class="op">&lt;=</span> <span class="number">500</span> {
+        <span class="kw">if</span> <span class="ident">c_limit</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="ident">c_limit</span> <span class="op">&lt;=</span> <span class="number">1000</span> {
             <span class="ident">limit</span> <span class="op">=</span> <span class="ident">c_limit</span>;
         }
     }
@@ -1691,13 +1692,14 @@
         <span class="ident">where_v</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
         <span class="ident">join_v</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
         <span class="ident">order_v</span>: <span class="ident">Vec</span>::<span class="ident">new</span>(),
-        <span class="ident">limit</span>: <span class="number">500</span>,
+        <span class="ident">limit</span>: <span class="number">0</span>,
         <span class="ident">offset</span>: <span class="number">0</span>,
         <span class="ident">format</span>: <span class="ident">String</span>::<span class="ident">new</span>(),
         <span class="ident">sort_order</span>: <span class="ident">AscDesc</span>::<span class="ident">ASC</span>,
     };
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">ts</span>.<span class="ident">clone</span>();
+    <span class="ident">ts</span>.<span class="ident">per_page</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">1000</span>);
 
     <span class="ident">query</span>.<span class="ident">format</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="string">r#&quot;SELECT
         {0}
@@ -1810,7 +1812,7 @@
         <span class="ident">ts</span>.<span class="ident">departure_after</span> <span class="op">=</span> <span class="prelude-val">None</span>;
         <span class="ident">ts</span>.<span class="ident">arrival_before</span> <span class="op">=</span> <span class="prelude-val">None</span>;
         <span class="ident">params</span>.<span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="ident">da</span>);
-        <span class="ident">params</span>.<span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="ident">da</span>);
+        <span class="ident">params</span>.<span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="ident">ab</span>);
     }
     
     <span class="kw">let</span> <span class="ident">paginated_result</span> <span class="op">=</span> <span class="ident">trips_query_filter</span>(<span class="kw-2">&amp;</span><span class="ident">ts</span>,
