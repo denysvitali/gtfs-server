@@ -216,7 +216,7 @@ fn trips_query_filter(ts: &TripSearch,
 
     if ts.per_page.is_some() {
         let c_limit = ts.per_page.unwrap();
-        if c_limit > 0 && c_limit <= 500 {
+        if c_limit > 0 && c_limit <= 1000 {
             limit = c_limit;
         }
     }
@@ -681,13 +681,14 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
         where_v: Vec::new(),
         join_v: Vec::new(),
         order_v: Vec::new(),
-        limit: 500,
+        limit: 0,
         offset: 0,
         format: String::new(),
         sort_order: AscDesc::ASC,
     };
 
     let mut ts = ts.clone();
+    ts.per_page = Some(1000);
 
     query.format = String::from(r#"SELECT
         {0}
@@ -800,7 +801,7 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
         ts.departure_after = None;
         ts.arrival_before = None;
         params.push(&da);
-        params.push(&da);
+        params.push(&ab);
     }
     
     let paginated_result = trips_query_filter(&ts,
