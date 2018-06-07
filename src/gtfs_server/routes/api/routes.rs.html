@@ -278,7 +278,6 @@
 <span id="278">278</span>
 <span id="279">279</span>
 <span id="280">280</span>
-<span id="281">281</span>
 </pre><pre class="rust ">
 <span class="doccomment">//! `/routes` related routes</span>
 
@@ -358,8 +357,7 @@
 ) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">query</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(
         <span class="string">&quot;SELECT 
-        route.uid, route.id, route.agency, route.short_name,
-        route.long_name, route.description, route.type, route.color, route.text_color, route.feed_id
+        route.*
         FROM route &quot;</span>,
     );
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">addition</span>: <span class="ident">String</span>;
@@ -481,7 +479,7 @@
 <span class="doccomment">/// &lt;[Route](../../../models/route/struct.Route.html)&gt;</span>
 <span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/routes/by-stop/&lt;stop_uid&gt;&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">route_by_stop_uid</span>(<span class="ident">rh</span>: <span class="ident">State</span><span class="op">&lt;</span><span class="ident">RoutesHandler</span><span class="op">&gt;</span>, <span class="ident">stop_uid</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">ResultArray</span><span class="op">&lt;</span><span class="ident">Route</span><span class="op">&gt;&gt;</span> {
-    <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">&quot;SELECT route.uid, route.id, route.agency, route.short_name, route.long_name, route.description, route.\&quot;type\&quot;, route.color, route.text_color, route.feed_id FROM route, (SELECT trip.route_id as rid, trip.feed_id as fid
+    <span class="kw">let</span> <span class="ident">query</span> <span class="op">=</span> <span class="string">&quot;SELECT route.* FROM route, (SELECT trip.route_id as rid, trip.feed_id as fid
     FROM trip, (SELECT trip_id as tid, feed_id as fid FROM stop_time WHERE stop_time.stop_id = (SELECT stop.id FROM stop WHERE stop.uid = $1 )) as sq1
     WHERE sq1.tid = trip.trip_id 
     AND sq1.fid = trip.feed_id
@@ -556,8 +554,8 @@
         <span class="ident">long_name</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">4</span>),
         <span class="ident">description</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">5</span>),
         <span class="ident">route_type</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">6</span>),
-        <span class="ident">color</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">7</span>),
-        <span class="ident">text_color</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">8</span>),
+        <span class="ident">color</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">9</span>),
+        <span class="ident">text_color</span>: <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">10</span>),
         <span class="ident">feed_id</span>,
     }
 }
