@@ -76,8 +76,7 @@ fn get_routes_by_query(
 ) -> Vec<Route> {
     let mut query = String::from(
         "SELECT 
-        route.uid, route.id, route.agency, route.short_name,
-        route.long_name, route.description, route.type, route.color, route.text_color, route.feed_id
+        route.*
         FROM route ",
     );
     let mut addition: String;
@@ -199,7 +198,7 @@ pub fn route_by_id(rh: State<RoutesHandler>, route_uid: String) -> Json<Result<R
 /// <[Route](../../../models/route/struct.Route.html)>
 #[get("/routes/by-stop/<stop_uid>")]
 pub fn route_by_stop_uid(rh: State<RoutesHandler>, stop_uid: String) -> Json<ResultArray<Route>> {
-    let query = "SELECT route.uid, route.id, route.agency, route.short_name, route.long_name, route.description, route.\"type\", route.color, route.text_color, route.feed_id FROM route, (SELECT trip.route_id as rid, trip.feed_id as fid
+    let query = "SELECT route.* FROM route, (SELECT trip.route_id as rid, trip.feed_id as fid
     FROM trip, (SELECT trip_id as tid, feed_id as fid FROM stop_time WHERE stop_time.stop_id = (SELECT stop.id FROM stop WHERE stop.uid = $1 )) as sq1
     WHERE sq1.tid = trip.trip_id 
     AND sq1.fid = trip.feed_id
@@ -274,8 +273,8 @@ fn parse_route_row(row: &Row, rh: &State<RoutesHandler>) -> Route {
         long_name: row.get(4),
         description: row.get(5),
         route_type: row.get(6),
-        color: row.get(7),
-        text_color: row.get(8),
+        color: row.get(9),
+        text_color: row.get(10),
         feed_id,
     }
 }
