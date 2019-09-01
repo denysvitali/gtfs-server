@@ -1,12 +1,8 @@
 //! This is the documentation for `gtfs-server`
 //!
 
-#![feature(plugin)]
-#![feature(custom_derive)]
-#![plugin(rocket_codegen)]
-
-extern crate rocket;
-
+#![feature(proc_macro_hygiene, decl_macro)]
+#[macro_use] extern crate rocket;
 extern crate chrono;
 extern crate num_traits;
 extern crate postgres;
@@ -23,7 +19,7 @@ pub mod models;
 pub mod routes;
 
 use r2d2::Pool;
-use r2d2_postgres::{PostgresConnectionManager, TlsMode};
+use r2d2_postgres::{PostgresConnectionManager};
 
 use rocket::response::NamedFile;
 use routes::api;
@@ -35,8 +31,10 @@ use std::path::{Path, PathBuf};
 use chrono::{NaiveDate, NaiveTime};
 use std::{time,thread};
 use models::api::result::Result;
-use postgres::Error;
+use postgres::{Error, TlsMode};
 use importer::update_db;
+use postgres::tls::native_tls::NativeTls;
+use std::time::Duration;
 
 #[macro_use]
 extern crate serde_derive;
@@ -64,21 +62,25 @@ fn create_pool() -> Pool<PostgresConnectionManager> {
 
     let connection_string = format!("postgres://postgres:{}@{}:5432", password, hostname);
 
+
+
     let manager = PostgresConnectionManager::new(
-        connection_string.clone(),
-        TlsMode::None).unwrap();
+        connection_string.parse().unwrap(),
+            NativeTls
+    ).unwrap();
     let mut pool = Pool::new(manager);
 
     while pool.is_err() && attempts <= MAX_ATTEMPTS {
         let manager = PostgresConnectionManager::new(
-            connection_string.clone(),
-            TlsMode::None).unwrap();
+            connection_string.parse().unwrap(),
+            NativeTls
+        ).unwrap();
 
         println!("Unable to connect, attempt {}/{}", attempts, MAX_ATTEMPTS);
         pool = Pool::new(manager);
         attempts += 1;
         println!("Waiting 5s for the next try...");
-        thread::sleep_ms(5000);
+        std::thread::sleep(Duration::from_secs(5));
     }
 
     if pool.is_ok() {
