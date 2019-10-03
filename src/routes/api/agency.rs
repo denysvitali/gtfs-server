@@ -111,7 +111,7 @@ fn get_agency_by_uid(rh: State<RoutesHandler>, agency_uid: String) -> Option<Age
                  WHERE uid=$1\
                  LIMIT 1";
 
-    let conn = rh.pool.clone().get().unwrap();
+    let mut conn = rh.pool.clone().get().unwrap();
     let agency = conn.query(query, &[&agency_uid]);
     let agency = agency.expect("Query failed");
 
@@ -135,7 +135,7 @@ fn get_agencies(rh: &State<RoutesHandler>) -> Option<Vec<Agency>> {
                  FROM agency \
                  LIMIT 50";
 
-    let conn = rh.pool.clone().get().unwrap();
+    let mut conn = rh.pool.clone().get().unwrap();
     let agencies = conn.query(query, &[]);
 
     let result = agencies.expect("Query failed");
@@ -173,7 +173,7 @@ fn get_agency(
                  WHERE id=$1 AND feed_id=$2 \
                  LIMIT 1";
 
-    let conn = rh.pool.clone().get().unwrap();
+    let mut conn = rh.pool.clone().get().unwrap();
     let agencies = conn.query(query, &[&agency_id, &feed_id]);
 
     let result = agencies.expect("Query failed");

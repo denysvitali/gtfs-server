@@ -21,6 +21,7 @@ use postgres::row::Row;
 use postgres::NoTls;
 
 use postgres::types::ToSql;
+use rocket::request::Form;
 
 /// `/routes`  
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
@@ -28,7 +29,7 @@ use postgres::types::ToSql;
 #[get("/routes")]
 pub fn routes(rh: State<RoutesHandler>) -> Json<ResultArray<Route>> {
     let query = "SELECT * FROM route LIMIT 50";
-    let conn = rh.pool.clone().get().unwrap();
+    let mut conn = rh.pool.clone().get().unwrap();
     let routes = conn.query(query, &[]);
     let mut routes_result: Vec<Route> = Vec::new();
 
@@ -53,10 +54,10 @@ pub fn routes(rh: State<RoutesHandler>) -> Json<ResultArray<Route>> {
 
 // TODO: Implement Route Search by RouteSearch query
 
-#[get("/routes?<route_search>")]
+#[get("/routes?<route_search..>")]
 pub fn routes_by_query(
     rh: State<RoutesHandler>,
-    route_search: RouteSearch,
+    route_search: Form<RouteSearch>,
 ) -> Json<ResultArray<Route>> {
     let result: Vec<Route> = get_routes_by_query(&rh, &route_search, &rh.pool);
 
@@ -139,7 +140,8 @@ fn get_routes_by_query(
     }
 
     let mut conn = pool.clone().get().unwrap();
-    let times = conn.query(&conn.prepare(&query).unwrap(),
+    let stmt = conn.prepare(&query).unwrap();
+    let times = conn.query(&stmt,
                            &params.as_slice());
 
     println!("{:?}", params.as_slice());
@@ -162,7 +164,7 @@ fn get_routes_by_query(
 #[get("/routes/<route_uid>")]
 pub fn route_by_id(rh: State<RoutesHandler>, route_uid: String) -> Json<Result<Route>> {
     let query = "SELECT * FROM route WHERE uid = $1 LIMIT 1";
-    let conn = rh.pool.clone().get().unwrap();
+    let mut conn = rh.pool.clone().get().unwrap();
     let routes = conn.query(query, &[&route_uid]);
 
     let routes = routes.expect("Query failed");
@@ -208,7 +210,7 @@ pub fn route_by_stop_uid(rh: State<RoutesHandler>, stop_uid: String) -> Json<Res
     sq2.rid = route.id AND
     sq2.fid = route.feed_id";
 
-    let conn = rh.pool.clone().get().unwrap();
+    let mut conn = rh.pool.clone().get().unwrap();
     let routes = conn.query(query, &[&stop_uid]);
 
     let routes = routes.expect("Query failed");

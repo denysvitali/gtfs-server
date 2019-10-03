@@ -1,7 +1,7 @@
 use rocket::http::RawStr;
 use rocket::request::FromFormValue;
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, FromFormValue)]
 pub enum AscDesc {
     ASC,
     DESC,
@@ -13,17 +13,5 @@ impl AscDesc {
             &AscDesc::ASC => "ASC",
             &AscDesc::DESC => "DESC",
         }
-    }
-}
-
-impl<'v> FromFormValue<'v> for AscDesc {
-    type Error = ();
-
-    fn from_form_value(form_value: &RawStr) -> Result<Self, <Self as FromFormValue>::Error> {
-        Ok(match form_value.to_lowercase().as_str() {
-            "asc" => AscDesc::ASC,
-            "desc" => AscDesc::DESC,
-            _ => AscDesc::ASC,
-        })
     }
 }

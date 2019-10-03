@@ -42,6 +42,7 @@ use models::api::sort::tripsort::TripSort;
 use postgres::NoTls;
 use std::cmp::Ordering;
 use std::str::FromStr;
+use rocket::request::Form;
 
 fn add_stop_times_to_query(has_times: &mut bool, has_stop: &mut bool, query: &mut Query) {
     if !*has_times {
@@ -78,7 +79,7 @@ fn trips_query_filter(
 
     let mut query: Query = query.clone();
     let mut trips_result: Vec<Trip> = Vec::new();
-    let mut ints: Vec<i64> = Vec::new();
+    let ints: Vec<i64> = Vec::new();
     let mut values: Vec<String> = Vec::new();
     let mut i = params.len();
     let mut params: Vec<&ToSql> = Vec::from(params);
@@ -89,7 +90,7 @@ fn trips_query_filter(
         i += 1;
         addition = format!("stop_time.departure_time >= ${} ", &i);
 
-        values.push(ts.departure_after.unwrap_or(String::new()));
+        values.push(ts.departure_after.as_ref().unwrap().to_string());
         query.where_v.push(addition);
     }
 
@@ -98,7 +99,7 @@ fn trips_query_filter(
         i += 1;
         addition = format!("stop_time.arrival_time <= ${} ", &i);
 
-        values.push(ts.arrival_before.unwrap_or(String::new()));
+        values.push(ts.arrival_before.as_ref().unwrap().to_string());
         query.where_v.push(addition);
     }
 
@@ -222,9 +223,8 @@ fn trips_query_filter(
     println!("Query: {}", query.format());
 
     let mut conn = pool.clone().get().unwrap();
-    let trips = conn.query(
-        &conn.prepare(&query.format()).unwrap(),
-               &params);
+    let stmt= &conn.prepare(&query.format()).unwrap();
+    let trips = conn.query(stmt, &params);
 
     if select_has_times && select_has_stop {
         let mut trips_hm: BTreeMap<Trip, Vec<StopTrip>> = BTreeMap::new();
@@ -342,7 +342,7 @@ pub fn trips(rh: State<RoutesHandler>) -> Json<ResultArray<Trip>> {
                  AND r.feed_id = t.feed_id \
                  LIMIT 50";
 
-    let conn = rh.pool.clone().get().unwrap();
+    let mut conn = rh.pool.clone().get().unwrap();
     let trips = conn.query(query, &[]);
 
     let mut trips_result: Vec<Trip> = Vec::new();
@@ -377,8 +377,8 @@ pub fn trips(rh: State<RoutesHandler>) -> Json<ResultArray<Trip>> {
 /// the stop_sequence vector (for a performance reason).
 /// To get the related stop_sequence, make a GET request to `/trips/<uid>`.
 
-#[get("/trips?<query>")]
-pub fn trips_by_query(rh: State<RoutesHandler>, query: TripSearch) -> Json<ResultArray<Trip>> {
+#[get("/trips?<query..>")]
+pub fn trips_by_query(rh: State<RoutesHandler>, query: Form<TripSearch>) -> Json<ResultArray<Trip>> {
     let trips_result: PaginatedVec<Trip> = get_trips_by_query(&query, &rh.pool);
 
     let rr = ResultArray::<Trip> {
@@ -422,7 +422,7 @@ pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArr
                  AND r.feed_id = t.feed_id \
                  LIMIT 50";
 
-    let conn = rh.pool.clone().get().unwrap();
+    let mut conn = rh.pool.clone().get().unwrap();
     let trips = conn.query(query, &[&stop_id]);
 
     let mut trips_result: Vec<Trip> = Vec::new();
@@ -532,7 +532,7 @@ pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>> {
                  route.feed_id = trip.feed_id AND \
                  route.id = trip.route_id";
 
-    let conn = rh.pool.clone().get().unwrap();
+    let mut conn = rh.pool.clone().get().unwrap();
     let trips = conn.query(query, &[&trip_id]);
 
     let trips = &trips.unwrap();
@@ -593,7 +593,7 @@ pub fn trips_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<Resul
         calendar.service_id = trip.service_id
         LIMIT 50";
 
-    let conn = rh.pool.clone().get().unwrap();
+    let mut conn = rh.pool.clone().get().unwrap();
     let trips = conn.query(query, &[&route_uid]);
 
     let trips = &trips.unwrap();
@@ -646,7 +646,7 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
     return trips_by_bbox_query(
         rh,
         bbox,
-        TripSearch {
+        Form(TripSearch {
             stops_visited: None,
             route: None,
             departure_after: None,
@@ -655,7 +655,7 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
             per_page: None,
             sort_by: None,
             sort_order: None,
-        },
+        }),
     );
 }
 
@@ -664,11 +664,11 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
 /// Returns a [ResultArray](../../../models/api/result/struct.ResultArray.html)
 /// <[Trip](../../../models/trip/struct.Trip.html)>
 ///
-#[get("/trips/in/<bbox>?<ts>")]
+#[get("/trips/in/<bbox>?<ts..>")]
 pub fn trips_by_bbox_query(
     rh: State<RoutesHandler>,
     bbox: BoundingBox,
-    ts: TripSearch,
+    ts: Form<TripSearch>,
 ) -> Json<ResultArray<Trip>> {
     let mut query: Query = Query {
         select_v: Vec::new(),
@@ -853,8 +853,9 @@ fn get_stop_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager<NoTls>>
 
     println!("Query (trip_uid = {}): {}", trip_uid, query);
 
-    let connection = pool.clone().get().unwrap();
-    let stop_trips = connection.query(query, &[&trip_uid]);
+    let mut connection = pool.clone().get().unwrap();
+    let stmt = connection.prepare(query).unwrap();
+    let stop_trips = connection.query(&stmt, &[&trip_uid]);
 
     let mut stop_trip_result: Vec<StopTrip> = Vec::new();
 

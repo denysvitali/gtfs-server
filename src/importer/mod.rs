@@ -115,7 +115,7 @@ impl<'a> PartialOrd for MZipFile<'a> {
 pub fn parse_feed_zip(zar: &mut ZipArchive<File>, pool: &Pool<PostgresConnectionManager<NoTls>>) {
     let mut feed_id: String = String::new();
     for i in 0..zar.len() {
-        let mut file = zar.by_index(i).expect("Invalid file index");
+        let file = zar.by_index(i).expect("Invalid file index");
         println!("File {} ", file.name());
         if file.name() == "feed_info.txt" {
             feed_id = parse_feed(file, pool);
@@ -391,7 +391,7 @@ pub fn parse_trips(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMana
         }
     }
     for result in rdr.deserialize() {
-        let conn = pool.clone().get().unwrap();
+        let mut conn = pool.clone().get().unwrap();
         let feed_clone: String = String::from(feed_id).to_owned();
         let fc = fields.clone();
         thread::spawn(move || {
@@ -495,7 +495,7 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
     println!("{:?}", fields);
     for result in rdr.byte_records() {
         let record = result.unwrap();
-        let conn = pool.get().unwrap();
+        let mut conn = pool.get().unwrap();
         let feed_clone: String = String::from(feed_id).to_owned();
         let fc = fields.clone();
 
@@ -536,24 +536,6 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
             if !re.is_match(dt) {
                 panic!("Invalid departure time!");
             }
-
-            let (mut h_arr, mut m_arr, mut s_arr) = (0, 0, 0);
-            let (mut h_dep, mut m_dep, mut s_dep) = (0, 0, 0);
-
-            for cap in re.captures_iter(at) {
-                h_arr = u32::from_str(&cap[1]).unwrap() % 24;
-                m_arr = u32::from_str(&cap[2]).unwrap();
-                s_arr = u32::from_str(&cap[3]).unwrap();
-            }
-
-            for cap in re.captures_iter(dt) {
-                h_dep = u32::from_str(&cap[1]).unwrap() % 24;
-                m_dep = u32::from_str(&cap[2]).unwrap();
-                s_dep = u32::from_str(&cap[3]).unwrap();
-            }
-
-            let arr_time : String;
-            let dep_time : String;
 
             let mut stop_headsign: Option<String> = Option::None;
             let mut pickup_type: Option<i32> = Option::None;
@@ -618,8 +600,8 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
             conn.execute(&stmt,&[
                 &String::from_utf8(record[field_index_by_name("trip_id", &fc).unwrap()].to_vec())
                     .unwrap(),
-                &arr_time,
-                &dep_time,
+                &at,
+                &dt,
                 &String::from_utf8(record[field_index_by_name("stop_id", &fc).unwrap()].to_vec())
                     .unwrap(),
                 &String::from_utf8(
@@ -1037,7 +1019,7 @@ pub fn update_db(pool: &Pool<PostgresConnectionManager<NoTls>>) {
     }
 }
 
-pub fn update_db_ver(ver: u32, conn: &PooledConnection<PostgresConnectionManager<NoTls>>) {
+pub fn update_db_ver(ver: u32, conn: &mut PooledConnection<PostgresConnectionManager<NoTls>>) {
     conn.execute(
         "UPDATE settings SET value=$1 WHERE key = 'db_version'",
         &[&ver.to_string()],
@@ -1052,7 +1034,7 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
     }
     if ver < 2 {
         // Do nothing.
-        update_db_ver(2, &conn);
+        update_db_ver(2, &mut conn);
     }
 
     if ver < 3 {
@@ -1065,7 +1047,7 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
             &[],
         )
         .expect("Unable to alter table stop_time");
-        update_db_ver(3, &conn);
+        update_db_ver(3, &mut conn);
     }
 
     if ver < 4 {
@@ -1078,7 +1060,7 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
             &[],
         )
         .expect("Unable to ALTER TABLE route");
-        update_db_ver(4, &conn);
+        update_db_ver(4, &mut conn);
     }
 
     if ver < 5 {
@@ -1093,7 +1075,7 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
             &[],
         )
         .expect("Unable to ALTER TABLE stop");
-        update_db_ver(5, &conn);
+        update_db_ver(5, &mut conn);
     }
 
     if ver < 6 {
@@ -1104,7 +1086,7 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
             &[],
         )
         .expect("Unable to ALTER TABLE agency");
-        update_db_ver(6, &conn);
+        update_db_ver(6, &mut conn);
     }
 
     if ver < 7 {
@@ -1114,7 +1096,7 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
             &[],
         )
         .expect("Unable to ALTER TABLE trip");
-        update_db_ver(7, &conn);
+        update_db_ver(7, &mut conn);
     }
 
     if ver < 8 {
@@ -1124,7 +1106,7 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
             &[],
         )
         .expect("Unable to ALTER TABLE trip");
-        update_db_ver(8, &conn);
+        update_db_ver(8, &mut conn);
     }
 
     if ver < 9 {
@@ -1146,7 +1128,7 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
             ADD CONSTRAINT trip_calendar_dates_fk FOREIGN KEY(service_id, feed_id) REFERENCES
             calendar_dates(service_id, feed_id)", &[])
         .expect("Unable to ALTER TABLE trip");*/
-        update_db_ver(9, &conn);
+        update_db_ver(9, &mut conn);
     }
 
     if ver < 10 {
@@ -1157,7 +1139,7 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
             &[],
         )
         .expect("Unable to ALTER TABLE trip");
-        update_db_ver(10, &conn);
+        update_db_ver(10, &mut conn);
     }
 
     if ver < 11 {
@@ -1167,7 +1149,7 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
             &[],
         )
         .expect("Unable to ALTER TABLE trip");
-        update_db_ver(11, &conn);
+        update_db_ver(11, &mut conn);
     }
 
     if ver < 12 {
@@ -1183,7 +1165,7 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
             &[],
         )
         .expect("Unable to CREATE index 2 for calendar_date");
-        update_db_ver(12, &conn);
+        update_db_ver(12, &mut conn);
     }
 
     if ver < 13 {
@@ -1197,7 +1179,7 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
             &[],
         )
         .expect("[13] Unable to CREATE index for calendar_date");
-        update_db_ver(13, &conn);
+        update_db_ver(13, &mut conn);
     }
 }
 

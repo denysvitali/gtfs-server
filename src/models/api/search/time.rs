@@ -1,6 +1,8 @@
 //! TimeSearch related structs and implementations
 // use super::ascdesc::AscDesc;
 
+use models::api::search::ascdesc::AscDesc;
+
 #[derive(FromForm, Serialize, Deserialize, Default)]
 pub struct TimeSearch {
     pub date: Option<String>,
@@ -20,14 +22,14 @@ pub struct TimeSearch {
     pub pickup_type: Option<String>,
     pub drop_off_type: Option<String>,
     pub stop_sequence: Option<i32>,
-    pub sort_by: Option<String>, // TODO: Switch to TimeSort later (https://github.com/SergioBenitez/Rocket/issues/16)
-    pub sort_order: Option<String>, // TODO: Switch to AscDesc, see above
+    pub sort_by: Option<TimeSort>, // TODO: Switch to TimeSort later (https://github.com/SergioBenitez/Rocket/issues/16)
+    pub sort_order: Option<AscDesc>, // TODO: Switch to AscDesc, see above
     pub stop: Option<String>,
     pub route: Option<String>,
     pub trip: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, FromPrimitive, ToPrimitive)]
+#[derive(Serialize, Deserialize, FromPrimitive, ToPrimitive, FromFormValue)]
 pub enum TimeSort {
     ArrivalTime,
     DepartureTime,

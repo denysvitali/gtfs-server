@@ -27,9 +27,11 @@ use super::model_api::search::ascdesc::AscDesc;
 use super::model_api::search::time::TimeSearch;
 use super::model_api::search::time::TimeSort;
 use postgres::NoTls;
+use rocket::request::Form;
+use std::borrow::BorrowMut;
 
-#[get("/times?<time_search>")]
-pub fn times_query(rh: State<RoutesHandler>, time_search: TimeSearch) -> Json<ResultArray<Time>> {
+#[get("/times?<time_search..>")]
+pub fn times_query(rh: State<RoutesHandler>, time_search: Form<TimeSearch>) -> Json<ResultArray<Time>> {
     let result = get_times_by_query(&time_search, &rh.pool);
 
     let meta = Meta {
@@ -181,14 +183,16 @@ pub fn times_by_trip(rh: State<RoutesHandler>, trip_uid: String) -> Json<ResultA
     ```
 **/
 ///
-#[get("/times/by-stop/<stop_id>?<time_search>")]
+#[get("/times/by-stop/<stop_id>?<time_search..>")]
 pub fn times_stop_query(
     rh: State<RoutesHandler>,
     stop_id: String,
-    mut time_search: TimeSearch,
+    mut time_search: Form<TimeSearch>,
 ) -> Json<ResultArray<Time>> {
-    time_search.stop = Some(stop_id);
-    let result = get_times_by_query(&time_search, &rh.pool);
+    let mut ts = time_search.into_inner();
+    let mut mts = ts.borrow_mut();
+    mts.stop = Some(stop_id);
+    let result = get_times_by_query(&ts, &rh.pool);
 
     let meta = Meta {
         success: true,
@@ -436,7 +440,7 @@ fn get_times_by_query<'a>(
         let mut sort: AscDesc = AscDesc::ASC;
         if time_search.sort_order.as_ref().is_some() {
             let res = time_search.sort_order.as_ref().unwrap();
-            sort = match res.to_lowercase().as_str() {
+            sort = match res.as_str().to_lowercase().as_str() {
                 "asc" => AscDesc::ASC,
                 "desc" => AscDesc::DESC,
                 _ => AscDesc::ASC,
@@ -477,7 +481,8 @@ fn get_times_by_query<'a>(
     ORDER BY stop_sequence) as a INNER JOIN stop ON (a.stop_id=stop.id) WHERE a.feed_id = stop.feed_id";*/
 
     let mut conn = pool.clone().get().unwrap();
-    let times = conn.query(&conn.prepare(&query).unwrap(), &params.as_slice());
+    let stmt = &conn.prepare(&query).unwrap();
+    let times = conn.query(stmt, &params.as_slice());
 
     println!("{:?}", params.as_slice());
 

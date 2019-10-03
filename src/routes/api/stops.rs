@@ -281,7 +281,7 @@ fn get_stop_by_id(stop_id: String, pool: &Pool<PostgresConnectionManager<NoTls>>
         WHERE uid=$1
         LIMIT 1";
 
-    let conn = pool.clone().get().unwrap();
+    let mut conn = pool.clone().get().unwrap();
     let stops = conn.query(query, &[&stop_id]);
 
     let stops = &stops.expect("Query failed");
@@ -306,7 +306,7 @@ fn get_stops(pool: &Pool<PostgresConnectionManager<NoTls>>) -> Vec<Stop> {
         ST_X(position::geometry) as lng FROM stop
         LIMIT 50";
 
-    let conn = pool.clone().get().unwrap();
+    let mut conn = pool.clone().get().unwrap();
     let stops = conn.query(query, &[]);
 
     let mut stops_result: Vec<Stop> = Vec::new();
@@ -342,7 +342,7 @@ fn get_stops_near(
         LIMIT 50;";
 
     //println!(format!("{}", query));
-    let conn = pool.clone().get().unwrap();
+    let mut conn = pool.clone().get().unwrap();
     let stops = conn.query(query, &[&format!("POINT({:.5} {:.5})", lng, lat), &meters]);
 
     let mut stops_result: Vec<StopDistance> = Vec::new();
@@ -387,7 +387,7 @@ fn get_stops_in_bbox(
     let p2 = bbox.p2;
     //println!(format!("{}", query));
 
-    let conn = pool.clone().get().unwrap();
+    let mut conn = pool.clone().get().unwrap();
     let stops = conn.query(query, &[&p1.lat, &p1.lng, &p2.lat, &p2.lng]);
 
     let mut stops_result: Vec<Stop> = Vec::new();
@@ -428,7 +428,7 @@ fn get_stops_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager<NoTl
             trip.uid=$1 \
     ORDER BY stop_time.stop_sequence ASC;";
 
-    let conn = pool.clone().get().unwrap();
+    let mut conn = pool.clone().get().unwrap();
     let stops = conn.query(query, &[&trip_id]);
 
     let mut stops_result: Vec<Stop> = Vec::new();

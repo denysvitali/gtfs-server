@@ -177,7 +177,7 @@ pub fn stop_times_between_in(
         stop_time.departure_time < $6
     LIMIT 1000"#;
 
-    let conn = rh.pool.clone().get().unwrap();
+    let mut conn = rh.pool.clone().get().unwrap();
     let p1 = bbox.p1;
     let p2 = bbox.p2;
     let stop_times = conn.query(
