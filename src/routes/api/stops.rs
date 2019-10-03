@@ -9,18 +9,20 @@ use super::model_api::stopdistance::StopDistance;
 use models::boundingbox::BoundingBox;
 use models::stop::Stop;
 
-use super::super::Json;
+use rocket_contrib::json::Json;
+
 use super::super::Pool;
 use super::super::PostgresConnectionManager;
 use super::super::RoutesHandler;
 use super::super::State;
-use postgres::rows::Row;
+use postgres::row::Row;
 use std::f64;
 
 use rocket::http::ContentType;
 use rocket::response::content;
 
 use models::coordinate::Coordinate;
+use postgres::NoTls;
 
 static GMAPS_API_KEY: &'static str = "AIzaSyAvtzzsAPAlOrK8JbGfXfHMt18MbqCqrj4";
 
@@ -29,7 +31,7 @@ static GMAPS_API_KEY: &'static str = "AIzaSyAvtzzsAPAlOrK8JbGfXfHMt18MbqCqrj4";
 ///  
 /// ### Example
 /// `/api/stops/` returns:  
-/**  
+/**
     ```json
     {
       "result": [
@@ -62,7 +64,7 @@ pub fn stops(rh: State<RoutesHandler>) -> Json<ResultArray<Stop>> {
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     };
     Json(sr)
@@ -83,7 +85,7 @@ pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Sto
                     code: 2,
                     message: String::from("Invalid stop id"),
                 }),
-                pagination: Option::None
+                pagination: Option::None,
             },
         });
     }
@@ -93,7 +95,7 @@ pub fn stops_by_id(rh: State<RoutesHandler>, stop_id: String) -> Json<Result<Sto
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     };
     Json(sr)
@@ -108,7 +110,7 @@ pub fn stops_by_trip(rh: State<RoutesHandler>, trip_id: String) -> Json<ResultAr
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     };
     Json(sr)
@@ -130,7 +132,7 @@ pub fn stops_near_default(
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     };
     Json(sr)
@@ -154,7 +156,7 @@ pub fn stops_near(
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     };
     Json(sr)
@@ -173,7 +175,7 @@ pub fn stops_in_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     };
     Json(sr)
@@ -198,7 +200,7 @@ pub fn stops_in_bbox_radius(
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     };
     Json(sr)
@@ -254,7 +256,7 @@ fn parse_stop_row(row: &Row) -> Stop {
     let uid = row.get(0);
     let id = row.get(1);
     let name = row.get(2);
-    let location_type : Option<i32> = row.get(3);
+    let location_type: Option<i32> = row.get(3);
     let parent_station: Option<String> = row.get(4);
     let feed_id = row.get(5);
 
@@ -266,7 +268,7 @@ fn parse_stop_row(row: &Row) -> Stop {
     stop
 }
 
-fn get_stop_by_id(stop_id: String, pool: &Pool<PostgresConnectionManager>) -> Option<Stop> {
+fn get_stop_by_id(stop_id: String, pool: &Pool<PostgresConnectionManager<NoTls>>) -> Option<Stop> {
     let query = "SELECT
         uid,
         id,
@@ -288,11 +290,11 @@ fn get_stop_by_id(stop_id: String, pool: &Pool<PostgresConnectionManager>) -> Op
         return Option::None;
     }
 
-    let stop = parse_stop_row(&stops.get(0));
+    let stop = parse_stop_row(&stops.get(0).unwrap());
     Some(stop)
 }
 
-fn get_stops(pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
+fn get_stops(pool: &Pool<PostgresConnectionManager<NoTls>>) -> Vec<Stop> {
     let query = "SELECT
         uid,
         id,
@@ -318,7 +320,7 @@ fn get_stops(pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
 }
 
 fn get_stops_near(
-    pool: &Pool<PostgresConnectionManager>,
+    pool: &Pool<PostgresConnectionManager<NoTls>>,
     lat: f32,
     lng: f32,
     meters: f64,
@@ -357,7 +359,10 @@ fn get_stops_near(
     stops_result
 }
 
-fn get_stops_in_bbox(pool: &Pool<PostgresConnectionManager>, bbox: BoundingBox) -> Vec<Stop> {
+fn get_stops_in_bbox(
+    pool: &Pool<PostgresConnectionManager<NoTls>>,
+    bbox: BoundingBox,
+) -> Vec<Stop> {
     let query = "SELECT \
         uid,
         id,
@@ -395,9 +400,9 @@ fn get_stops_in_bbox(pool: &Pool<PostgresConnectionManager>, bbox: BoundingBox) 
     stops_result
 }
 
-fn get_stops_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Stop> {
+fn get_stops_by_trip(trip_id: String, pool: &Pool<PostgresConnectionManager<NoTls>>) -> Vec<Stop> {
     /*
-        	stop_time.stop_sequence, \
+            stop_time.stop_sequence, \
             stop_time.arrival_time, \
             stop_time.departure_time \
     */

@@ -13,12 +13,11 @@ pub struct Query {
     pub limit: i64,
     pub offset: i64,
     pub format: String,
-    pub sort_order: AscDesc
+    pub sort_order: AscDesc,
 }
 
 impl Query {
     pub fn format(&mut self) -> String {
-
         if self.where_v.len() == 0 {
             self.where_v.push(String::from("1=1"));
         }
@@ -29,24 +28,25 @@ impl Query {
         let join_string = self.join_v.join("\n");
         let order_string = match self.order_v.len() {
             0 => String::from(""),
-            _ => format!("ORDER BY {} {}",
-                         self.order_v.join(",\n"),
-                         self.sort_order.as_str())
+            _ => format!(
+                "ORDER BY {} {}",
+                self.order_v.join(",\n"),
+                self.sort_order.as_str()
+            ),
         };
 
             ;
-        let limit_string = format!("LIMIT {} OFFSET {}",
-            self.limit,
-            self.offset
-        );
+        let limit_string = format!("LIMIT {} OFFSET {}", self.limit, self.offset);
 
-        return rt_format!(self.format,
+        return rt_format!(
+            self.format,
             select_string,
             rt_format!(from_string, limit_string).unwrap(),
             join_string,
             where_string,
             order_string,
             limit_string
-        ).unwrap()
+        )
+        .unwrap();
     }
 }

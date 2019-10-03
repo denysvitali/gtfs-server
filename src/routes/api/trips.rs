@@ -13,14 +13,15 @@ use super::model_api::error::Error;
 use super::model_api::result::Result;
 use super::model_api::resultarray::ResultArray;
 
-use super::super::Json;
+use rocket_contrib::json::Json;
+
 use super::super::Pool;
 use super::super::PostgresConnectionManager;
 use super::super::RoutesHandler;
 use super::super::State;
 
 use chrono::NaiveTime;
-use postgres::rows::Row;
+use postgres::row::Row;
 use postgres::types::ToSql;
 
 use std::ops::Deref;
@@ -29,23 +30,27 @@ use std::ops::DerefMut;
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 
-use models::api::search::trip::TripSearch;
-use models::boundingbox::BoundingBox;
-use num_traits as num;
 use models::api::paginatedvec::PaginatedVec;
 use models::api::pagination::Pagination;
-use models::query::Query;
 use models::api::search::ascdesc::AscDesc;
+use models::api::search::trip::TripSearch;
+use models::boundingbox::BoundingBox;
+use models::query::Query;
+use num_traits as num;
 
-use std::str::FromStr;
 use models::api::sort::tripsort::TripSort;
+use postgres::NoTls;
 use std::cmp::Ordering;
+use std::str::FromStr;
 
 fn add_stop_times_to_query(has_times: &mut bool, has_stop: &mut bool, query: &mut Query) {
     if !*has_times {
-        query.join_v.push(String::from_str(
-            "INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid"
-        ).unwrap());
+        query.join_v.push(
+            String::from_str(
+                "INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid",
+            )
+            .unwrap(),
+        );
         *has_times = true;
     }
 
@@ -57,71 +62,50 @@ fn add_stop_times_to_query(has_times: &mut bool, has_stop: &mut bool, query: &mu
     }
 }
 
-fn trips_query_filter(ts: &TripSearch,
-                      query: Query,
-                      params: Vec<&ToSql>,
-                      pool: &Pool<PostgresConnectionManager>,
-                      has_times: bool,
-                      has_stop: bool
+fn trips_query_filter(
+    ts: &TripSearch,
+    query: Query,
+    params: Vec<&ToSql>,
+    pool: &Pool<PostgresConnectionManager<NoTls>>,
+    has_times: bool,
+    has_stop: bool,
 ) -> PaginatedVec<Trip> {
-
     let select_has_times = has_times;
     let select_has_stop = has_stop;
 
     let mut has_times = has_times;
     let mut has_stop = has_stop;
 
-    let mut query : Query = query.clone();
+    let mut query: Query = query.clone();
     let mut trips_result: Vec<Trip> = Vec::new();
-    let mut ints : Vec<i64> = Vec::new();
+    let mut ints: Vec<i64> = Vec::new();
     let mut values: Vec<String> = Vec::new();
-    let mut times : Vec<NaiveTime> = Vec::new();
     let mut i = params.len();
     let mut params: Vec<&ToSql> = Vec::from(params);
     let mut addition: String;
 
     if ts.departure_after.is_some() {
-        let departure_after_str = ts.departure_after.as_ref().unwrap();
-        let departure_after =
-            NaiveTime::parse_from_str(&departure_after_str,
-                                      "%H:%M:%S"
-            ).unwrap();
         add_stop_times_to_query(&mut has_times, &mut has_stop, &mut query);
         i += 1;
-        addition = format!(
-            "stop_time.departure_time >= ${} ",
-            &i
-        );
+        addition = format!("stop_time.departure_time >= ${} ", &i);
 
-        times.push(departure_after);
+        values.push(ts.departure_after.unwrap_or(String::new()));
         query.where_v.push(addition);
     }
 
     if ts.arrival_before.is_some() {
-        let arrival_before =
-            NaiveTime::parse_from_str(ts.arrival_before.as_ref().unwrap(),
-                                      "%H:%M:%S"
-            ).unwrap();
-
         add_stop_times_to_query(&mut has_times, &mut has_stop, &mut query);
         i += 1;
-        addition = format!(
-            "stop_time.arrival_time <= ${} ",
-            &i
-        );
+        addition = format!("stop_time.arrival_time <= ${} ", &i);
 
-        times.push(arrival_before);
+        values.push(ts.arrival_before.unwrap_or(String::new()));
         query.where_v.push(addition);
     }
 
-    for time in &times {
-        params.push(time);
-    }
-
     if ts.route.is_some() {
-        i+= 1;
+        i += 1;
 
-        let route_uid : String = ts.route.as_ref().unwrap().to_string();
+        let route_uid: String = ts.route.as_ref().unwrap().to_string();
 
         addition = format!("ruid = ${}", &i);
         values.push(route_uid);
@@ -172,29 +156,31 @@ fn trips_query_filter(ts: &TripSearch,
                     query.select_v.push(String::from("tsid"));
                     query.order_v.push(String::from("tsid"));
                     query.order_v.rotate_right(1);
-                },
+                }
                 &TripSort::RouteId => {
                     query.order_v.push(String::from("ruid"));
                     query.order_v.rotate_right(1);
-                },
+                }
                 &TripSort::Uid => {
                     query.order_v.push(String::from("tuid"));
                     query.order_v.rotate_right(1);
-                },
+                }
                 &TripSort::DirectionId => {
                     query.order_v.push(String::from("td"));
                     query.order_v.rotate_right(1);
                 }
                 &TripSort::DepartureTime => {
-                    query.select_v.push(String::from("stop_time.departure_time"));
+                    query
+                        .select_v
+                        .push(String::from("stop_time.departure_time"));
                     query.order_v.push(String::from("stop_time.departure_time"));
                     query.order_v.rotate_right(1);
-                },
+                }
                 &TripSort::ArrivalTime => {
                     query.select_v.push(String::from("stop_time.arrival_time"));
                     query.order_v.push(String::from("stop_time.arrival_time"));
                     query.order_v.rotate_right(1);
-                },
+                }
                 _ => {}
             }
         }
@@ -204,8 +190,8 @@ fn trips_query_filter(ts: &TripSearch,
         query.sort_order = ts.sort_order.as_ref().unwrap().clone();
     }
 
-    let mut offset : i64 = 0;
-    let mut limit: i64  = 50;
+    let mut offset: i64 = 0;
+    let mut limit: i64 = 50;
 
     if ts.offset.is_some() {
         let c_offset = ts.offset.unwrap();
@@ -235,9 +221,10 @@ fn trips_query_filter(ts: &TripSearch,
 
     println!("Query: {}", query.format());
 
-    let conn = pool.clone().get().unwrap();
-    let trips = conn.query(&query.format(), &params);
-
+    let mut conn = pool.clone().get().unwrap();
+    let trips = conn.query(
+        &conn.prepare(&query.format()).unwrap(),
+               &params);
 
     if select_has_times && select_has_stop {
         let mut trips_hm: BTreeMap<Trip, Vec<StopTrip>> = BTreeMap::new();
@@ -254,61 +241,72 @@ fn trips_query_filter(ts: &TripSearch,
             let mut t = (*k).clone();
             t.stop_sequence = Some(v.clone());
             trips_result.push(t);
-
         }
 
         if ts.sort_by.is_some() {
             let v_v = ts.sort_by.as_ref().unwrap();
             // Handle sorting of BTreeMap
             match v_v {
-                &TripSort::ArrivalTime => {
-                    trips_result.sort_by(|a, b| {
-                        if a.stop_sequence.as_ref().is_some() {
-                            if b.stop_sequence.as_ref().is_some() {
-                                let at_a = a.stop_sequence.as_ref().unwrap().get(0)
-                                    .unwrap().arrival_time;
-                                let at_b = b.stop_sequence.as_ref().unwrap().get(0)
-                                    .unwrap().arrival_time;
-                                return at_a.cmp(&at_b);
-                            } else {
-                                return Ordering::Less;
-                            }
+                &TripSort::ArrivalTime => trips_result.sort_by(|a, b| {
+                    if a.stop_sequence.as_ref().is_some() {
+                        if b.stop_sequence.as_ref().is_some() {
+                            let at_a = a
+                                .stop_sequence
+                                .as_ref()
+                                .unwrap()
+                                .get(0)
+                                .unwrap()
+                                .arrival_time;
+                            let at_b = b
+                                .stop_sequence
+                                .as_ref()
+                                .unwrap()
+                                .get(0)
+                                .unwrap()
+                                .arrival_time;
+                            return at_a.cmp(&at_b);
                         } else {
-                            return Ordering::Greater;
+                            return Ordering::Less;
                         }
-                    })
-                },
-                &TripSort::DepartureTime => {
-                    trips_result.sort_by(|a, b| {
-                        if a.stop_sequence.as_ref().is_some() {
-                            if b.stop_sequence.as_ref().is_some() {
-                                let at_a = a.stop_sequence.as_ref().unwrap().get(0)
-                                    .unwrap().departure_time;
-                                let at_b = b.stop_sequence.as_ref().unwrap().get(0)
-                                    .unwrap().departure_time;
-                                return at_a.cmp(&at_b);
-                            } else {
-                                return Ordering::Less;
-                            }
+                    } else {
+                        return Ordering::Greater;
+                    }
+                }),
+                &TripSort::DepartureTime => trips_result.sort_by(|a, b| {
+                    if a.stop_sequence.as_ref().is_some() {
+                        if b.stop_sequence.as_ref().is_some() {
+                            let at_a = a
+                                .stop_sequence
+                                .as_ref()
+                                .unwrap()
+                                .get(0)
+                                .unwrap()
+                                .departure_time;
+                            let at_b = b
+                                .stop_sequence
+                                .as_ref()
+                                .unwrap()
+                                .get(0)
+                                .unwrap()
+                                .departure_time;
+                            return at_a.cmp(&at_b);
                         } else {
-                            return Ordering::Greater;
+                            return Ordering::Less;
                         }
-                    })
-                },
-                &TripSort::DirectionId => {
-                    trips_result.sort_by(|a, b| {
-                        return a.direction_id.cmp(&b.direction_id);
-                    })
-                },
+                    } else {
+                        return Ordering::Greater;
+                    }
+                }),
+                &TripSort::DirectionId => trips_result.sort_by(|a, b| {
+                    return a.direction_id.cmp(&b.direction_id);
+                }),
                 _ => {}
             }
 
-            if ts.sort_order.is_some() &&
-                ts.sort_order.as_ref().unwrap() == &AscDesc::DESC {
+            if ts.sort_order.is_some() && ts.sort_order.as_ref().unwrap() == &AscDesc::DESC {
                 trips_result.reverse();
             }
         }
-
     } else {
         for row in trips.expect("Query failed").iter() {
             let mut route = parse_trip_row(&row);
@@ -319,10 +317,7 @@ fn trips_query_filter(ts: &TripSearch,
 
     return PaginatedVec {
         vec: trips_result,
-        pag: Some(Pagination{
-            limit,
-            offset
-        })
+        pag: Some(Pagination { limit, offset }),
     };
 }
 
@@ -366,7 +361,7 @@ pub fn trips(rh: State<RoutesHandler>) -> Json<ResultArray<Trip>> {
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     };
 
@@ -391,7 +386,7 @@ pub fn trips_by_query(rh: State<RoutesHandler>, query: TripSearch) -> Json<Resul
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: trips_result.pag
+            pagination: trips_result.pag,
         },
     };
 
@@ -446,16 +441,18 @@ pub fn trips_stopid(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArr
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     };
 
     Json(rr)
 }
 
-fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -> PaginatedVec<Trip> {
-
-    let mut query : Query = Query {
+fn get_trips_by_query(
+    ts: &TripSearch,
+    pool: &Pool<PostgresConnectionManager<NoTls>>,
+) -> PaginatedVec<Trip> {
+    let mut query: Query = Query {
         select_v: Vec::new(),
         from_v: Vec::new(),
         where_v: Vec::new(),
@@ -467,14 +464,16 @@ fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -
         sort_order: AscDesc::ASC,
     };
 
-    query.format = String::from(r#"SELECT DISTINCT
+    query.format = String::from(
+        r#"SELECT DISTINCT
         {0}
         FROM {1}
         {2}
         WHERE {3}
         {4}
         {5}
-    "#);
+    "#,
+    );
 
     query.select_v.push(String::from("tuid"));
     query.select_v.push(String::from("r.uid as ruid"));
@@ -485,7 +484,8 @@ fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -
     query.select_v.push(String::from("td"));
     query.select_v.push(String::from("tfid"));
 
-    query.from_v.push(String::from(r#"(
+    query.from_v.push(String::from(
+        r#"(
     SELECT
         trip.uid as tuid,
         trip.trip_id as tid,
@@ -495,30 +495,19 @@ fn get_trips_by_query(ts: &TripSearch, pool: &Pool<PostgresConnectionManager>) -
         trip.headsign as ths,
         trip.route_id as truid,
         trip.service_id as tsid
-    FROM trip) as t"#));
-    query.join_v.push(
-        String::from(
-            "INNER JOIN calendar as c ON c.service_id=tsid"
-        )
-    );
+    FROM trip) as t"#,
+    ));
+    query.join_v.push(String::from(
+        "INNER JOIN calendar as c ON c.service_id=tsid",
+    ));
 
-    query.join_v.push(
-        String::from(
-            "INNER JOIN route as r ON r.id = truid"
-        )
-    );
+    query
+        .join_v
+        .push(String::from("INNER JOIN route as r ON r.id = truid"));
 
-    query.where_v.push(
-        String::from(
-            "c.feed_id = tfid"
-        )
-    );
+    query.where_v.push(String::from("c.feed_id = tfid"));
 
-    query.where_v.push(
-        String::from(
-            "r.feed_id = tfid"
-        )
-    );
+    query.where_v.push(String::from("r.feed_id = tfid"));
 
     return trips_query_filter(ts, query, vec![], pool, false, false);
 }
@@ -557,12 +546,12 @@ pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>> {
                     code: 1,
                     message: String::from("Trip not found"),
                 }),
-                pagination: Option::None
+                pagination: Option::None,
             },
         });
     }
     let sequence: Vec<StopTrip>;
-    let mut trip = parse_trip_row(&(trips).get(0));
+    let mut trip = parse_trip_row(&(trips).get(0).unwrap());
     let trip_uid = trip.uid.clone();
     sequence = get_stop_trip(String::from(trip_uid), &rh.pool);
 
@@ -573,7 +562,7 @@ pub fn trip(rh: State<RoutesHandler>, trip_id: String) -> Json<Result<Trip>> {
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     };
 
@@ -618,7 +607,7 @@ pub fn trips_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<Resul
                     code: 1,
                     message: String::from("Trip not found"),
                 }),
-                pagination: Option::None
+                pagination: Option::None,
             },
         });
     }
@@ -640,7 +629,7 @@ pub fn trips_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<Resul
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     };
 
@@ -654,16 +643,20 @@ pub fn trips_by_route(rh: State<RoutesHandler>, route_uid: String) -> Json<Resul
 ///
 #[get("/trips/in/<bbox>")]
 pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<ResultArray<Trip>> {
-    return trips_by_bbox_query(rh, bbox, TripSearch {
-        stops_visited: None,
-        route: None,
-        departure_after: None,
-        arrival_before: None,
-        offset: None,
-        per_page: None,
-        sort_by: None,
-        sort_order: None,
-    });
+    return trips_by_bbox_query(
+        rh,
+        bbox,
+        TripSearch {
+            stops_visited: None,
+            route: None,
+            departure_after: None,
+            arrival_before: None,
+            offset: None,
+            per_page: None,
+            sort_by: None,
+            sort_order: None,
+        },
+    );
 }
 
 /// `/trips/in/<bbox>?<query>`, returns the [Trip](../../../models/trip/struct.Trip.html)s contained
@@ -672,10 +665,12 @@ pub fn trips_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
 /// <[Trip](../../../models/trip/struct.Trip.html)>
 ///
 #[get("/trips/in/<bbox>?<ts>")]
-pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: TripSearch)
-    -> Json<ResultArray<Trip>> {
-
-    let mut query : Query = Query {
+pub fn trips_by_bbox_query(
+    rh: State<RoutesHandler>,
+    bbox: BoundingBox,
+    ts: TripSearch,
+) -> Json<ResultArray<Trip>> {
+    let mut query: Query = Query {
         select_v: Vec::new(),
         from_v: Vec::new(),
         where_v: Vec::new(),
@@ -690,13 +685,15 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
     let mut ts = ts.clone();
     ts.per_page = Some(1000);
 
-    query.format = String::from(r#"SELECT
+    query.format = String::from(
+        r#"SELECT
         {0}
         FROM {1}
         {2}
         WHERE {3}
         {4}
-    "#);
+    "#,
+    );
 
     // We didn't include {5} because we limit the query in from_v
 
@@ -707,18 +704,40 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
     query.select_v.push(String::from_str("tsn").unwrap());
     query.select_v.push(String::from_str("td").unwrap());
     query.select_v.push(String::from_str("tfid").unwrap());
-    query.select_v.push(String::from_str("stop.uid as suid").unwrap());
-    query.select_v.push(String::from_str("stop.id as sid").unwrap());
-    query.select_v.push(String::from_str("stop.\"name\" as sname").unwrap());
-    query.select_v.push(String::from_str("ST_Y(stop.position::geometry) as slat").unwrap());
-    query.select_v.push(String::from_str("ST_X(stop.position::geometry) as slng").unwrap());
-    query.select_v.push(String::from_str("stop.\"type\" as st").unwrap());
+    query
+        .select_v
+        .push(String::from_str("stop.uid as suid").unwrap());
+    query
+        .select_v
+        .push(String::from_str("stop.id as sid").unwrap());
+    query
+        .select_v
+        .push(String::from_str("stop.\"name\" as sname").unwrap());
+    query
+        .select_v
+        .push(String::from_str("ST_Y(stop.position::geometry) as slat").unwrap());
+    query
+        .select_v
+        .push(String::from_str("ST_X(stop.position::geometry) as slng").unwrap());
+    query
+        .select_v
+        .push(String::from_str("stop.\"type\" as st").unwrap());
     query.select_v.push(String::from_str("pstop.uid").unwrap());
-    query.select_v.push(String::from_str("stop_time.arrival_time as st_at").unwrap());
-    query.select_v.push(String::from_str("stop_time.departure_time as st_dt").unwrap());
-    query.select_v.push(String::from_str("stop_time.stop_sequence as st_ss").unwrap());
-    query.select_v.push(String::from_str("stop_time.drop_off_type as st_do").unwrap());
-    query.select_v.push(String::from_str("stop_time.pickup_type as st_pu").unwrap());
+    query
+        .select_v
+        .push(String::from_str("stop_time.arrival_time as st_at").unwrap());
+    query
+        .select_v
+        .push(String::from_str("stop_time.departure_time as st_dt").unwrap());
+    query
+        .select_v
+        .push(String::from_str("stop_time.stop_sequence as st_ss").unwrap());
+    query
+        .select_v
+        .push(String::from_str("stop_time.drop_off_type as st_do").unwrap());
+    query
+        .select_v
+        .push(String::from_str("stop_time.pickup_type as st_pu").unwrap());
 
     let mut limited_range = false;
     let mut addition = "";
@@ -759,73 +778,60 @@ pub fn trips_by_bbox_query(rh: State<RoutesHandler>, bbox: BoundingBox, ts: Trip
 		route.id = trip.route_id AND
 		calendar.service_id = trip.service_id
 		GROUP BY tuid, ruid, cuid, tid, ths, tsn, td, tfid
-	) as t"#.replace("{addition_goes_here}", addition);
+	) as t"#
+        .replace("{addition_goes_here}", addition);
 
-    query.from_v.push(String::from_str(&formatted_query).unwrap());
+    query
+        .from_v
+        .push(String::from_str(&formatted_query).unwrap());
 
     query.join_v.push(
         String::from_str(
-            "INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid"
-        ).unwrap()
+            "INNER JOIN stop_time ON stop_time.trip_id = tid AND stop_time.feed_id = tfid",
+        )
+        .unwrap(),
     );
     query.join_v.push(
         String::from_str(
-            "INNER JOIN stop ON stop_time.stop_id = stop.id AND stop_time.feed_id = stop.feed_id"
-        ).unwrap()
+            "INNER JOIN stop ON stop_time.stop_id = stop.id AND stop_time.feed_id = stop.feed_id",
+        )
+        .unwrap(),
     );
     query.join_v.push(
         String::from_str(
-            "LEFT JOIN stop as pstop ON pstop.id = stop.parent_stop AND pstop.feed_id = tfid"
-        ).unwrap()
+            "LEFT JOIN stop as pstop ON pstop.id = stop.parent_stop AND pstop.feed_id = tfid",
+        )
+        .unwrap(),
     );
 
     //query.order_v.push(String::from_str("tuid").unwrap());
     //query.order_v.push(String::from_str("stop_time.stop_sequence").unwrap());
 
-    let mut da : NaiveTime;
-    let mut ab : NaiveTime;
 
-    let mut params: Vec<&ToSql> =
-        vec![&bbox.p1.lng, &bbox.p1.lat, &bbox.p2.lng, &bbox.p2.lat];
+    let mut params: Vec<&ToSql> = vec![&bbox.p1.lng, &bbox.p1.lat, &bbox.p2.lng, &bbox.p2.lat];
 
     if limited_range {
-        da =
-            NaiveTime::parse_from_str(&ts.departure_after.clone().unwrap(),
-                                      "%H:%M:%S"
-            ).unwrap();
-        ab =
-            NaiveTime::parse_from_str(&ts.arrival_before.clone().unwrap(),
-                                      "%H:%M:%S"
-            ).unwrap();
         ts.departure_after = None;
         ts.arrival_before = None;
-        params.push(&da);
-        params.push(&ab);
+        params.push(&ts.departure_after);
+        params.push(&ts.arrival_before);
     }
-    
-    let paginated_result = trips_query_filter(&ts,
-                                              query,
-                                              params,
-                                              &rh.pool,
-                                              true,
-                                              true);
 
+    let paginated_result = trips_query_filter(&ts, query, params, &rh.pool, true, true);
 
     let result = ResultArray::<Trip> {
         result: Some(paginated_result.vec),
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: paginated_result.pag
+            pagination: paginated_result.pag,
         },
     };
 
-    return Json(
-        result
-    );
+    return Json(result);
 }
 
-fn get_stop_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager>) -> Vec<StopTrip> {
+fn get_stop_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager<NoTls>>) -> Vec<StopTrip> {
     let query =
     r#"SELECT 
     stop.uid, 
@@ -910,26 +916,26 @@ fn parse_stop_trip_trip_row<'a>(trips: &'a mut BTreeMap<Trip, Vec<StopTrip>>, ro
     stop.set_feed_id(row.get(6));
 
     /*
-		tuid
-		ruid
-		cuid
-		ths
-		tsn
-		td
-		tfid
-		------
-	7:	suid
-		sid
-		sname
-		slat
-		slng
-		st
-	13:	uid
-		st_at
-		st_dt
-		st_ss
-		st_do
-	18:	st_pu
+        tuid
+        ruid
+        cuid
+        ths
+        tsn
+        td
+        tfid
+        ------
+    7:	suid
+        sid
+        sname
+        slat
+        slng
+        st
+    13:	uid
+        st_at
+        st_dt
+        st_ss
+        st_do
+    18:	st_pu
     */
     stop.set_feed_id(row.get(6));
 
@@ -937,25 +943,17 @@ fn parse_stop_trip_trip_row<'a>(trips: &'a mut BTreeMap<Trip, Vec<StopTrip>>, ro
     let pickup_i: Option<i32> = row.get(18);
 
     let drop_off: DropOff = match drop_off_i {
-        Some(n) => {
-            num::FromPrimitive::from_i32(n).unwrap()
-        },
-        None => {
-            DropOff::RegularlyScheduled
-        }
+        Some(n) => num::FromPrimitive::from_i32(n).unwrap(),
+        None => DropOff::RegularlyScheduled,
     };
 
     let pickup: PickUp = match pickup_i {
-        Some(n) => {
-            num::FromPrimitive::from_i32(n).unwrap()
-        },
-        None => {
-            PickUp::RegularlyScheduled
-        }
+        Some(n) => num::FromPrimitive::from_i32(n).unwrap(),
+        None => PickUp::RegularlyScheduled,
     };
 
-    let arrival_time: NaiveTime = row.get(14);
-    let departure_time: NaiveTime = row.get(15);
+    let arrival_time: NaiveTime = NaiveTime::parse_from_str(row.get(14), "%H:%M:%S").unwrap();
+    let departure_time: NaiveTime = NaiveTime::parse_from_str(row.get(15), "%H:%M:%S").unwrap();
 
     let stop_trip = StopTrip {
         stop,
@@ -990,8 +988,8 @@ fn parse_stop_trip_row(row: &Row) -> StopTrip {
     let drop_off_i: Option<i32> = row.get(7);
     let pickup_i: Option<i32> = row.get(8);
 
-    let drop_off : DropOff;
-    let pickup : PickUp;
+    let drop_off: DropOff;
+    let pickup: PickUp;
 
     if drop_off_i.is_some() {
         drop_off = num::FromPrimitive::from_i32(drop_off_i.unwrap()).unwrap();
@@ -1005,8 +1003,8 @@ fn parse_stop_trip_row(row: &Row) -> StopTrip {
         pickup = PickUp::RegularlyScheduled;
     }
 
-    let arrival_time: NaiveTime = row.get(9);
-    let departure_time: NaiveTime = row.get(10);
+    let arrival_time: NaiveTime = NaiveTime::parse_from_str(row.get(9), "%H:%M:%S").unwrap();
+    let departure_time: NaiveTime = NaiveTime::parse_from_str(row.get(10), "%H:%M:%S").unwrap();
 
     let st = StopTrip {
         stop,

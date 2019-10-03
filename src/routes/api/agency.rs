@@ -7,9 +7,10 @@ use models::agency::Agency;
 use super::model_api::error::Error;
 use super::model_api::result::Result;
 
-use super::super::Json;
 use super::super::RoutesHandler;
 use super::super::State;
+use postgres::NoTls;
+use rocket_contrib::json::Json;
 
 /// `/agency`
 /// Get the Agencies.
@@ -27,7 +28,7 @@ pub fn agency(rh: State<RoutesHandler>) -> Json<ResultArray<Agency>> {
                     code: 3,
                     message: String::from("This agency doesn't exists"),
                 }),
-                pagination: Option::None
+                pagination: Option::None,
             },
         });
     }
@@ -37,7 +38,7 @@ pub fn agency(rh: State<RoutesHandler>) -> Json<ResultArray<Agency>> {
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     })
 }
@@ -78,7 +79,7 @@ pub fn agency_by_id(rh: State<RoutesHandler>, agency_uid: String) -> Json<Result
                     code: 3,
                     message: String::from("This agency doesn't exists"),
                 }),
-                pagination: Option::None
+                pagination: Option::None,
             },
         });
     }
@@ -88,13 +89,13 @@ pub fn agency_by_id(rh: State<RoutesHandler>, agency_uid: String) -> Json<Result
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     })
 }
 
 use models::api::resultarray::ResultArray;
-use postgres::rows::Row;
+use postgres::row::Row;
 
 fn get_agency_by_uid(rh: State<RoutesHandler>, agency_uid: String) -> Option<Agency> {
     let query = "SELECT \
@@ -118,7 +119,7 @@ fn get_agency_by_uid(rh: State<RoutesHandler>, agency_uid: String) -> Option<Age
         return Option::None;
     }
 
-    return Some(parse_agency_row(&agency.get(0)));
+    return Some(parse_agency_row(&agency.get(0).unwrap()));
 }
 
 fn get_agencies(rh: &State<RoutesHandler>) -> Option<Vec<Agency>> {
@@ -180,7 +181,7 @@ fn get_agency(
         return Option::None;
     }
 
-    return Some(parse_agency_row(&result.get(0)));
+    return Some(parse_agency_row(&result.get(0).unwrap()));
 }
 
 /// Returns the UID of the `agency_id` and `feed_id` provided.
@@ -198,7 +199,7 @@ pub fn get_agency_id(
         WHERE id=$1 AND feed_id=$2 \
         LIMIT 1";
 
-    let conn = rh.pool.clone().get().unwrap();
+    let mut conn = rh.pool.clone().get().unwrap();
     let agencies = conn.query(query, &[&agency_id, &feed_id]);
 
     let result = agencies.expect("Query failed");
@@ -206,7 +207,7 @@ pub fn get_agency_id(
         return Option::None;
     }
 
-    return Some(result.get(0).get(0));
+    result.get(0).unwrap().get(0)
 }
 
 fn parse_agency_row(row: &Row) -> Agency {

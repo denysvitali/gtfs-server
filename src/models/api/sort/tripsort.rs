@@ -1,8 +1,8 @@
 //! Trip Sort Model
 
-use rocket::request::{FromForm, FormItems};
-use rocket::request::FromFormValue;
 use rocket::http::RawStr;
+use rocket::request::FromFormValue;
+use rocket::request::{FormItems, FromForm};
 
 #[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub enum TripSort {
@@ -12,7 +12,7 @@ pub enum TripSort {
     ServiceId,
     RouteId,
     Uid,
-    None
+    None,
 }
 
 impl<'f> FromFormValue<'f> for TripSort {
@@ -26,7 +26,7 @@ impl<'f> FromFormValue<'f> for TripSort {
             "serviceid" => TripSort::ServiceId,
             "routeid" => TripSort::RouteId,
             "uid" => TripSort::Uid,
-            _ => TripSort::None
+            _ => TripSort::None,
         })
     }
 }

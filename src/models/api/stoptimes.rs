@@ -9,12 +9,12 @@ use chrono::NaiveTime;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct StopTimes {
     pub stop: String,
-    pub time: Vec<TripTime>
+    pub time: Vec<TripTime>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct TripTime{
+pub struct TripTime {
     pub trip: String,
     pub time: NaiveTime,
-    pub next_stop: Option<String>
+    pub next_stop: Option<String>,
 }

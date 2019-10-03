@@ -3,7 +3,7 @@ use rocket::http::{ContentType, Status};
 use rocket::local::Client;
 use rocket::local::LocalResponse;
 use rocket::{Rocket, Route};
-use rocket_contrib::Json;
+use rocket_contrib::json::Json;
 
 use models::api::resultarray::ResultArray;
 use models::api::stopdistance::StopDistance;
@@ -12,7 +12,7 @@ use models::stop::Stop;
 use std::prelude::*;
 
 use r2d2::Pool;
-use r2d2_postgres::{PostgresConnectionManager, TlsMode};
+use r2d2_postgres::PostgresConnectionManager;
 
 use models::api::result::Result;
 
@@ -21,12 +21,15 @@ use importer::serde_json;
 use routes::RoutesHandler;
 
 use super::route_api as api;
+use postgres::{NoTls, Config};
 
-fn create_pool() -> Pool<PostgresConnectionManager> {
+fn create_pool() -> Pool<PostgresConnectionManager<NoTls>> {
     let manager = PostgresConnectionManager::new(
-        "postgres://postgres:mysecretpassword@172.18.0.2:5432",
-        TlsMode::None,
-    ).unwrap();
+        Config::new().host("172.18.0.2").port(5432)
+            .user("postgres")
+            .password("mysecretpassword").to_owned(),
+        NoTls
+    );
     let pool = Pool::new(manager).unwrap();
     pool
 }

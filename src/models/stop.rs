@@ -50,7 +50,7 @@ impl Stop {
             lng,
             location_type: match location_type.is_none() {
                 true => 0,
-                false => location_type.unwrap()
+                false => location_type.unwrap(),
             },
             parent_station,
             feed_id,

@@ -7,13 +7,14 @@ use models::time::Time;
 
 use super::model_api::resultarray::ResultArray;
 
-use super::super::Json;
+use rocket_contrib::json::Json;
+
 use super::super::Pool;
 use super::super::PostgresConnectionManager;
 use super::super::RoutesHandler;
 use super::super::State;
 
-use postgres::rows::Row;
+use postgres::row::Row;
 
 use num_traits as num;
 
@@ -25,6 +26,7 @@ use postgres::types::ToSql;
 use super::model_api::search::ascdesc::AscDesc;
 use super::model_api::search::time::TimeSearch;
 use super::model_api::search::time::TimeSort;
+use postgres::NoTls;
 
 #[get("/times?<time_search>")]
 pub fn times_query(rh: State<RoutesHandler>, time_search: TimeSearch) -> Json<ResultArray<Time>> {
@@ -33,7 +35,7 @@ pub fn times_query(rh: State<RoutesHandler>, time_search: TimeSearch) -> Json<Re
     let meta = Meta {
         success: true,
         error: None,
-        pagination: Option::None
+        pagination: Option::None,
     };
 
     Json(ResultArray::<Time> {
@@ -54,7 +56,7 @@ pub fn times_by_trip(rh: State<RoutesHandler>, trip_uid: String) -> Json<ResultA
     let meta = Meta {
         success: true,
         error: None,
-        pagination: Option::None
+        pagination: Option::None,
     };
 
     Json(ResultArray::<Time> {
@@ -69,47 +71,47 @@ pub fn times_by_trip(rh: State<RoutesHandler>, trip_uid: String) -> Json<ResultA
 /// The results can be filtered with `<time_search>` parameters (check [TimeSearch](../../../models/api/search/time/struct.TimeSearch.html))  
 /// Returns a [ResultArray](../../../models/api/resultarray/struct.ResultArray.html)
 /// <[Time](../../../models/time/struct.Time.html)>
-/// 
+///
 /// ## Query Parameters
 /// ### date
 /// A date on which the time is valid.
 /// This field only validates the `start_date` and `end_date` fields,
 /// this means that you'll still need to check if the requested trip is available in
 /// the `date` weekday.
-/// 
+///
 /// ### service_id
 /// Filter by this service_id
-/// 
+///
 /// ### monday, tuesday, ..., sunday
 /// When they're set (to either true or false) a filter will be applied on these week days service conditions
 ///
 /// ### at_a
 /// Arrival time is after ... (00:00:00)
-/// 
+///
 /// ### at_b
 /// Arrival time is before ... (00:00:00)
-/// 
+///
 /// ### dt_a
 /// Departure time is after ... (00:00:00)
-/// 
+///
 /// ### dt_b
 /// Departure time is before ... (00:00:00)
-/// 
+///
 /// ### trip_id
 /// Filter by trip_id (for example `t-32c94c-castagnolacapolinea`)
-/// 
+///
 /// ### pickup_type
 /// Only show Time Stops with this pickup condition.  
 /// For example: `RegularlyScheduled`
-/// 
+///
 /// ### drop_off_type
 /// Only show Time Stops with this drop-off condition.  
-/// For example: `RegularlyScheduled` 
-/// 
+/// For example: `RegularlyScheduled`
+///
 /// ### stop_sequence
 /// Only show Time Stops with this stop_sequence.  
 /// For example: `1`
-/// 
+///
 /// ### sort_by
 /// Sort by ...  
 /// Possible values are available in the [TimeSort](../../../models/api/search/time/enum.TimeSort.html) enum.  
@@ -118,7 +120,7 @@ pub fn times_by_trip(rh: State<RoutesHandler>, trip_uid: String) -> Json<ResultA
 /// ### Sort order
 /// Ascending (`asc`) or Descending (`desc`)
 /// These sorting order conditions will only affect the query if `sort_by` is set.
-/// 
+///
 /// ## Example
 /// Transports that reach `s-bdf67e-luganostazione` (Lugano, Stazione) on a Sunday, between 2PM and 3 PM, sorted by arrival time in Ascending order:  
 /// ### Request
@@ -178,7 +180,7 @@ pub fn times_by_trip(rh: State<RoutesHandler>, trip_uid: String) -> Json<ResultA
     }
     ```
 **/
-/// 
+///
 #[get("/times/by-stop/<stop_id>?<time_search>")]
 pub fn times_stop_query(
     rh: State<RoutesHandler>,
@@ -191,12 +193,12 @@ pub fn times_stop_query(
     let meta = Meta {
         success: true,
         error: None,
-        pagination: Option::None
+        pagination: Option::None,
     };
 
     Json(ResultArray::<Time> {
         result: Some(result),
-        meta
+        meta,
     })
 }
 
@@ -212,7 +214,7 @@ pub fn times_stop(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray
     let meta = Meta {
         success: true,
         error: None,
-        pagination: Option::None
+        pagination: Option::None,
     };
 
     Json(ResultArray::<Time> {
@@ -223,7 +225,7 @@ pub fn times_stop(rh: State<RoutesHandler>, stop_id: String) -> Json<ResultArray
 
 fn get_times_by_query<'a>(
     time_search: &TimeSearch,
-    pool: &Pool<PostgresConnectionManager>,
+    pool: &Pool<PostgresConnectionManager<NoTls>>,
 ) -> Vec<Time> {
     let mut query = String::from(
         "SELECT t.uid,
@@ -353,11 +355,7 @@ fn get_times_by_query<'a>(
     }
 
     for &val in string_values.iter() {
-        &dates.push(val.parse::<NaiveDate>().unwrap());
-    }
-
-    for val in &dates {
-        params.push(val);
+        params.push(val)
     }
 
     i32_values = Vec::new();
@@ -410,13 +408,8 @@ fn get_times_by_query<'a>(
     }
 
     for &val in string_values.iter() {
-        &times.push(val.parse::<NaiveTime>().unwrap());
-    }
-
-    for val in &times {
         params.push(val);
     }
-
     string_values = Vec::new();
 
     if time_search.trip_id.is_some() {
@@ -466,25 +459,25 @@ fn get_times_by_query<'a>(
     println!("{}", query);
 
     /*let query = "SELECT  trip_id,\
-        arrival_time,\
-        departure_time,\
-        stop.uid,\
-        stop_sequence,\
-        pickup_type,\
-        drop_off_type,\
-        a.feed_id \
-        FROM (SELECT * FROM stop_time \
-        WHERE \
-        stop_time.trip_id = (\
-            SELECT trip.trip_id FROM trip WHERE trip.uid=$1\
-        ) AND \
-        stop_time.feed_id = (\
-            SELECT trip.feed_id FROM trip WHERE trip.uid=$1\
-        ) \
-        ORDER BY stop_sequence) as a INNER JOIN stop ON (a.stop_id=stop.id) WHERE a.feed_id = stop.feed_id";*/
+    arrival_time,\
+    departure_time,\
+    stop.uid,\
+    stop_sequence,\
+    pickup_type,\
+    drop_off_type,\
+    a.feed_id \
+    FROM (SELECT * FROM stop_time \
+    WHERE \
+    stop_time.trip_id = (\
+        SELECT trip.trip_id FROM trip WHERE trip.uid=$1\
+    ) AND \
+    stop_time.feed_id = (\
+        SELECT trip.feed_id FROM trip WHERE trip.uid=$1\
+    ) \
+    ORDER BY stop_sequence) as a INNER JOIN stop ON (a.stop_id=stop.id) WHERE a.feed_id = stop.feed_id";*/
 
-    let conn = pool.clone().get().unwrap();
-    let times = conn.query(&query, &params.as_slice());
+    let mut conn = pool.clone().get().unwrap();
+    let times = conn.query(&conn.prepare(&query).unwrap(), &params.as_slice());
 
     println!("{:?}", params.as_slice());
 
@@ -498,13 +491,19 @@ fn get_times_by_query<'a>(
     times_result
 }
 
-pub fn get_times_by_trip(trip_uid: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Time> {
+pub fn get_times_by_trip(
+    trip_uid: String,
+    pool: &Pool<PostgresConnectionManager<NoTls>>,
+) -> Vec<Time> {
     let mut ts: TimeSearch = Default::default();
     ts.trip = Some(trip_uid);
     get_times_by_query(&ts, pool)
 }
 
-fn get_times_by_stop_id(stop_uid: String, pool: &Pool<PostgresConnectionManager>) -> Vec<Time> {
+fn get_times_by_stop_id(
+    stop_uid: String,
+    pool: &Pool<PostgresConnectionManager<NoTls>>,
+) -> Vec<Time> {
     let mut ts: TimeSearch = Default::default();
     ts.stop = Some(stop_uid);
     get_times_by_query(&ts, pool)
@@ -514,16 +513,13 @@ fn parse_time_row(row: &Row) -> Time {
     let pickup_int: i32 = row.get(5);
     let dropoff_int: i32 = row.get(6);
 
-    let arrival: NaiveTime = row.get(1);
-    let departure: NaiveTime = row.get(2);
-
-    let start_date: NaiveDate = row.get(16);
-    let end_date: NaiveDate = row.get(17);
+    let start_date: NaiveDate = NaiveDate::parse_from_str(row.get(16), "%Y-%m-%d").unwrap();
+    let end_date: NaiveDate =NaiveDate::parse_from_str(row.get(17), "%Y-%m-%d").unwrap();
 
     let time = Time {
         trip_id: row.get(0),
-        arrival_time: arrival.format("%H:%M:%S").to_string(),
-        departure_time: departure.format("%H:%M:%S").to_string(),
+        arrival_time: row.get(1),
+        departure_time: row.get(2),
         stop_id: row.get(3),
         stop_sequence: row.get(4),
         pickup_type: num::FromPrimitive::from_i32(pickup_int).unwrap(),

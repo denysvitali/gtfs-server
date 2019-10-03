@@ -2,15 +2,18 @@
 //!
 
 #![feature(proc_macro_hygiene, decl_macro)]
-#[macro_use] extern crate rocket;
+#[macro_use]
+extern crate rocket;
 extern crate chrono;
+extern crate crypto;
 extern crate num_traits;
 extern crate postgres;
 extern crate r2d2;
 extern crate r2d2_postgres;
 extern crate regex;
 extern crate rocket_contrib;
-#[macro_use] extern crate runtime_fmt;
+#[macro_use]
+extern crate runtime_fmt;
 
 mod test;
 
@@ -19,7 +22,7 @@ pub mod models;
 pub mod routes;
 
 use r2d2::Pool;
-use r2d2_postgres::{PostgresConnectionManager};
+use r2d2_postgres::PostgresConnectionManager;
 
 use rocket::response::NamedFile;
 use routes::api;
@@ -29,19 +32,21 @@ use std::env;
 use std::path::{Path, PathBuf};
 
 use chrono::{NaiveDate, NaiveTime};
-use std::{time,thread};
-use models::api::result::Result;
-use postgres::{Error, TlsMode};
 use importer::update_db;
-use postgres::tls::native_tls::NativeTls;
+use models::api::result::Result;
+use postgres::{Client, NoTls, Error};
 use std::time::Duration;
+use std::{thread, time};
 
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate num_derive;
 
-fn create_pool() -> Pool<PostgresConnectionManager> {
+#[macro_use]
+extern crate rocket_codegen;
+
+fn create_pool() -> Pool<PostgresConnectionManager<NoTls>> {
     let mut hostname = "172.18.0.2";
     let mut password = String::from("mysecretpassword");
     let MAX_ATTEMPTS = 10;
@@ -62,19 +67,12 @@ fn create_pool() -> Pool<PostgresConnectionManager> {
 
     let connection_string = format!("postgres://postgres:{}@{}:5432", password, hostname);
 
-
-
-    let manager = PostgresConnectionManager::new(
-        connection_string.parse().unwrap(),
-            NativeTls
-    ).unwrap();
+    let manager = PostgresConnectionManager::new(connection_string.parse().unwrap(), NoTls);
     let mut pool = Pool::new(manager);
 
     while pool.is_err() && attempts <= MAX_ATTEMPTS {
-        let manager = PostgresConnectionManager::new(
-            connection_string.parse().unwrap(),
-            NativeTls
-        ).unwrap();
+        let manager =
+            PostgresConnectionManager::new(connection_string.parse().unwrap(), NoTls);
 
         println!("Unable to connect, attempt {}/{}", attempts, MAX_ATTEMPTS);
         pool = Pool::new(manager);

@@ -5,11 +5,12 @@ use super::super::PostgresConnectionManager;
 use super::super::RoutesHandler;
 
 use super::super::super::importer;
-use super::super::Json;
 use super::super::State;
 use super::model_api::meta::Meta;
 use super::model_api::result::Result;
 use super::model_api::successresult::SuccessResult;
+use postgres::NoTls;
+use rocket_contrib::json::Json;
 
 /// `/db/update`
 /// Updates the DB schema. This operation should be performed after each update
@@ -34,7 +35,7 @@ pub fn version(rh: State<RoutesHandler>) -> Json<Result<i32>> {
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     })
 }

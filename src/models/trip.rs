@@ -36,13 +36,9 @@ impl Trip {
             trip_id: String::new(),
             headsign,
             short_name,
-            direction_id: match direction_id.is_some(){
-                true => {
-                    direction_id.unwrap()
-                },
-                false => {
-                    1
-                }
+            direction_id: match direction_id.is_some() {
+                true => direction_id.unwrap(),
+                false => 1,
             },
             stop_sequence: Some(vec![]),
             feed_id: String::new(),

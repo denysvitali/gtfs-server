@@ -2,13 +2,14 @@ use super::super::{NaiveDate, NaiveTime};
 use super::model_api;
 
 use rocket::response::content;
+use rocket::response::content::Json;
 
 pub mod agency;
 pub mod db;
 pub mod import;
 pub mod routes;
-pub mod stops;
 pub mod stop_times;
+pub mod stops;
 pub mod times;
 pub mod trips;
 

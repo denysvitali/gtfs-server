@@ -9,7 +9,7 @@ use models::route::Route;
 
 use super::agency;
 
-use super::super::Json;
+use rocket_contrib::json::Json;
 use super::super::Pool;
 use super::super::PostgresConnectionManager;
 use super::super::RoutesHandler;
@@ -17,7 +17,8 @@ use super::super::State;
 
 use models::api::search::route::RouteSearch;
 use models::boundingbox::BoundingBox;
-use postgres::rows::Row;
+use postgres::row::Row;
+use postgres::NoTls;
 
 use postgres::types::ToSql;
 
@@ -41,7 +42,7 @@ pub fn routes(rh: State<RoutesHandler>) -> Json<ResultArray<Route>> {
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     })
 }
@@ -64,7 +65,7 @@ pub fn routes_by_query(
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     })
 }
@@ -72,7 +73,7 @@ pub fn routes_by_query(
 fn get_routes_by_query(
     rh: &State<RoutesHandler>,
     route_search: &RouteSearch,
-    pool: &Pool<PostgresConnectionManager>,
+    pool: &Pool<PostgresConnectionManager<NoTls>>,
 ) -> Vec<Route> {
     let mut query = String::from(
         "SELECT 
@@ -137,8 +138,9 @@ fn get_routes_by_query(
         params.push(value);
     }
 
-    let conn = pool.clone().get().unwrap();
-    let times = conn.query(&query, &params.as_slice());
+    let mut conn = pool.clone().get().unwrap();
+    let times = conn.query(&conn.prepare(&query).unwrap(),
+                           &params.as_slice());
 
     println!("{:?}", params.as_slice());
 
@@ -174,19 +176,19 @@ pub fn route_by_id(rh: State<RoutesHandler>, route_uid: String) -> Json<Result<R
                     code: 4,
                     message: String::from("Unable to find this route"),
                 }),
-                pagination: Option::None
+                pagination: Option::None,
             },
         });
     }
 
-    let route = parse_route_row(&routes.get(0), &rh);
+    let route = parse_route_row(&routes.get(0).unwrap(), &rh);
 
     Json(Result {
         result: Some(route),
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     })
 }
@@ -221,7 +223,7 @@ pub fn route_by_stop_uid(rh: State<RoutesHandler>, stop_uid: String) -> Json<Res
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     })
 }
@@ -235,9 +237,9 @@ pub fn route_by_stop_uid(rh: State<RoutesHandler>, stop_uid: String) -> Json<Res
 pub fn route_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<ResultArray<Route>> {
     /*let query = "SELECT route.uid, route.id, route.agency, route.short_name, route.long_name, route.description, route.\"type\", route.feed_id FROM route, (SELECT trip.route_id as rid, trip.feed_id as fid
     FROM trip, (SELECT trip_id as tid, feed_id as fid FROM stop_time WHERE stop_time.stop_id = (SELECT stop.id FROM stop WHERE stop.uid = $1 )) as sq1
-    WHERE sq1.tid = trip.trip_id 
+    WHERE sq1.tid = trip.trip_id
     AND sq1.fid = trip.feed_id
-    GROUP BY (trip.route_id, trip.feed_id)) as sq2 WHERE 
+    GROUP BY (trip.route_id, trip.feed_id)) as sq2 WHERE
     sq2.rid = route.id AND
     sq2.fid = route.feed_id";
 
@@ -258,7 +260,7 @@ pub fn route_by_bbox(rh: State<RoutesHandler>, bbox: BoundingBox) -> Json<Result
         meta: Meta {
             success: true,
             error: Option::None,
-            pagination: Option::None
+            pagination: Option::None,
         },
     })
 }

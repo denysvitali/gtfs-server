@@ -2,7 +2,8 @@ use super::super::Pool;
 use super::super::PostgresConnectionManager;
 use super::super::RoutesHandler;
 
-use super::super::Json;
+use rocket_contrib::json::Json;
+
 use super::super::State;
 use super::model_api::successresult::SuccessResult;
 

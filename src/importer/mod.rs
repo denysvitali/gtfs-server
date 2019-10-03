@@ -25,9 +25,8 @@ use self::regex::Regex;
 
 use importer::zip::read::ZipArchive;
 use importer::zip::read::ZipFile;
-use postgres::rows::{Row, Rows};
-use postgres::Connection;
-use r2d2::Pool;
+use postgres::row::Row;
+use r2d2::{Pool, PooledConnection};
 use r2d2_postgres::PostgresConnectionManager;
 use std::fs::File;
 
@@ -41,14 +40,16 @@ use models::csv::feed::FeedCSV;
 use models::csv::route::RouteCSV;
 use models::csv::stop::StopCSV;
 use models::csv::trip::TripCSV;
+use postgres::tls::TlsConnect;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::io::Read;
 use std::time::{SystemTime, UNIX_EPOCH};
+use postgres::{NoTls, Statement};
 
 pub fn download_feed_zip<'a>(
     feed_url: &str,
-    pool: &Pool<PostgresConnectionManager>,
+    pool: &Pool<PostgresConnectionManager<NoTls>>,
 ) -> Option<ZipArchive<File>> {
     // Download feed from URL
     // Example:  https://opentransportdata.swiss/en/dataset/timetable-2018-gtfs/permalink
@@ -111,7 +112,7 @@ impl<'a> PartialOrd for MZipFile<'a> {
     }
 }
 
-pub fn parse_feed_zip(zar: &mut ZipArchive<File>, pool: &Pool<PostgresConnectionManager>) {
+pub fn parse_feed_zip(zar: &mut ZipArchive<File>, pool: &Pool<PostgresConnectionManager<NoTls>>) {
     let mut feed_id: String = String::new();
     for i in 0..zar.len() {
         let mut file = zar.by_index(i).expect("Invalid file index");
@@ -188,14 +189,15 @@ pub fn parse_feed_zip(zar: &mut ZipArchive<File>, pool: &Pool<PostgresConnection
     }
 }
 
-pub fn parse_agency(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager>) {
+pub fn parse_agency(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager<NoTls>>) {
     println!("Parsing agency for fid {} ...", feed_id);
     let mut rdr = csv::ReaderBuilder::new().from_reader(f);
     for result in rdr.deserialize() {
-        let conn = pool.clone().get().unwrap();
+        let mut conn = pool.clone().get().unwrap();
         let feed_clone: String = String::from(feed_id).to_owned();
-        let stmt = conn.prepare(
-            "INSERT INTO agency \
+        let stmt : Statement = conn
+            .prepare(
+                "INSERT INTO agency \
             (
                 uid, 
                 id, 
@@ -210,7 +212,8 @@ pub fn parse_agency(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMan
             ) \
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) \
             ON CONFLICT DO NOTHING",
-        ).expect("Unable to create statement");
+            )
+            .expect("Unable to create statement");
 
         let record: AgencyCSV = result.unwrap();
         let mut agency_id = String::from("1");
@@ -226,18 +229,19 @@ pub fn parse_agency(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMan
         );
 
         println!("{}", &agency_id);
-        stmt.execute(&[
+        conn.execute(&stmt, &[
             &uid,
             &agency_id,
             &record.agency_name,
             &record.agency_url,
             &record.agency_timezone,
-            &record.agency_lang,
-            &record.agency_phone,
-            &record.agency_fare_url,
-            &record.agency_email,
+            &record.agency_lang.unwrap_or_default(),
+            &record.agency_phone.unwrap_or_default(),
+            &record.agency_fare_url.unwrap_or_default(),
+            &record.agency_email.unwrap_or_default(),
             &feed_clone,
-        ]).expect("Unable to add agency");
+        ])
+        .expect("Unable to add agency");
     }
 }
 
@@ -252,22 +256,24 @@ fn generate_uid(identifier: &str, fields: &str, name: &str) -> String {
     let name_stripped = Regex::new(r"[(),.-]")
         .unwrap()
         .replace_all(&name_stripped, "");
-    let uid = re.replace_all(&name_stripped, "-")
+    let uid = re
+        .replace_all(&name_stripped, "-")
         .to_owned()
         .to_lowercase();
     let uid = format!("{}-{}-{}", identifier, &stopsha, uid);
     uid
 }
 
-pub fn parse_stops(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager>) {
+pub fn parse_stops(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager<NoTls>>) {
     println!("Parsing stops for fid {} ...", feed_id);
     let mut rdr = csv::ReaderBuilder::new().from_reader(f);
     for result in rdr.deserialize() {
-        let conn = pool.clone().get().unwrap();
+        let mut conn = pool.clone().get().unwrap();
         let feed_clone: String = String::from(feed_id).to_owned();
         let record: StopCSV = result.unwrap();
-        let stmt = conn.prepare(
-            "INSERT INTO stop\
+        let stmt = conn
+            .prepare(
+                "INSERT INTO stop\
                 (
                     uid, 
                     id, 
@@ -288,7 +294,8 @@ pub fn parse_stops(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMana
                 $8, $9, $10, $11, $12, $13
             ) \
             ON CONFLICT DO NOTHING",
-        ).expect("Unable to create statement");
+            )
+            .expect("Unable to create statement");
 
         let uid = generate_uid(
             "s",
@@ -296,7 +303,7 @@ pub fn parse_stops(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMana
             &record.stop_name,
         );
 
-        stmt.execute(&[
+        conn.execute(&stmt, &[
             &uid,
             &record.stop_id,
             &record.stop_code,
@@ -310,21 +317,23 @@ pub fn parse_stops(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMana
             &record.stop_timezone,
             &record.wheelchair_boarding,
             &feed_clone,
-        ]).expect("Cannot add stop");
+        ])
+        .expect("Cannot add stop");
     }
 }
 
-pub fn parse_routes(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager>) {
+pub fn parse_routes(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager<NoTls>>) {
     println!("Parsing routes for fid {} ...", feed_id);
     let mut rdr = csv::ReaderBuilder::new().from_reader(f);
     for result in rdr.deserialize() {
-        let conn = pool.clone().get().unwrap();
+        let mut conn = pool.clone().get().unwrap();
         let feed_clone: String = String::from(feed_id).to_owned();
 
         thread::spawn(move || {
             let record: RouteCSV = result.unwrap();
-            let stmt = conn.prepare(
-                "INSERT INTO route (
+            let stmt = conn
+                .prepare(
+                    "INSERT INTO route (
                     uid, 
                     id, 
                     agency, 
@@ -340,7 +349,8 @@ pub fn parse_routes(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMan
                 ) \
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) \
                 ON CONFLICT DO NOTHING",
-            ).expect("Unable to create statement");
+                )
+                .expect("Unable to create statement");
             println!(
                 "Route ID {}, {}, {} ({})",
                 record.route_id, record.route_short_name, record.route_long_name, record.route_type
@@ -352,10 +362,10 @@ pub fn parse_routes(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMan
                 &record.route_short_name,
             );
 
-            stmt.execute(&[
+            conn.execute(&stmt, &[
                 &uid,
                 &record.route_id,
-                &record.agency_id,
+                &record.agency_id.unwrap_or_default(),
                 &record.route_short_name,
                 &record.route_long_name,
                 &record.route_desc,
@@ -365,12 +375,13 @@ pub fn parse_routes(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMan
                 &record.route_text_color,
                 &record.route_sort_order,
                 &feed_clone,
-            ]).expect("Unable to insert route");
+            ])
+            .expect("Unable to insert route");
         });
     }
 }
 
-pub fn parse_trips(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager>) {
+pub fn parse_trips(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager<NoTls>>) {
     println!("Parsing trips for fid {} ...", feed_id);
     let mut rdr = csv::ReaderBuilder::new().from_reader(f);
     let mut fields: Vec<String> = Vec::new();
@@ -384,8 +395,9 @@ pub fn parse_trips(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMana
         let feed_clone: String = String::from(feed_id).to_owned();
         let fc = fields.clone();
         thread::spawn(move || {
-            let stmt = conn.prepare(
-                "INSERT INTO trip (\
+            let stmt = conn
+                .prepare(
+                    "INSERT INTO trip (\
                     uid,
                     route_id,
                     service_id,
@@ -402,7 +414,8 @@ pub fn parse_trips(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMana
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,
                 $10, $11, $12) \
                 ON CONFLICT DO NOTHING",
-            ).expect("Unable to create statement");
+                )
+                .expect("Unable to create statement");
             let record: TripCSV = result.unwrap();
 
             let uid = generate_uid(
@@ -439,20 +452,21 @@ pub fn parse_trips(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionMana
                 bikes_allowed = Option::None;
             }
 
-            stmt.execute(&[
+            conn.execute(&stmt,&[
                 &uid,
                 &record.route_id,
                 &record.service_id,
                 &record.trip_id,
-                &record.trip_headsign,
-                &record.trip_short_name,
+                &record.trip_headsign.unwrap_or_default(),
+                &record.trip_short_name.unwrap_or_default(),
                 &record.direction_id,
                 &record.block_id,
                 &record.shape_id,
                 &wheelchair_accessible,
                 &bikes_allowed,
                 &feed_clone,
-            ]).expect("Unable to parse trip");
+            ])
+            .expect("Unable to parse trip");
         });
     }
 }
@@ -468,7 +482,7 @@ fn field_index_by_name(field_name: &str, fields: &Vec<String>) -> Option<usize> 
     Option::None
 }
 
-pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager>) {
+pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager<NoTls>>) {
     println!("Parsing stop times for fid {} ...", feed_id);
     let reader = BufReader::new(f);
     let mut rdr = csv::Reader::from_reader(reader);
@@ -486,8 +500,9 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
         let fc = fields.clone();
 
         thread::spawn(move || {
-            let stmt = conn.prepare(
-                "INSERT INTO stop_time (\
+            let stmt = conn
+                .prepare(
+                    "INSERT INTO stop_time (\
                     trip_id,
                     arrival_time,
                     departure_time,
@@ -501,15 +516,18 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
                     feed_id
                 )\
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) ON CONFLICT DO NOTHING",
-            ).expect("Unable to create statement");
+                )
+                .expect("Unable to create statement");
 
             let re = Regex::new(r"^(\d{2}):(\d{2}):(\d{2})$").unwrap();
             let at = &String::from_utf8(
                 record[field_index_by_name("arrival_time", &fc).unwrap()].to_vec(),
-            ).unwrap();
+            )
+            .unwrap();
             let dt = &String::from_utf8(
                 record[field_index_by_name("departure_time", &fc).unwrap()].to_vec(),
-            ).unwrap();
+            )
+            .unwrap();
 
             if !re.is_match(at) {
                 panic!("Invalid arrival time!");
@@ -534,8 +552,8 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
                 s_dep = u32::from_str(&cap[3]).unwrap();
             }
 
-            let arr_time = NaiveTime::from_hms(h_arr, m_arr, s_arr);
-            let dep_time = NaiveTime::from_hms(h_dep, m_dep, s_dep);
+            let arr_time : String;
+            let dep_time : String;
 
             let mut stop_headsign: Option<String> = Option::None;
             let mut pickup_type: Option<i32> = Option::None;
@@ -548,7 +566,8 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
                 stop_headsign = Some(
                     String::from_utf8(
                         record[field_index_by_name("stop_headsign", &fc).unwrap()].to_vec(),
-                    ).unwrap(),
+                    )
+                    .unwrap(),
                 );
             }
 
@@ -556,9 +575,10 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
                 pickup_type = Some(
                     String::from_utf8(
                         record[field_index_by_name("pickup_type", &fc).unwrap()].to_vec(),
-                    ).unwrap()
-                        .parse::<i32>()
-                        .unwrap_or_default(),
+                    )
+                    .unwrap()
+                    .parse::<i32>()
+                    .unwrap_or_default(),
                 );
             }
 
@@ -566,9 +586,10 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
                 drop_off_type = Some(
                     String::from_utf8(
                         record[field_index_by_name("drop_off_type", &fc).unwrap()].to_vec(),
-                    ).unwrap()
-                        .parse::<i32>()
-                        .unwrap_or_default(),
+                    )
+                    .unwrap()
+                    .parse::<i32>()
+                    .unwrap_or_default(),
                 );
             }
 
@@ -576,9 +597,10 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
                 shape_dist_traveled = Some(
                     String::from_utf8(
                         record[field_index_by_name("shape_dist_traveled", &fc).unwrap()].to_vec(),
-                    ).unwrap()
-                        .parse::<f32>()
-                        .unwrap_or_default(),
+                    )
+                    .unwrap()
+                    .parse::<f32>()
+                    .unwrap_or_default(),
                 );
             }
 
@@ -586,13 +608,14 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
                 timepoint = Some(
                     String::from_utf8(
                         record[field_index_by_name("timepoint", &fc).unwrap()].to_vec(),
-                    ).unwrap()
-                        .parse::<i32>()
-                        .unwrap_or_default(),
+                    )
+                    .unwrap()
+                    .parse::<i32>()
+                    .unwrap_or_default(),
                 );
             }
 
-            stmt.execute(&[
+            conn.execute(&stmt,&[
                 &String::from_utf8(record[field_index_by_name("trip_id", &fc).unwrap()].to_vec())
                     .unwrap(),
                 &arr_time,
@@ -601,21 +624,23 @@ pub fn parse_stop_times(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectio
                     .unwrap(),
                 &String::from_utf8(
                     record[field_index_by_name("stop_sequence", &fc).unwrap()].to_vec(),
-                ).unwrap()
-                    .parse::<i32>()
-                    .unwrap(),
+                )
+                .unwrap()
+                .parse::<i32>()
+                .unwrap(),
                 &stop_headsign,
                 &pickup_type,
                 &drop_off_type,
                 &shape_dist_traveled,
                 &timepoint,
                 &feed_clone,
-            ]).expect("Unable to insert stop time");
+            ])
+            .expect("Unable to insert stop time");
         });
     }
 }
 
-fn parse_feed(f: ZipFile, pool: &Pool<PostgresConnectionManager>) -> String {
+fn parse_feed(f: ZipFile, pool: &Pool<PostgresConnectionManager<NoTls>>) -> String {
     println!("Parsing feed...");
 
     let feed_id: String;
@@ -631,36 +656,28 @@ fn parse_feed(f: ZipFile, pool: &Pool<PostgresConnectionManager>) -> String {
 
     let mut rdr = csv::ReaderBuilder::new().from_reader(reader);
     for result in rdr.deserialize() {
-        let conn = pool.clone().get().unwrap();
-        let stmt = conn.prepare(
-            "INSERT INTO feed \
-             (id, publisher_name, publisher_url, lang,\
-             start_date, end_date, version) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING",
-        ).expect("Unable to create statement");
+        let mut conn = pool.clone().get().unwrap();
+        let stmt = conn
+            .prepare(
+                "INSERT INTO feed \
+                 (id, publisher_name, publisher_url, lang,\
+                 start_date, end_date, version) \
+                 VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING",
+            )
+            .expect("Unable to create statement");
         let record: FeedCSV = result.unwrap();
         println!("Parsing Feed from {}", record.feed_publisher_name);
 
-        let mut start_date: Option<NaiveDate> = Option::None;
-        let mut end_date: Option<NaiveDate> = Option::None;
-
-        if record.feed_start_date.is_some() && record.feed_end_date.is_some() {
-            start_date = Some(
-                NaiveDate::parse_from_str(&record.feed_start_date.unwrap(), "%Y%m%d").unwrap(),
-            );
-            end_date =
-                Some(NaiveDate::parse_from_str(&record.feed_end_date.unwrap(), "%Y%m%d").unwrap());
-        }
-
-        stmt.execute(&[
+        conn.execute(&stmt,&[
             &feed_id,
             &record.feed_publisher_name,
             &record.feed_publisher_url,
             &record.feed_lang,
-            &start_date,
-            &end_date,
+            &record.feed_start_date,
+            &record.feed_end_date,
             &record.feed_version,
-        ]).expect("Unable to add feed");
+        ])
+        .expect("Unable to add feed");
 
         return feed_id;
     }
@@ -668,18 +685,20 @@ fn parse_feed(f: ZipFile, pool: &Pool<PostgresConnectionManager>) -> String {
     return feed_id;
 }
 
-pub fn parse_calendar(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager>) {
+pub fn parse_calendar(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager<NoTls>>) {
     println!("Parsing calendar for fid {} ...", feed_id);
     let mut rdr = csv::Reader::from_reader(f);
 
     for result in rdr.deserialize() {
-        let conn = pool.clone().get().unwrap();
-        let stmt = conn.prepare(
-            "INSERT INTO calendar \
-             (uid, service_id, monday, tuesday, wednesday, thursday,\
-             friday, saturday, sunday, start_date, end_date, feed_id) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) ON CONFLICT DO NOTHING",
-        ).expect("Unable to create statement");
+        let mut conn = pool.clone().get().unwrap();
+        let stmt = conn
+            .prepare(
+                "INSERT INTO calendar \
+                 (uid, service_id, monday, tuesday, wednesday, thursday,\
+                 friday, saturday, sunday, start_date, end_date, feed_id) \
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) ON CONFLICT DO NOTHING",
+            )
+            .expect("Unable to create statement");
         let record: CalendarCSV = result.unwrap();
 
         let uid = generate_uid(
@@ -702,10 +721,7 @@ pub fn parse_calendar(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionM
             record.end_date
         );*/
 
-        let start_date = NaiveDate::parse_from_str(&record.start_date, "%Y%m%d").unwrap();
-        let end_date = NaiveDate::parse_from_str(&record.end_date, "%Y%m%d").unwrap();
-
-        stmt.execute(&[
+        conn.execute(&stmt,&[
             &uid,
             &record.service_id,
             &record.monday,
@@ -715,50 +731,56 @@ pub fn parse_calendar(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionM
             &record.friday,
             &record.saturday,
             &record.sunday,
-            &start_date,
-            &end_date,
+            &record.start_date,
+            &record.end_date,
             &feed_id,
-        ]).expect("Unable to insert calendar entry");
+        ])
+        .expect("Unable to insert calendar entry");
     }
 }
 
-pub fn parse_calendar_dates(feed_id: &str, f: ZipFile, pool: &Pool<PostgresConnectionManager>) {
+pub fn parse_calendar_dates(
+    feed_id: &str,
+    f: ZipFile,
+    pool: &Pool<PostgresConnectionManager<NoTls>>,
+) {
     println!("Parsing calendar dates for fid {} ...", feed_id);
     let mut rdr = csv::Reader::from_reader(f);
 
     for result in rdr.deserialize() {
-
-        let conn = pool.clone().get().unwrap();
+        let mut conn = pool.clone().get().unwrap();
         let feed_clone = String::from(feed_id);
         thread::spawn(move || {
             let feed_id = feed_clone;
-            let stmt = conn.prepare(
-                "INSERT INTO calendar_date \
-                 (uid, service_id, date, exception_type, feed_id) \
-                 VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING",
-            ).expect("Unable to create statement");
+            let stmt = conn
+                .prepare(
+                    "INSERT INTO calendar_date \
+                     (uid, service_id, date, exception_type, feed_id) \
+                     VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING",
+                )
+                .expect("Unable to create statement");
             let record: CalendarDateCSV = result.unwrap();
 
-            let date = NaiveDate::parse_from_str(&record.date, "%Y%m%d").unwrap();
             let uid = generate_uid(
                 "se",
                 &format!("{}{}{}", &record.service_id, &record.date, &feed_id),
                 &record.service_id,
             );
 
-            stmt.execute(&[
+            conn.execute(&stmt,&[
                 &uid,
                 &record.service_id,
-                &date,
+                &record.date,
                 &record.exception_type,
                 &feed_id,
-            ]).expect("Unable to insert calendar entry");
+            ])
+            .expect("Unable to insert calendar entry");
         });
     }
 }
 
-pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
-    let conn = pool.clone().get().unwrap();
+pub fn create_tables(pool: &Pool<PostgresConnectionManager<NoTls>>) {
+    let mut conn = pool.clone().get().unwrap();
     conn.execute(
         "CREATE TABLE IF NOT EXISTS feed
     (\
@@ -771,7 +793,8 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         version VARCHAR(255)
     )",
         &[],
-    ).expect("Cannot create table \"feed\"");
+    )
+    .expect("Cannot create table \"feed\"");
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS agency\
@@ -787,7 +810,8 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         PRIMARY KEY (id, feed_id)
     )",
         &[],
-    ).expect("Cannot create table \"agency\"");
+    )
+    .expect("Cannot create table \"agency\"");
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS stop\
@@ -803,7 +827,8 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         UNIQUE(id, feed_id)
     )",
         &[],
-    ).expect("Cannot create table \"stop\"");
+    )
+    .expect("Cannot create table \"stop\"");
 
     /*
         ALTER TABLE public.stop_time
@@ -826,14 +851,15 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         PRIMARY KEY (id, feed_id)\
     )",
         &[],
-    ).expect("Cannot create table \"route\"");
+    )
+    .expect("Cannot create table \"route\"");
 
     /*
-        ALTER TABLE public.route
-        ADD CONSTRAINT route_agency_fk
-        FOREIGN KEY (agency,feed_id)
-        REFERENCES public.agency(id,feed_id);
-     */
+       ALTER TABLE public.route
+       ADD CONSTRAINT route_agency_fk
+       FOREIGN KEY (agency,feed_id)
+       REFERENCES public.agency(id,feed_id);
+    */
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS trip\
@@ -853,7 +879,8 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         PRIMARY KEY (uid)\
     )",
         &[],
-    ).expect("Cannot create table \"trip\"");
+    )
+    .expect("Cannot create table \"trip\"");
 
     // ALTER TABLE public.trip ADD CONSTRAINT trip_calendar_fk FOREIGN KEY (service_id,feed_id) REFERENCES public.calendar(service_id,feed_id) ;
 
@@ -871,7 +898,8 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         PRIMARY KEY (trip_id, stop_id, stop_sequence, feed_id)\
     )",
         &[],
-    ).expect("Cannot create table \"stop_time\"");
+    )
+    .expect("Cannot create table \"stop_time\"");
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS transfer\
@@ -884,7 +912,8 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         PRIMARY KEY (from_sid, to_sid, feed_id)\
     )",
         &[],
-    ).expect("Cannot create table \"transfers\"");
+    )
+    .expect("Cannot create table \"transfers\"");
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS calendar\
@@ -905,7 +934,8 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         UNIQUE (service_id, feed_id)\
     )",
         &[],
-    ).expect("Cannot create table \"calendar\"");
+    )
+    .expect("Cannot create table \"calendar\"");
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS settings\
@@ -915,7 +945,8 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         PRIMARY KEY (key)\
     )",
         &[],
-    ).expect("Cannot create table \"settings\"");
+    )
+    .expect("Cannot create table \"settings\"");
 
     // Create FKs
     conn.execute(
@@ -924,7 +955,8 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         FOREIGN KEY (stop_id,feed_id)
         REFERENCES public.stop(id,feed_id);",
         &[],
-    ).expect("Add stop_time constraints");
+    )
+    .expect("Add stop_time constraints");
 
     conn.execute(
         "ALTER TABLE public.route
@@ -932,7 +964,8 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
         FOREIGN KEY (agency,feed_id)
         REFERENCES public.agency(id,feed_id);",
         &[],
-    ).expect("Add stop_time constraints");
+    )
+    .expect("Add stop_time constraints");
 
     conn.execute(
         "ALTER TABLE public.trip \
@@ -940,21 +973,25 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
          FOREIGN KEY (service_id,feed_id) \
          REFERENCES public.calendar(service_id,feed_id);",
         &[],
-    ).expect("Add stop_time constraints");
+    )
+    .expect("Add stop_time constraints");
 
     // Create Indexes
     conn.execute(
         "CREATE INDEX IF NOT EXISTS stop_time_stop_id_idx ON public.stop_time (stop_id);",
         &[],
-    ).expect("Add stop_time index");
+    )
+    .expect("Add stop_time index");
     conn.execute(
         "CREATE UNIQUE INDEX IF NOT EXISTS  stop_id_idx ON public.stop (id,feed_id);",
         &[],
-    ).expect("Add stop index");
+    )
+    .expect("Add stop index");
     conn.execute(
         "CREATE UNIQUE INDEX IF NOT EXISTS  route_id_idx ON public.route (id,feed_id);",
         &[],
-    ).expect("Add route index");
+    )
+    .expect("Add route index");
     conn.execute(
         "CREATE UNIQUE INDEX IF NOT EXISTS  calendar_service_id_idx ON public.calendar (service_id,feed_id);",
         &[],
@@ -962,25 +999,27 @@ pub fn create_tables(pool: &Pool<PostgresConnectionManager>) {
     conn.execute(
         "CREATE INDEX IF NOT EXISTS  trip_feed_id_idx ON public.trip (feed_id,trip_id);",
         &[],
-    ).expect("Add trip index");
+    )
+    .expect("Add trip index");
     conn.execute(
         "CREATE INDEX IF NOT EXISTS stop_time_trip_id_idx ON public.stop_time (trip_id,feed_id);",
         &[],
-    ).expect("Add stop_time index 2");
+    )
+    .expect("Add stop_time index 2");
     conn.execute(
         "CREATE INDEX IF NOT EXISTS  stop_time_trip_id_feed_idx ON public.stop_time (trip_id,stop_id,feed_id);",
         &[],
     ).expect("Add stop_time index 3");
 }
 
-pub fn update_db(pool: &Pool<PostgresConnectionManager>) {
-    let conn = pool.clone().get().unwrap();
-    let db_vers: postgres::Result<Rows> =
+pub fn update_db(pool: &Pool<PostgresConnectionManager<NoTls>>) {
+    let mut conn = pool.clone().get().unwrap();
+    let db_vers: Result<Vec<Row>, postgres::Error> =
         conn.query("SELECT value FROM settings WHERE key='db_version';", &[]);
     if db_vers.as_ref().is_err() || db_vers.as_ref().is_ok() && db_vers.as_ref().unwrap().len() == 0
     {
         println!("Cannot get db version");
-        let db_vers: postgres::Result<u64> = conn.execute("SELECT * FROM settings", &[]);
+        let db_vers: Result<u64, postgres::Error> = conn.execute("SELECT * FROM settings", &[]);
         if db_vers.is_err() {
             // The settings table doesn't exists
             create_tables(&pool);
@@ -988,24 +1027,26 @@ pub fn update_db(pool: &Pool<PostgresConnectionManager>) {
         conn.execute(
             "INSERT INTO settings (key, value) VALUES('db_version', $1)",
             &[&"1"],
-        ).expect("Unable to add db_version to settings");
+        )
+        .expect("Unable to add db_version to settings");
 
         update_db_from(1, &pool);
     } else {
-        let version: String = db_vers.unwrap().get(0).get(0);
+        let version: String = db_vers.unwrap().get(0).unwrap().get(0);
         update_db_from(version.parse::<u32>().unwrap(), &pool);
     }
 }
 
-pub fn update_db_ver(ver: u32, conn: &Connection) {
+pub fn update_db_ver(ver: u32, conn: &PooledConnection<PostgresConnectionManager<NoTls>>) {
     conn.execute(
         "UPDATE settings SET value=$1 WHERE key = 'db_version'",
         &[&ver.to_string()],
-    ).expect("Version Update Failed");
+    )
+    .expect("Version Update Failed");
 }
 
-pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
-    let conn = pool.clone().get().unwrap();
+pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager<NoTls>>) {
+    let mut conn = pool.clone().get().unwrap();
     if ver < 0 {
         create_tables(pool);
     }
@@ -1022,7 +1063,8 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
         ADD COLUMN timepoint INTEGER
         ",
             &[],
-        ).expect("Unable to alter table stop_time");
+        )
+        .expect("Unable to alter table stop_time");
         update_db_ver(3, &conn);
     }
 
@@ -1034,7 +1076,8 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
              ADD COLUMN text_color CHAR(6), \
              ADD COLUMN sort_order INTEGER",
             &[],
-        ).expect("Unable to ALTER TABLE route");
+        )
+        .expect("Unable to ALTER TABLE route");
         update_db_ver(4, &conn);
     }
 
@@ -1048,7 +1091,8 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
              ADD COLUMN timezone VARCHAR(255), \
              ADD COLUMN wheelchair_boarding INTEGER",
             &[],
-        ).expect("Unable to ALTER TABLE stop");
+        )
+        .expect("Unable to ALTER TABLE stop");
         update_db_ver(5, &conn);
     }
 
@@ -1058,7 +1102,8 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
         ADD COLUMN fare_url VARCHAR(512),
         ADD COLUMN email VARCHAR(255)",
             &[],
-        ).expect("Unable to ALTER TABLE agency");
+        )
+        .expect("Unable to ALTER TABLE agency");
         update_db_ver(6, &conn);
     }
 
@@ -1067,7 +1112,8 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
             "ALTER TABLE trip \
              ALTER COLUMN short_name DROP NOT NULL",
             &[],
-        ).expect("Unable to ALTER TABLE trip");
+        )
+        .expect("Unable to ALTER TABLE trip");
         update_db_ver(7, &conn);
     }
 
@@ -1076,7 +1122,8 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
             "ALTER TABLE trip \
              DROP CONSTRAINT trip_calendar_fk",
             &[],
-        ).expect("Unable to ALTER TABLE trip");
+        )
+        .expect("Unable to ALTER TABLE trip");
         update_db_ver(8, &conn);
     }
 
@@ -1093,9 +1140,10 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
             UNIQUE (service_id, date, feed_id)
         )",
             &[],
-        ).expect("Unable to CREATE TABLE calendar_dates");
+        )
+        .expect("Unable to CREATE TABLE calendar_dates");
         /*conn.execute("ALTER TABLE trip \
-            ADD CONSTRAINT trip_calendar_dates_fk FOREIGN KEY(service_id, feed_id) REFERENCES 
+            ADD CONSTRAINT trip_calendar_dates_fk FOREIGN KEY(service_id, feed_id) REFERENCES
             calendar_dates(service_id, feed_id)", &[])
         .expect("Unable to ALTER TABLE trip");*/
         update_db_ver(9, &conn);
@@ -1107,7 +1155,8 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
              ALTER COLUMN block_id SET DATA TYPE VARCHAR(255), \
              ALTER COLUMN shape_id SET DATA TYPE VARCHAR(255)",
             &[],
-        ).expect("Unable to ALTER TABLE trip");
+        )
+        .expect("Unable to ALTER TABLE trip");
         update_db_ver(10, &conn);
     }
 
@@ -1116,7 +1165,8 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
             "ALTER TABLE trip \
              ALTER COLUMN headsign DROP NOT NULL",
             &[],
-        ).expect("Unable to ALTER TABLE trip");
+        )
+        .expect("Unable to ALTER TABLE trip");
         update_db_ver(11, &conn);
     }
 
@@ -1125,12 +1175,14 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
             r#"CREATE UNIQUE INDEX calendar_date_service_id_idx ON
                public.calendar_date (service_id,feed_id,"date")"#,
             &[],
-        ).expect("Unable to CREATE index 1 for calendar_date");
+        )
+        .expect("Unable to CREATE index 1 for calendar_date");
         conn.execute(
             r#"CREATE UNIQUE INDEX calendar_date_uid_idx ON
                public.calendar_date (uid)"#,
             &[],
-        ).expect("Unable to CREATE index 2 for calendar_date");
+        )
+        .expect("Unable to CREATE index 2 for calendar_date");
         update_db_ver(12, &conn);
     }
 
@@ -1143,18 +1195,19 @@ pub fn update_db_from(ver: u32, pool: &Pool<PostgresConnectionManager>) {
         conn.execute(
             r#"CREATE INDEX calendar_date_date_idx ON public.calendar_date ("date",feed_id);"#,
             &[],
-        ).expect("[13] Unable to CREATE index for calendar_date");
+        )
+        .expect("[13] Unable to CREATE index for calendar_date");
         update_db_ver(13, &conn);
     }
 }
 
-pub fn get_db_version(pool: &Pool<PostgresConnectionManager>) -> i32 {
-    let conn = pool.clone().get().unwrap();
+pub fn get_db_version(pool: &Pool<PostgresConnectionManager<NoTls>>) -> i32 {
+    let mut conn = pool.clone().get().unwrap();
     let result = conn.query("SELECT value FROM settings WHERE key='db_version'", &[]);
     if result.as_ref().is_err() || result.as_ref().unwrap().len() == 0 {
         return -1;
     }
 
-    let db_vers_string: String = result.unwrap().get(0).get(0);
+    let db_vers_string: String = result.unwrap().get(0).unwrap().get(0);
     return db_vers_string.parse::<i32>().unwrap();
 }

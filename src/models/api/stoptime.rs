@@ -10,5 +10,5 @@ use chrono::NaiveTime;
 pub struct StopTime {
     pub stop: String,
     pub time: NaiveTime,
-    pub trip: String
+    pub trip: String,
 }
