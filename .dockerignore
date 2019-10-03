@@ -3,3 +3,5 @@
 *.tar.gz
 target/
 resources/
+Dockerfile
+.env*
